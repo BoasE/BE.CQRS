@@ -1,0 +1,21 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AllowParallelTestExecution>True</AllowParallelTestExecution>
+    <MetricsExclusionList>
+      <Value>BE.CQRS.Domain.GetEventStore.Tests.FakeDomainObjects\BE.CQRS.Domain.GetEventStore.Tests.FakeDomainObjects.csproj</Value>
+      <Value>BE.CQRS.Domain.GetEventStore.Tests\BE.CQRS.Domain.GetEventStore.Tests.csproj</Value>
+      <Value>BE.CQRS.Domain.GetEventStore.IntegrationTests\BE.CQRS.Domain.GetEventStore.IntegrationTests.csproj</Value>
+      <Value>BE.CQRS.Domain.Tests\BE.CQRS.Domain.Tests.csproj:netcoreapp1.1</Value>
+      <Value>BE.CQRS.Domain.GetEventStore.Tests.FakeDomainObjects\BE.CQRS.Domain.GetEventStore.Tests.FakeDomainObjects.csproj:netstandard1.4</Value>
+      <Value>BE.CQRS.Domain.GetEventStore.IntegrationTests\BE.CQRS.Domain.GetEventStore.IntegrationTests.csproj:netcoreapp1.1</Value>
+      <Value>BE.CQRS.Domain.GetEventStore.Tests\BE.CQRS.Domain.GetEventStore.Tests.csproj:netcoreapp1.1</Value>
+      <Value>Domain\Domain.Tests\Domain.Tests.csproj</Value>
+      <Value>Data\BE.CQRS.Data.GetEventStore.IntegrationTests\GetEventStore.IntegrationTests.csproj</Value>
+      <Value>Data\BE.CQRS.Data.GetEventStore.Tests\GetEventStore.Tests.csproj</Value>
+      <Value>Data\BE.CQRS.Data.MongoDb.Tests\MongoDb.Tests.csproj</Value>
+      <Value>TestFramework\Tests.Fakes\Tests.Fakes.csproj</Value>
+      <Value>TestFramework\Testrunner\Testrunner.csproj</Value>
+    </MetricsExclusionList>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+</SolutionConfiguration>
