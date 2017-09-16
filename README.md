@@ -1,9 +1,10 @@
 # CQRS
 
-
 ## Common
 This project represents a interpretation of the CQRS pattern, setting the focus on domainobjects, states and repositories.
 Although this project is already used in some real world projects like [groupl](https://www.groupl.de) I can't provide you any guarantues on functionality or support.
+
+Currently a process of migration, documentation and samples creation is in progress. If you have any questions or wished please drop an issue here.
 
 This project doesn't claim to be a prefect cqrs implementation. As most patterns CQRS has also many different real world interpretations.
 
