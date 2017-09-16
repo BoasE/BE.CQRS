@@ -9,8 +9,8 @@
     <PackageReference Include="BE.CQRS" Version="0.54.0-alpha" />
     <PackageReference Include="BE.CQRS.Data.GetEventStore" Version="0.40.0-alpha" />
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.0-alpha-1" />
-    <PackageReference Include="IdeaSoftware.EventStore.Client.Core" Version="301.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.Reactive" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
