@@ -151,9 +151,21 @@ namespace BE.CQRS.Domain.DomainObjects
             return Policy(typeof(T), command);
         }
 
+        private readonly Type commandPolicyType = typeof(CommandPolicyBase<>);
+
         public bool Policy(Type policy, ICommand command)
         {
-            if (!(Activator.CreateInstance(policy, command) is PolicyBase state) || state == null)
+            PolicyBase state;
+            if (commandPolicyType.IsAssignableFrom(policy))
+            {
+                state = Activator.CreateInstance(policy, command) as PolicyBase;
+            }
+            else
+            {
+                state = Activator.CreateInstance(policy) as PolicyBase;
+            }
+
+            if (state == null)
             {
                 throw new InvalidOperationException();
             }
