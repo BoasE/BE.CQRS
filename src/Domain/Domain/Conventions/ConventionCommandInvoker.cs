@@ -15,7 +15,7 @@ namespace BE.CQRS.Domain.Conventions
     {
         private readonly IDomainObjectRepository repository;
         private readonly int retryCount = 10;
-        private readonly PolicyAttributeValidator policyValidator = new PolicyAttributeValidator();
+        private readonly RequiresAttributeValidator policyValidator = new RequiresAttributeValidator();
 
         public ConventionCommandInvoker(IDomainObjectRepository repository)
         {

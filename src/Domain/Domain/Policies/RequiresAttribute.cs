@@ -3,15 +3,15 @@
 namespace BE.CQRS.Domain.Policies
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class PolicyAttribute : Attribute
+    public sealed class RequiresAttribute : Attribute
     {
         public Type[] Polices { get; set; }
 
-        public PolicyAttribute()
+        public RequiresAttribute()
         {
         }
 
-        public PolicyAttribute(params Type[] policy)
+        public RequiresAttribute(params Type[] policy)
         {
             Polices = policy;
         }
