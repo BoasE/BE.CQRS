@@ -6,7 +6,7 @@ using BE.CQRS.Domain.DomainObjects;
 
 namespace BE.CQRS.Domain.Policies
 {
-    public sealed class PolicyAttributeValidator
+    public sealed class RequiresAttributeValidator
     {
         public bool CheckPolicies(IDomainObject domainObject, ICommand cmd, IEnumerable<MethodInfo> methods)
         {
@@ -20,7 +20,7 @@ namespace BE.CQRS.Domain.Policies
 
         private static bool ArePoliciesFullfilled(IDomainObject domainObject, ICommand cmd, MethodInfo method)
         {
-            var annotation = method.GetCustomAttribute<PolicyAttribute>(true);
+            var annotation = method.GetCustomAttribute<RequiresAttribute>(true);
 
             if (annotation == null)
                 return true;
