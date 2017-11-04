@@ -1,5 +1,6 @@
 ﻿using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Domain.Configuration
@@ -8,6 +9,11 @@ namespace BE.CQRS.Domain.Configuration
     {
         public static void AddEventSource(this IServiceCollection collection, EventSourceConfiguration config)
         {
+            Precondition.For(() => config).NotNull();
+            Precondition.For(() => config.Activator).NotNull();
+            Precondition.For(() => config.CommandBus).NotNull();
+            Precondition.For(() => config.DomainObjectRepository).NotNull();
+
             collection.AddSingleton(config.Activator);
             collection.AddSingleton(config.CommandBus);
             collection.AddSingleton(config.DomainObjectRepository);
