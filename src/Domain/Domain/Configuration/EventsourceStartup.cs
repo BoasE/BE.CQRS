@@ -7,7 +7,7 @@ namespace BE.CQRS.Domain.Configuration
 {
     public static class EventsourceStartup
     {
-        public static void AddEventSource(this IServiceCollection collection, EventSourceConfiguration config)
+        public static EventSourceConfiguration AddEventSource(this IServiceCollection collection, EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Activator).NotNull();
@@ -17,17 +17,34 @@ namespace BE.CQRS.Domain.Configuration
             collection.AddSingleton(config.Activator);
             collection.AddSingleton(config.CommandBus);
             collection.AddSingleton(config.DomainObjectRepository);
+
+            if (config.EventMapper != null)
+            {
+                collection.AddSingleton(config.EventMapper);
+            }
+
+            return config;
         }
 
-        public static void SetInMemoryCommandBus(this EventSourceConfiguration config)
+        public static EventSourceConfiguration SetInMemoryCommandBus(this EventSourceConfiguration config)
         {
+            Precondition.For(() => config).NotNull();
+            Precondition.For(() => config.DomainObjectRepository).NotNull();
+            Precondition.For(() => config.DomainObjectAssemblies).NotNull();
+
             config.CommandBus = InMemoryCommandBus.CreateConventionCommandBus(config.DomainObjectRepository,
                 config.DomainObjectAssemblies);
+
+            return config;
         }
 
-        public static void SetDefaultActivator(this EventSourceConfiguration config)
+        public static EventSourceConfiguration SetDefaultActivator(this EventSourceConfiguration config)
         {
+            Precondition.For(() => config).NotNull();
+
             config.Activator = new ActivatorDomainObjectActivator();
+
+            return config;
         }
     }
 }

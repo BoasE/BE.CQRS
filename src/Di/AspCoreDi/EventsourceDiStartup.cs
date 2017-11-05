@@ -5,11 +5,13 @@ namespace BE.CQRS.Di.AspCore
 {
     public static class EventsourceDiStartup
     {
-        public static void SetServiceCollectionActivator(this EventSourceConfiguration config, IServiceProvider serivces)
+        public static EventSourceConfiguration SetServiceCollectionActivator(this EventSourceConfiguration config, IServiceProvider serivces)
         {
             var activator = new ServiceCollectionActivator();
             activator.UseProvider(serivces);
             config.Activator = activator;
+
+            return config;
         }
     }
 }

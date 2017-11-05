@@ -8,6 +8,8 @@ namespace BE.CQRS.Domain.Configuration
     {
         public string Prefix { get; set; }
 
+        public IEventMapper EventMapper { get; set; }
+
         public IDomainObjectActivator Activator { get; set; }
 
         public ICommandBus CommandBus { get; set; }
@@ -15,5 +17,11 @@ namespace BE.CQRS.Domain.Configuration
         public IDomainObjectRepository DomainObjectRepository { get; set; }
 
         public Assembly[] DomainObjectAssemblies { get; set; }
+
+        public EventSourceConfiguration()
+        {
+            this.SetDefaultActivator();
+            this.SetInMemoryCommandBus();
+        }
     }
 }
