@@ -21,6 +21,7 @@ To get started have a look at the sample directory.
 
 ### Adding the write part
 
+####MongoDb as EventStore, and asp.core serviceprovider for di
 ```csharp
  public static void AddWrite(this IServiceCollection collection, IConfigurationRoot config,
             IMongoDatabase connection)
