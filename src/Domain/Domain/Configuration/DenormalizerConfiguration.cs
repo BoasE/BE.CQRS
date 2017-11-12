@@ -10,11 +10,7 @@ namespace BE.CQRS.Domain.Configuration
 
         public IStreamPositionGateway StreamPositionGateway { get; set; }
 
-        public EventDenormalizer EventDenormalizer { get; set; }
-
         public Assembly[] DenormalizerAssemblies { get; set; }
-
-        public Func<Type, object> Factory { get; set; }  // TODO Extract Object Factory like the DomainObjectFacotry
-   
+        
     }
 }

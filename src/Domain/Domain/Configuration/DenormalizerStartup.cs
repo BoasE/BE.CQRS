@@ -4,6 +4,7 @@ using System.Reflection;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.Events.Handlers;
 using BE.FluentGuard;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Domain.Configuration
@@ -15,16 +16,26 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => services).NotNull();
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Subscriber).NotNull();
-            Precondition.For(() => config.EventDenormalizer).NotNull();
             Precondition.For(() => config.StreamPositionGateway).NotNull();
 
-            services.AddSingleton(config.StreamPositionGateway);
-            services.AddSingleton(config.Subscriber);
-            services.AddSingleton(config.EventDenormalizer);
+            services.AddSingleton(config);
 
             return services;
         }
-        
+
+        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app, Func<Type, object> denormalizerFactory) // TODO Extract Object Factory like the DomainObjectFacotry
+        {
+            Precondition.For(() => app).NotNull();
+
+            var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
+
+            var result = new EventDenormalizer(config.Subscriber,
+                new ConventionEventHandler(denormalizerFactory, config.DenormalizerAssemblies),
+                config.StreamPositionGateway);
+
+            return result;
+        }
+
         public static DenormalizerConfiguration SetDenormalizerAssemblies(this DenormalizerConfiguration config, params Assembly[] assemblies)
         {
             Precondition.For(() => config).NotNull();
@@ -32,28 +43,6 @@ namespace BE.CQRS.Domain.Configuration
 
             config.DenormalizerAssemblies = assemblies;
 
-            return config;
-        }
-
-        public static DenormalizerConfiguration SetDenormalizerFactory(this DenormalizerConfiguration config, Func<Type, object> factory)
-        {
-            Precondition.For(() => config).NotNull();
-            Precondition.For(() => factory).NotNull();
-
-            config.Factory = factory;
-
-            return config;
-        }
-
-        public static DenormalizerConfiguration SetConvetionBasedDenormalizer(this DenormalizerConfiguration config)
-        {
-            Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.Subscriber).NotNull();
-            Precondition.For(() => config.Factory).NotNull();
-            Precondition.For(() => config.DenormalizerAssemblies).NotNull();
-            Precondition.For(() => config.StreamPositionGateway).NotNull();
-
-            config.EventDenormalizer = new EventDenormalizer(config.Subscriber, new ConventionEventHandler(config.Factory, config.DenormalizerAssemblies), config.StreamPositionGateway);
             return config;
         }
     }
