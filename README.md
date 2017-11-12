@@ -19,6 +19,26 @@ The EventStore implementation is already used in production scenarios , the mong
 ## Samples
 To get started have a look at the sample directory.
 
+### Adding the write part
+
+#### MongoDb as EventStore, and asp.core serviceprovider for di
+```csharp
+public static void AddWrite(this IServiceCollection services,
+    IMongoDatabase connection)
+{
+    services.AddEventSource(
+        new EventSourceConfiguration()
+            .SetServiceProviderActivator()
+            .SetInMemoryCommandBus()
+            .SetMongoDbEventSource(connection));
+}
+
+public static void UseWrite(this IApplicationBuilder app)
+{
+    app.UseServiceProviderActivator();
+}
+```
+
 
 ## Ressources
 To get started I strongly recommend to have a look at the awesome CQRS Webcasts by GregYoung.
