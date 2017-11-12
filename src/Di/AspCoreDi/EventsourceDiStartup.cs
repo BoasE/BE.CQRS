@@ -1,6 +1,7 @@
 ﻿using System;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
+using BE.FluentGuard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,14 @@ namespace BE.CQRS.Di.AspCore
             return config;
         }
 
+        public static DenormalizerConfiguration SetServiceProviderDenormalizerActivator(this DenormalizerConfiguration config)
+        {
+            Precondition.For(() => config).NotNull();
+
+            config.Activator = new ServiceCollectionActivator();
+
+            return config;
+        }
         public static void UseServiceProviderActivator(this IApplicationBuilder app)
         {
             if (!(app.ApplicationServices.GetRequiredService<IDomainObjectActivator>() is ServiceCollectionActivator activator))

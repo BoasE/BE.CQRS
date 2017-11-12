@@ -22,6 +22,18 @@ namespace BE.CQRS.Domain.Events.Handlers
 
         public int HandlerCount => denormalizers.Length;
 
+        public ConventionEventHandler(IDenormalizerActivator activator, params Assembly[] projectors) // TODO Unify to one constructor (Breaking changes to geteventstore possible)
+        {
+            Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any());
+
+            normalizerFactory = activator.ResolveDenormalizer;
+            IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
+
+            List<Type> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
+
+            denormalizers = denormalizersWithMethods.ToArray();
+        }
+
         public ConventionEventHandler(Func<Type, object> factory, params Assembly[] projectors)
         {
             Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any());

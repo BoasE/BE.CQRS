@@ -11,6 +11,7 @@ namespace BE.CQRS.Domain.Configuration
         public IStreamPositionGateway StreamPositionGateway { get; set; }
 
         public Assembly[] DenormalizerAssemblies { get; set; }
-        
+
+        public IDenormalizerActivator Activator { get; set; }
     }
 }

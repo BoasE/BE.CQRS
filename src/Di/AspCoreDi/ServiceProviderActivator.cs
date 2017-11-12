@@ -1,10 +1,11 @@
 ﻿using System;
+using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Di.AspCore
 {
-    public class ServiceCollectionActivator : IDomainObjectActivator
+    public class ServiceCollectionActivator : IDomainObjectActivator,IDenormalizerActivator
     {
         private IServiceProvider provider;
 
@@ -21,6 +22,16 @@ namespace BE.CQRS.Di.AspCore
         public IDomainObject Resolve(Type domainObjectType, string id)
         {
             return ActivatorUtilities.CreateInstance(provider, domainObjectType, id) as IDomainObject;
+        }
+
+        public T ResolveDenormalizer<T>() where T : class
+        {
+            return ResolveDenormalizer(typeof(T)) as T;
+        }
+
+        public object ResolveDenormalizer(Type denormalizerType)
+        {
+            return ActivatorUtilities.CreateInstance(provider, denormalizerType);
         }
     }
 }

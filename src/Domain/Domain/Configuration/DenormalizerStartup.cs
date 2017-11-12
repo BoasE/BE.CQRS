@@ -16,6 +16,7 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => services).NotNull();
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Subscriber).NotNull();
+            Precondition.For(() => config.Activator).NotNull();
             Precondition.For(() => config.StreamPositionGateway).NotNull();
 
             services.AddSingleton(config);
@@ -23,14 +24,14 @@ namespace BE.CQRS.Domain.Configuration
             return services;
         }
 
-        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app, Func<Type, object> denormalizerFactory) // TODO Extract Object Factory like the DomainObjectFacotry
+        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app) // TODO Extract Object Factory like the DomainObjectFacotry
         {
             Precondition.For(() => app).NotNull();
 
             var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
 
             var result = new EventDenormalizer(config.Subscriber,
-                new ConventionEventHandler(denormalizerFactory, config.DenormalizerAssemblies),
+                new ConventionEventHandler(config.Activator, config.DenormalizerAssemblies),
                 config.StreamPositionGateway);
 
             return result;
