@@ -31,11 +31,13 @@ namespace BE.CQRS.Domain.Configuration
         public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config, params Assembly[] assembliesWithDomainObjects)
         {
             Precondition.For(() => config).NotNull();
-            Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x=>x.Any());
+            Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x => x.Any());
 
             config.DomainObjectAssemblies = assembliesWithDomainObjects;
+
             return config;
         }
+
         public static EventSourceConfiguration SetInMemoryCommandBus(this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
