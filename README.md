@@ -57,7 +57,7 @@ public static void AddCqrsDenormalizer(this IServiceCollection collection, IConf
             .SetMongoEventPositionGateway(streamPosDb)
             .SetMongoDbEventSubscriber(eventDb)
             .SetConvetionBasedDenormalizer()   
-            ); //TODO Extract type similar to domainbobject activator
+            ); 
 }
 
 public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApplicationBuilder app)
