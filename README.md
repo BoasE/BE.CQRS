@@ -19,6 +19,26 @@ The EventStore implementation is already used in production scenarios , the mong
 ## Samples
 To get started have a look at the sample directory.
 
+### Adding the write part
+
+```csharp
+ public static void AddWrite(this IServiceCollection collection, IConfigurationRoot config,
+            IMongoDatabase connection)
+ {
+     var esConfig = new EventSourceConfiguration()
+          .SetServiceCollectionActivator()
+          .SetInMemoryCommandBus()
+          .SetMongoDbEventSource(connection);
+
+     collection.AddEventSource(esConfig);
+ }
+
+ public static void UseWrite(IServiceProvider provider)
+ {
+     provider.UseServiceCollectionActivator();
+ }
+```
+
 
 ## Ressources
 To get started I strongly recommend to have a look at the awesome CQRS Webcasts by GregYoung.
