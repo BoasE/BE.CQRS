@@ -42,6 +42,21 @@ public static void UseWrite(this IApplicationBuilder app)
 ```
 
 
+### Adding the denormalizers
+
+```csharp
+var eventDb = GetEsMongoDbFromConfig(config);
+            var streamPosDb = GetStreamPositionMongoDbFromConfig(config);
+
+            collection.AddDenormalizers(
+                new DenormalizerConfiguration()
+                    .SetDenormalizerAssemblies(typeof(ChildDenormalizer).Assembly)
+                    .SetDenormalizerFactory(Activator.CreateInstance)
+                    .SetMongoEventPositionGateway(streamPosDb)
+                    .SetMongoDbEventSubscriber(eventDb)
+                    .SetConvetionBasedDenormalizer()   
+                    ); 
+```
 ## Ressources
 To get started I strongly recommend to have a look at the awesome CQRS Webcasts by GregYoung.
 
