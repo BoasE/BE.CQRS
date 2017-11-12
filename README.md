@@ -53,7 +53,6 @@ public static void AddCqrsDenormalizer(this IServiceCollection collection, IConf
     collection.AddDenormalizers(
         new DenormalizerConfiguration()
             .SetDenormalizerAssemblies(typeof(ChildDenormalizer).Assembly)
-            .SetDenormalizerFactory(Activator.CreateInstance)
             .SetMongoEventPositionGateway(streamPosDb)
             .SetMongoDbEventSubscriber(eventDb)
             .SetConvetionBasedDenormalizer()   
