@@ -6,7 +6,7 @@ namespace BE.CQRS.Data.MongoDb
 {
     public static class MongoEventSourceStartup
     {
-        public static EventSourceConfiguration SetMongoDbEventSource(this EventSourceConfiguration config, IMongoDatabase db)
+        public static EventSourceConfiguration SetMongoDomainObjectRepository(this EventSourceConfiguration config, IMongoDatabase db)
         {
             Precondition.For(() => db).NotNull();
             Precondition.For(() => config).NotNull();
