@@ -17,11 +17,5 @@ namespace BE.CQRS.Domain.Configuration
         public IDomainObjectRepository DomainObjectRepository { get; set; }
 
         public Assembly[] DomainObjectAssemblies { get; set; }
-
-        public EventSourceConfiguration()
-        {
-            this.SetDefaultActivator();
-            this.SetInMemoryCommandBus();
-        }
     }
 }
