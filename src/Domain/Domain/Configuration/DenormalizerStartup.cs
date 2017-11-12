@@ -15,12 +15,16 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => services).NotNull();
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Subscriber).NotNull();
+            Precondition.For(() => config.EventDenormalizer).NotNull();
+            Precondition.For(() => config.StreamPositionGateway).NotNull();
 
+            services.AddSingleton(config.StreamPositionGateway);
             services.AddSingleton(config.Subscriber);
+            services.AddSingleton(config.EventDenormalizer);
 
             return services;
         }
-
+        
         public static DenormalizerConfiguration SetDenormalizerAssemblies(this DenormalizerConfiguration config, params Assembly[] assemblies)
         {
             Precondition.For(() => config).NotNull();
