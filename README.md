@@ -23,10 +23,10 @@ To get started have a look at the sample directory.
 
 #### MongoDb as EventStore, and asp.core serviceprovider for di
 ```csharp
-public static void AddWrite(this IServiceCollection collection,
+public static void AddWrite(this IServiceCollection services,
     IMongoDatabase connection)
 {
-    collection.AddEventSource(
+    services.AddEventSource(
         new EventSourceConfiguration()
             .SetServiceProviderActivator()
             .SetInMemoryCommandBus()
