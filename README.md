@@ -55,12 +55,13 @@ public static void AddCqrsDenormalizer(this IServiceCollection collection, IConf
             .SetDenormalizerAssemblies(typeof(ChildDenormalizer).Assembly)
             .SetMongoEventPositionGateway(streamPosDb)
             .SetMongoDbEventSubscriber(eventDb)
+            .SetServiceProviderDenormalizerActivator()
             ); 
 }
 
-public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApplicationBuilder app,IServiceProvider provider)
+public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApplicationBuilder app, IServiceProvider provider)
 {
-    EventDenormalizer denormalizer = app.UseConvetionBasedDenormalizer(x=> ActivatorUtilities.CreateInstance(provider, x));
+    EventDenormalizer denormalizer = app.UseConvetionBasedDenormalizer();
     await denormalizer.StartAsync(TimeSpan.FromMilliseconds(250));
 
     return app;
