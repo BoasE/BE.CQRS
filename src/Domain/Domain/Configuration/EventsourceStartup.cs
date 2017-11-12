@@ -38,7 +38,7 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
-        public static EventSourceConfiguration SetInMemoryCommandBus(this EventSourceConfiguration config)
+        public static EventSourceConfiguration SetConventionBasedInMemoryCommandBus(this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.DomainObjectRepository).NotNull();
