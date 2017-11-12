@@ -1,4 +1,6 @@
-﻿using BE.CQRS.Domain.Commands;
+﻿using System.Linq;
+using System.Reflection;
+using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,14 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
+        public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config, params Assembly[] assembliesWithDomainObjects)
+        {
+            Precondition.For(() => config).NotNull();
+            Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x=>x.Any());
+
+            config.DomainObjectAssemblies = assembliesWithDomainObjects;
+            return config;
+        }
         public static EventSourceConfiguration SetInMemoryCommandBus(this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
