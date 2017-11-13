@@ -25,6 +25,11 @@ namespace BE.CQRS.Data.MongoDb
             repository = new MongoCommitRepository(db);
         }
 
+        public Task<long> GetCommitCount()
+        {
+            return repository.Count();
+        }
+
         protected override Task<long> GetVersion(string streamName)
         {
             string id = namer.IdByStreamName(streamName);

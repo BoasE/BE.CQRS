@@ -154,5 +154,10 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             return Collection.Find(query).SortBy(x => x.Ordinal).ForEachAsync(consumer);
         }
+
+        public Task<long> Count()
+        {
+            return Collection.CountAsync(Filters.Empty);
+        }
     }
 }

@@ -1,0 +1,50 @@
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using BE.CQRS.Domain.Denormalization;
+using BE.CQRS.Domain.Events.Handlers;
+using BE.FluentGuard;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BE.CQRS.Domain.Configuration
+{
+    public static class DenormalizerStartup
+    {
+        public static IServiceCollection AddDenormalizers(this IServiceCollection services, DenormalizerConfiguration config)
+        {
+            Precondition.For(() => services).NotNull();
+            Precondition.For(() => config).NotNull();
+            Precondition.For(() => config.Subscriber).NotNull();
+            Precondition.For(() => config.Activator).NotNull();
+            Precondition.For(() => config.StreamPositionGateway).NotNull();
+
+            services.AddSingleton(config);
+
+            return services;
+        }
+
+        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app) // TODO Extract Object Factory like the DomainObjectFacotry
+        {
+            Precondition.For(() => app).NotNull();
+
+            var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
+
+            var result = new EventDenormalizer(config.Subscriber,
+                new ConventionEventHandler(config.Activator, config.DenormalizerAssemblies),
+                config.StreamPositionGateway);
+
+            return result;
+        }
+
+        public static DenormalizerConfiguration SetDenormalizerAssemblies(this DenormalizerConfiguration config, params Assembly[] assemblies)
+        {
+            Precondition.For(() => config).NotNull();
+            Precondition.For(() => assemblies).NotNull().True(x => x.Any());
+
+            config.DenormalizerAssemblies = assemblies;
+
+            return config;
+        }
+    }
+}

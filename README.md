@@ -19,7 +19,55 @@ The EventStore implementation is already used in production scenarios , the mong
 ## Samples
 To get started have a look at the sample directory.
 
+### Adding the write part
 
+#### MongoDb as EventStore, and asp.core serviceprovider for di
+```csharp
+public static void AddWrite(this IServiceCollection collection, IConfiguration config)
+{
+    var mongoDb = GetEsMongoDbFromConfig(config);
+
+    collection.AddEventSource(
+        new EventSourceConfiguration()
+            .SetDomainObjectAssemblies(typeof(ChildDomainObject).Assembly)
+            .SetServiceProviderActivator()
+            .SetMongoDomainObjectRepository(mongoDb)
+            .SetInMemoryCommandBus());
+}
+
+public static void UseWrite(this IApplicationBuilder app)
+{
+    app.UseServiceProviderActivator();
+}
+```
+
+
+### Adding the denormalizers
+
+```csharp
+public static void AddCqrsDenormalizer(this IServiceCollection collection, IConfiguration config)
+{
+    var eventDb = GetEsMongoDbFromConfig(config);
+    var streamPosDb = GetStreamPositionMongoDbFromConfig(config);
+
+    collection.AddDenormalizers(
+        new DenormalizerConfiguration()
+            .SetDenormalizerAssemblies(typeof(ChildDenormalizer).Assembly)
+            .SetMongoEventPositionGateway(streamPosDb)
+            .SetMongoDbEventSubscriber(eventDb)
+            .SetServiceProviderDenormalizerActivator()
+            ); 
+}
+
+public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApplicationBuilder app, IServiceProvider provider)
+{
+    EventDenormalizer denormalizer = app.UseConvetionBasedDenormalizer();
+    await denormalizer.StartAsync(TimeSpan.FromMilliseconds(250));
+
+    return app;
+}
+     
+```
 ## Ressources
 To get started I strongly recommend to have a look at the awesome CQRS Webcasts by GregYoung.
 
