@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Di.AspCore
 {
-    public class ServiceCollectionActivator : IDomainObjectActivator,IDenormalizerActivator
+    public class ServiceCollectionActivator : IDomainObjectActivator, IDenormalizerActivator
     {
         private IServiceProvider provider;
 

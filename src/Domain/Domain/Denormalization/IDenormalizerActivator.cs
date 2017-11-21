@@ -1,5 +1,4 @@
 ﻿using System;
-using BE.CQRS.Domain.DomainObjects;
 
 namespace BE.CQRS.Domain.Denormalization
 {

@@ -12,6 +12,5 @@ namespace BE.CQRS.Domain.Tests.StateTests
 
             Assert.Throws<ArgumentNullException>(() => sut.Execute(null));
         }
-
     }
 }

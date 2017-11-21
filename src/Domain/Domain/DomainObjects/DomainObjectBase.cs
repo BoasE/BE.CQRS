@@ -196,9 +196,9 @@ namespace BE.CQRS.Domain.DomainObjects
 
         private void ExecuteState(bool excludeUncommitted, IState state)
         {
-            List<IEvent> events = new List<IEvent>(committedEvents);
+            var events = new List<IEvent>(committedEvents);
 
-            if(!excludeUncommitted)
+            if (!excludeUncommitted)
             {
                 events.AddRange(unCommittedEvents);
             }

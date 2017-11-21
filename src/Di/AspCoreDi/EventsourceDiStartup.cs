@@ -25,6 +25,7 @@ namespace BE.CQRS.Di.AspCore
 
             return config;
         }
+
         public static void UseServiceProviderActivator(this IApplicationBuilder app)
         {
             if (!(app.ApplicationServices.GetRequiredService<IDomainObjectActivator>() is ServiceCollectionActivator activator))

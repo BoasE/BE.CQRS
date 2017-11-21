@@ -29,7 +29,7 @@ namespace BE.CQRS.Domain.Denormalization
             IObservable<OccuredEvent> feed = subscriber.Start(pos);
 
             feed
-                .Do(x =>  handler.HandleAsync(x.Event).Wait())
+                .Do(x => handler.HandleAsync(x.Event).Wait())
                 .Buffer(updateInvervall)
                 .Subscribe(i => UpdatePosition(i).Wait());
         }

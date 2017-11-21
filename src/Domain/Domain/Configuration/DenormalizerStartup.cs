@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.Events.Handlers;
