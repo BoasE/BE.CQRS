@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Tests.EventBaseTests;
 using Xunit;
 
 namespace BE.CQRS.Domain.Tests.StateTests
 {
-    public class WhenFreezing : GivenState
+    public class WhenVisitingEvents : GivenState
     {
         private readonly List<IEvent> source = new List<IEvent>
         {
@@ -16,22 +15,27 @@ namespace BE.CQRS.Domain.Tests.StateTests
 
         private readonly SampleState State;
 
-        public WhenFreezing()
+        public WhenVisitingEvents()
         {
             State = ResolveState(source);
-            State.Freeze();
         }
 
         [Fact]
-        public void ItIsFreezed()
+        public void ItIteratesThroughAllEvents()
         {
-            Assert.True(State.IsFreezed);
+            Assert.Equal(source.Count, State.Total);
         }
 
         [Fact]
-        public void ItDoesNotVisitEvents()
+        public void ItCountsTheSampleEvents()
         {
-            Assert.Throws<InvalidOperationException>(() => State.Execute(source));
+            Assert.Equal(2, State.SampleCount);
+        }
+
+        [Fact]
+        public void FreezedIsTrue()
+        {
+            Assert.Equal(true, State.IsFreezed);
         }
     }
 }

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace BE.CQRS.Domain.Tests.StateTests
 {
-    public class WhenFreezing : GivenState
+    public class WhenVisitingTwice : GivenState
     {
         private readonly List<IEvent> source = new List<IEvent>
         {
@@ -16,20 +16,14 @@ namespace BE.CQRS.Domain.Tests.StateTests
 
         private readonly SampleState State;
 
-        public WhenFreezing()
+        public WhenVisitingTwice()
         {
-            State = ResolveState(source);
-            State.Freeze();
+            State = GetSut();
+            State.Execute(source);
         }
 
         [Fact]
-        public void ItIsFreezed()
-        {
-            Assert.True(State.IsFreezed);
-        }
-
-        [Fact]
-        public void ItDoesNotVisitEvents()
+        public void ItThrows()
         {
             Assert.Throws<InvalidOperationException>(() => State.Execute(source));
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Events;
@@ -7,7 +8,7 @@ using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.States
 {
-    public abstract class StateBase : IState
+    public abstract class StateBase : IFreezeableState
     {
         private static readonly IEventMethodConvetion MethodConvetion = new EventMethodConvetion();
         private static readonly EventHandlerInvoker Invoker = new EventHandlerInvoker();
@@ -16,8 +17,11 @@ namespace BE.CQRS.Domain.States
 
         private readonly IEventHandlerRegistry registry;
 
+        public bool IsFreezed { get; private set; }
+
         protected StateBase()
         {
+            IsFreezed = false;
             EventHandlerMethod[] methods = MethodConvetion.ResolveEventMethods(GetType()).ToArray();
             registry = new EventHandlerRegistry();
             registry.Add(methods);
@@ -26,6 +30,11 @@ namespace BE.CQRS.Domain.States
         public void Execute(IEnumerable<IEvent> source)
         {
             Precondition.For(source, nameof(source)).NotNull();
+
+            if (IsFreezed)
+            {
+                throw new InvalidOperationException("State is freezed and can't be executed again!");
+            }
 
             foreach (IEvent entry in source)
             {
@@ -36,6 +45,8 @@ namespace BE.CQRS.Domain.States
                     break;
                 }
             }
+
+            Freeze();
         }
 
         protected void Break()
@@ -56,6 +67,11 @@ namespace BE.CQRS.Domain.States
             {
                 await Invoker.InvokeAsync(@event, method, this); //Todo get events    
             }
+        }
+
+        public void Freeze()
+        {
+            IsFreezed = true;
         }
     }
 }
