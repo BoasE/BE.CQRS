@@ -17,11 +17,11 @@ namespace BE.CQRS.Domain.States
 
         private readonly IEventHandlerRegistry registry;
 
-        public bool IsFreezed { get; private set; }
+        public bool IsFrozen { get; private set; }
 
         protected StateBase()
         {
-            IsFreezed = false;
+            IsFrozen = false;
             EventHandlerMethod[] methods = MethodConvetion.ResolveEventMethods(GetType()).ToArray();
             registry = new EventHandlerRegistry();
             registry.Add(methods);
@@ -31,7 +31,7 @@ namespace BE.CQRS.Domain.States
         {
             Precondition.For(source, nameof(source)).NotNull();
 
-            if (IsFreezed)
+            if (IsFrozen)
             {
                 throw new InvalidOperationException("State is freezed and can't be executed again!");
             }
@@ -71,7 +71,7 @@ namespace BE.CQRS.Domain.States
 
         public void Freeze()
         {
-            IsFreezed = true;
+            IsFrozen = true;
         }
     }
 }

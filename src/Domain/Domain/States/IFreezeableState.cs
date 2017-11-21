@@ -2,7 +2,7 @@
 {
     public interface IFreezeableState : IState
     {
-        bool IsFreezed { get; }
+        bool IsFrozen { get; }
 
         void Freeze();
     }
