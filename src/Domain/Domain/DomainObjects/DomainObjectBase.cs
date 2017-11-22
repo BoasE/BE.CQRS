@@ -46,7 +46,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
             T @event = mapper.MapToEvent<U, T>(mappingSource);
             @event = RaiseEventInternal(@event, null);
-
+            
             return @event;
         }
 
@@ -84,11 +84,9 @@ namespace BE.CQRS.Domain.DomainObjects
         {
             SetEventDefaults(@event);
 
-            if (modification != null)
-            {
-                modification(@event);
-            }
+            modification?.Invoke(@event);
 
+            @event.AssertValidation();
             unCommittedEvents.Add(@event);
 
             return @event;

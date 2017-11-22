@@ -17,5 +17,14 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests
             {
             });
         }
+
+
+        [Update]
+        public void RaiseInvalidEvent()
+        {
+            RaiseEvent<InvalidEvent>(i =>
+            {
+            });
+        }
     }
 }
