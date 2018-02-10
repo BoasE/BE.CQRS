@@ -1,22 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>BE.CQRS.Data.GetEventStore</RootNamespace>
     <AssemblyName>BE.CQRS.Data.GetEventStore</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.0-alpha-1" />
-    <PackageReference Include="FluentGuard" Version="1.0.3.5" />
+    <PackageReference Include="FluentGuard" Version="1.0.3.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Reactive" Version="3.1.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\Domain\Domain.csproj" />
   </ItemGroup>
-
 </Project>

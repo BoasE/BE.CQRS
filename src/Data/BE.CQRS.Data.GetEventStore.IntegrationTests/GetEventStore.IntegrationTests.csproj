@@ -1,25 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>    
-    <TargetFramework>netcoreapp2.0</TargetFramework>    
-    <RootNamespace>BE.CQRS.Data.GetEventStore.IntegrationTests</RootNamespace>    
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>BE.CQRS.Data.GetEventStore.IntegrationTests</RootNamespace>
     <AssemblyName>BE.CQRS.Data.GetEventStore.IntegrationTests</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="FluentGuard" Version="1.0.3.5" />
+    <PackageReference Include="FluentGuard" Version="1.0.3.7" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\Domain\Domain.csproj" />
     <ProjectReference Include="..\BE.CQRS.Data.GetEventStore\GetEventStore.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
 </Project>
