@@ -8,6 +8,43 @@ Currently a process of migration, documentation and samples creation is in progr
 
 This project doesn't claim to be a prefect cqrs implementation. As most patterns CQRS has also many different real world interpretations.
 
+##Example
+
+This is how a very basic domainobject looks like
+
+```
+public sealed class SessionDomainObject : DomainObjectBase
+    {
+        private readonly ILessonFactory lessonFactory;
+        
+        public SessionDomainObject(string id,ILessonFactory lessonFactory) : base(id,null)
+        {
+            Console.WriteLine("Creating object");
+
+            this.lessonFactory = lessonFactory;
+        }
+
+        [Create]
+        public void CreateSession(StartSessionForUserCommand cmd)
+        {
+            Precondition.For(cmd, nameof(cmd)).IsValidModel();
+            
+            ILesson lesson = lessonFactory.FromShortKey(cmd.LessonKey);
+
+            IWorksheet worksheet = lesson.CreateWorksheet(new WorksheetArgument());
+            
+            
+            RaiseEvent<SessionCreatedEvent>(@event =>
+            {
+                @event.Started = DateTimeOffset.Now;
+                @event.UserId = cmd.UserId;
+                @event.LessonKey = cmd.LessonKey;
+                @event.WorksheetItems = worksheet.Items.ToEvent()
+            });
+        }
+    }
+```
+
 ## Persistance
 Variant persistance implementations can be achieved by subclassing the domain object repository base. 
 Currently two databases are implemented:
