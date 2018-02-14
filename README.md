@@ -79,6 +79,7 @@ public static void UseWrite(this IApplicationBuilder app)
 }
 ```
 
+So when you have a 
 
 ### Adding the denormalizers
 
@@ -106,6 +107,20 @@ public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApp
 }
      
 ```
+
+And this is an example for an controler which triggers the creation process. The bus sends the command to a handler which creates the domain object, processes the events and persists the result
+
+```csharp
+[HttpPost]
+public async Task<IActionResult> Post([FromBody][Required] StartSessionModel model)
+{
+    Precondition.For(model, nameof(model)).NotNull().IsValidModel();
+
+   await bus.EnqueueAsync(new StartSessionForUserCommand(Guid.NewGuid().ToString(), model.LessonKey, userId));
+
+    return Accepted();
+}
+```` 
 ## Ressources
 To get started I strongly recommend to have a look at the awesome CQRS Webcasts by GregYoung.
 
