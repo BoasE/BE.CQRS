@@ -8,11 +8,12 @@ Currently a process of migration, documentation and samples creation is in progr
 
 This project doesn't claim to be a prefect cqrs implementation. As most patterns CQRS has also many different real world interpretations.
 
-##Example
+
+## Example
 
 This is how a very basic domainobject looks like
 
-```
+```csharp
 public sealed class SessionDomainObject : DomainObjectBase
     {
         private readonly ILessonFactory lessonFactory;
