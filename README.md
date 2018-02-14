@@ -9,7 +9,7 @@ Currently a process of migration, documentation and samples creation is in progr
 This project doesn't claim to be a prefect cqrs implementation. As most patterns CQRS has also many different real world interpretations.
 
 
-## Example
+## Usage-Example
 
 This is how a very basic domainobject looks like
 
@@ -70,7 +70,7 @@ Currently two databases are implemented:
 
 The EventStore implementation is already used in production scenarios , the mongodb is currentlyin a exeperimentell state.
 
-## Samples
+## Configuration-Examples
 To get started have a look at the sample directory.
 
 ### Adding the write part
