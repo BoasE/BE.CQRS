@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb;
 using BE.CQRS.Data.MongoDb.Streams;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events.Handlers;
@@ -15,8 +16,10 @@ namespace Testrunner
     {
         static void Main(string[] args)
         {
-            IMongoDatabase db = new MongoClient("mongodb://localhost:27017/?readPreference=primary").GetDatabase("eventTests");
-            var repo = new MongoDomainObjectRepository(new ActivatorDomainObjectActivator(), db);
+            IMongoDatabase db =
+                new MongoClient("mongodb://localhost:27017/?readPreference=primary").GetDatabase("eventTests");
+            var repo = new MongoDomainObjectRepository(
+                new EventSourceConfiguration() {Activator = new ActivatorDomainObjectActivator()}, db);
 
             StartDenormalizer(db, typeof(Program).GetTypeInfo().Assembly);
 

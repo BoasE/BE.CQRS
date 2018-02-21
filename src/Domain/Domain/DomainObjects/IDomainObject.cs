@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BE.CQRS.Domain.Commands;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
 
@@ -29,6 +30,8 @@ namespace BE.CQRS.Domain.DomainObjects
         void RevertChanges();
 
         void ApplyEvents(ICollection<IEvent> eventsToCommit);
+        
+        void ApplyConfig(EventSourceConfiguration configuration);
 
         bool Policy<T>() where T : PolicyBase, new();
 

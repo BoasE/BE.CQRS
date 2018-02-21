@@ -13,7 +13,7 @@ namespace BE.CQRS.Data.MongoDb
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Activator).NotNull();
 
-            var repo = new MongoDomainObjectRepository(config.Activator, db);
+            var repo = new MongoDomainObjectRepository(config, db);
 
             config.DomainObjectRepository = repo;
 

@@ -3,19 +3,23 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.States;
 
 namespace BE.CQRS.Domain
 {
     public abstract class DomainObjectRepositoryBase : IDomainObjectRepository
     {
-        private readonly IDomainObjectActivator activator;
+        
+        private readonly EventSourceConfiguration configuration;
         private static readonly string TraceCategory = typeof(DomainObjectRepositoryBase).FullName;
 
-        protected DomainObjectRepositoryBase(IDomainObjectActivator activator)
+        protected DomainObjectRepositoryBase(EventSourceConfiguration configuration)
         {
-            this.activator = activator;
+            this.configuration = configuration;
+            
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject
@@ -96,9 +100,9 @@ namespace BE.CQRS.Domain
                 .ToArray()
                 .Select(events =>
                     {
-                        var instance = activator.Resolve<T>(id);
+                        var instance = configuration.Activator.Resolve<T>(id);
                         instance.ApplyEvents(events);
-
+                        instance.ApplyConfig(configuration);
                         return instance;
                     }
                 );
@@ -117,9 +121,9 @@ namespace BE.CQRS.Domain
                 .ToArray()
                 .Select(events =>
                     {
-                        IDomainObject instance = activator.Resolve(domainObjectType, id);
+                        IDomainObject instance = configuration.Activator.Resolve(domainObjectType, id);
                         instance.ApplyEvents(events);
-
+                        instance.ApplyConfig(configuration);
                         return instance;
                     }
                 );
@@ -136,7 +140,7 @@ namespace BE.CQRS.Domain
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {
-            return activator.Resolve(domainObjectType, id);
+            return configuration.Activator.Resolve(domainObjectType, id);
         }
     }
 }

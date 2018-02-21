@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using EventStore.ClientAPI;
@@ -12,7 +13,7 @@ namespace BE.CQRS.Data.GetEventStore
     {
         private readonly EventStoreContext context;
 
-        public EventStoreRepository(EventStoreContext context) : base(context.Activator)
+        public EventStoreRepository(EventStoreContext context,EventSourceConfiguration configuration) : base(configuration)
         {
             this.context = context;
         }

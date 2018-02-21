@@ -9,7 +9,7 @@ namespace BE.CQRS.Data.GetEventStore
         {
             EventStoreContext context = EventStoreContext.CreateDefault(config.Prefix, connection, config.Activator);
 
-            var repo = new EventStoreRepository(context);
+            var repo = new EventStoreRepository(context,config);
             config.DomainObjectRepository = repo;
 
             return config;

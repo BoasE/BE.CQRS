@@ -53,9 +53,10 @@ namespace BE.CQRS.Domain.Configuration
         public static EventSourceConfiguration SetDefaultActivator(this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
+            var  activator = new ActivatorDomainObjectActivator();
 
-            config.Activator = new ActivatorDomainObjectActivator();
-
+            config.Activator = activator;
+            config.StateActivator = activator;
             return config;
         }
     }

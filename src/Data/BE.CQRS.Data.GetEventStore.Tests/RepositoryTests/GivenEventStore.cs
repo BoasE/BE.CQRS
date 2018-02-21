@@ -1,3 +1,4 @@
+using BE.CQRS.Domain.Configuration;
 using EventStore.ClientAPI;
 
 namespace BE.CQRS.Data.GetEventStore.Tests.RepositoryTests
@@ -9,7 +10,7 @@ namespace BE.CQRS.Data.GetEventStore.Tests.RepositoryTests
         protected virtual EventStoreRepository GetSut(string prefix, IEventStoreConnection connection)
         {
             EventStoreContext context = EventStoreContext.CreateDefault(prefix, connection);
-            return new EventStoreRepository(context);
+            return new EventStoreRepository(context,new EventSourceConfiguration());
         }
     }
 }

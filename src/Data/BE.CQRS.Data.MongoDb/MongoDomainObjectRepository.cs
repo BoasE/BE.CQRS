@@ -7,6 +7,7 @@ using BE.CQRS.Data.MongoDb.Commits;
 using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
@@ -20,7 +21,7 @@ namespace BE.CQRS.Data.MongoDb
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
 
-        public MongoDomainObjectRepository(IDomainObjectActivator activator, IMongoDatabase db) : base(activator)
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration,IMongoDatabase db) : base(configuration)
         {
             repository = new MongoCommitRepository(db);
         }

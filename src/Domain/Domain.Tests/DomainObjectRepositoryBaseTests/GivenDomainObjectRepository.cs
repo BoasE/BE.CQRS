@@ -1,4 +1,5 @@
-﻿using BE.CQRS.Domain.DomainObjects;
+﻿using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.DomainObjects;
 
 namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
@@ -6,7 +7,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
     {
         protected DomainObjectRepositoryBase GetSut(IDomainObjectActivator activator)
         {
-            return new FakeRepository(activator);
+            return new FakeRepository(new EventSourceConfiguration(){Activator = activator});
         }
     }
 }

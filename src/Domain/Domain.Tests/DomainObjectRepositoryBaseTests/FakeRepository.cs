@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 
@@ -10,7 +11,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public sealed class FakeRepository : DomainObjectRepositoryBase
     {
-        public FakeRepository(IDomainObjectActivator activator) : base(activator)
+        public FakeRepository(EventSourceConfiguration configuration) : base(configuration)
         {
         }
 

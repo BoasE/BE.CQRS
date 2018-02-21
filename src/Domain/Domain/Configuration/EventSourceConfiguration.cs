@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.States;
 
 namespace BE.CQRS.Domain.Configuration
 {
@@ -11,6 +12,8 @@ namespace BE.CQRS.Domain.Configuration
         public IEventMapper EventMapper { get; set; }
 
         public IDomainObjectActivator Activator { get; set; }
+
+        public IStateActivator StateActivator { get; set; }
 
         public ICommandBus CommandBus { get; set; }
 

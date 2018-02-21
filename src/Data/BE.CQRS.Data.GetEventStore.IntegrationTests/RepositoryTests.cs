@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.Configuration;
 using EventStore.ClientAPI;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace BE.CQRS.Data.GetEventStore.IntegrationTests
             IEventStoreConnection con = await LocalConfig.GetConnection();
             EventStoreContext context = EventStoreContext.CreateDefault("aa", con);
 
-            return new EventStoreRepository(context);
+            return new EventStoreRepository(context,new EventSourceConfiguration());
         }
 
         [Fact]

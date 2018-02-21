@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Reflection;
+using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
-    public sealed class ActivatorDomainObjectActivator : IDomainObjectActivator
+    public sealed class ActivatorDomainObjectActivator : IDomainObjectActivator,IStateActivator
     {
         private static readonly TypeInfo DomainObjectInfo = typeof(IDomainObject).GetTypeInfo();
 
@@ -24,6 +25,16 @@ namespace BE.CQRS.Domain.DomainObjects
             Precondition.For(id, nameof(id)).NotNullOrWhiteSpace();
 
             return (IDomainObject)Activator.CreateInstance(domainObjectType, id);
+        }
+
+        public T ResolveState<T>() where T : class,IState
+        {
+            return (T)Activator.CreateInstance(typeof(T));
+        }
+
+        public IState ResolveState(Type stateType)
+        {
+            return (IState)Activator.CreateInstance(stateType);
         }
     }
 }

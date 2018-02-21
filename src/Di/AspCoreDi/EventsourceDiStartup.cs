@@ -13,7 +13,7 @@ namespace BE.CQRS.Di.AspCore
         {
             var activator = new ServiceCollectionActivator();
             config.Activator = activator;
-
+            config.StateActivator = activator;
             return config;
         }
 
@@ -26,6 +26,7 @@ namespace BE.CQRS.Di.AspCore
             return config;
         }
 
+        
         public static void UseServiceProviderActivator(this IApplicationBuilder app)
         {
             if (!(app.ApplicationServices.GetRequiredService<IDomainObjectActivator>() is ServiceCollectionActivator activator))

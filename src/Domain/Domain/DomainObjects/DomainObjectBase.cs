@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BE.CQRS.Domain.Commands;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
 using BE.CQRS.Domain.States;
@@ -15,7 +16,8 @@ namespace BE.CQRS.Domain.DomainObjects
         private readonly List<IEvent> committedEvents = new List<IEvent>();
         private readonly List<IEvent> unCommittedEvents = new List<IEvent>();
         private readonly IEventMapper mapper;
-
+        private IStateActivator stateActivator;
+        
         public string Id { get; }
 
         public bool HasUncommittedEvents => unCommittedEvents.Any();
@@ -39,6 +41,11 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
+        public void ApplyConfig(EventSourceConfiguration configuration)
+        {
+            this.stateActivator = configuration.StateActivator;
+        }
+        
         protected T RaiseEvent<T, U>(U mappingSource) where T : IEvent, new()
         {
             Precondition.For(mappingSource, nameof(mappingSource)).NotNull();
@@ -62,7 +69,7 @@ namespace BE.CQRS.Domain.DomainObjects
             return @event;
         }
 
-        protected T RaiseEvent<T>(Action<T> modification) where T : IEvent, new()
+        protected T RaiseEvent<T>(Action<T> modification) where T : IEvent,new()
         {
             Precondition.For(modification, nameof(modification)).NotNull();
 
@@ -173,19 +180,19 @@ namespace BE.CQRS.Domain.DomainObjects
             return state.IsValid();
         }
 
-        public T State<T>() where T : StateBase, new()
+        public T State<T>() where T :  class,IState  
         {
             return StateInternal<T>(includeUncommittedStreamsDefault);
         }
 
-        public T State<T>(bool excludeUncommitted) where T : IState, new()
+        public T State<T>(bool excludeUncommitted) where T : class,IState  
         {
             return StateInternal<T>(excludeUncommitted);
         }
 
-        private T StateInternal<T>(bool excludeUncommitted) where T : IState, new()
+        private T StateInternal<T>(bool excludeUncommitted) where T : class,IState 
         {
-            var state = new T(); // TODO Include Di
+            var state = this.stateActivator.ResolveState<T>();
 
             ExecuteState(excludeUncommitted, state);
 
