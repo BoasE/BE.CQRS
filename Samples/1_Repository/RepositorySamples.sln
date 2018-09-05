@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositorySamples.EventStore", "RepositorySamples.EventStore\RepositorySamples.EventStore.csproj", "{1BB713E0-2AFD-4865-B80F-FAE566295285}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositorySamples.MongoDb", "RepositorySamples.MongoDb\RepositorySamples.MongoDb.csproj", "{0040FFAF-4F37-4236-9D9B-A22204E26DEA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{CD1FE25B-8476-44E2-982B-80DAD5CCC81D}"
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1BB713E0-2AFD-4865-B80F-FAE566295285}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1BB713E0-2AFD-4865-B80F-FAE566295285}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1BB713E0-2AFD-4865-B80F-FAE566295285}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1BB713E0-2AFD-4865-B80F-FAE566295285}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0040FFAF-4F37-4236-9D9B-A22204E26DEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0040FFAF-4F37-4236-9D9B-A22204E26DEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0040FFAF-4F37-4236-9D9B-A22204E26DEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
