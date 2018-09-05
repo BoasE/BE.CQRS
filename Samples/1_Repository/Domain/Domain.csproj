@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BE.CQRS" Version="0.54.0-alpha" />
+    <PackageReference Include="BE.CQRS" Version="0.62.0-alpha" />
+    <PackageReference Include="BE.CQRS.Data.MongoDb" Version="0.46.0-alpha" />
   </ItemGroup>
 
 </Project>
