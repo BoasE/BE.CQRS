@@ -9,7 +9,23 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="BE.CQRS.Data.MongoDb">
+          <Version>0.46.0-alpha</Version>
+        </PackageReference>
+        <PackageReference Include="BE.CQRS.Di.AspCore">
+          <Version>0.45.0-alpha</Version>
+        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="MongoDB.Driver, Version=2.4.4.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\..\..\..\.nuget\packages\mongodb.driver\2.4.4\lib\netstandard1.5\MongoDB.Driver.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AspNetCoreSample.Domain\AspNetCoreSample.Domain.csproj" />
     </ItemGroup>
 
 </Project>
