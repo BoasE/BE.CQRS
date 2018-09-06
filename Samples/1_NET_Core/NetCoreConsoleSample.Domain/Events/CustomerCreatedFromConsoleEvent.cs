@@ -1,6 +1,6 @@
 ﻿using BE.CQRS.Domain.Events;
 
-namespace Domain.Events
+namespace NetCoreConsoleSample.Domain.Events
 {
     public sealed class CustomerCreatedFromConsoleEvent : EventBase
     {

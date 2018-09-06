@@ -1,7 +1,7 @@
 ﻿using BE.CQRS.Domain.States;
-using Domain.Events;
+using NetCoreConsoleSample.Domain.Events;
 
-namespace Domain.States
+namespace NetCoreConsoleSample.Domain.States
 {
     public class NameState : StateBase
     {
