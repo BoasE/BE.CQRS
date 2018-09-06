@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Domain;
-using Domain.States;
-using MongoDB.Driver;
-using RepositorySamples.MongoDb;
 using System.Reactive.Linq;
-using Domain.Commands;
+using System.Threading.Tasks;
+using MongoDB.Driver;
+using NetCoreConsoleSample.Domain;
+using NetCoreConsoleSample.Domain.Commands;
+using NetCoreConsoleSample.Domain.States;
 
-namespace RepositorySamples
+namespace NetCoreConsoleSample
 {
     class Program
     {

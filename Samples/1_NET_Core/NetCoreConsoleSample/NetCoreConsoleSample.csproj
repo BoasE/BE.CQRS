@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\NetCoreConsoleSample.Domain\NetCoreConsoleSample.Domain.csproj" />
   </ItemGroup>
 </Project>

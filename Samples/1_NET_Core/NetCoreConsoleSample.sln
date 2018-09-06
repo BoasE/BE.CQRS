@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositorySamples.MongoDb", "RepositorySamples.MongoDb\RepositorySamples.MongoDb.csproj", "{0040FFAF-4F37-4236-9D9B-A22204E26DEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreConsoleSample", "NetCoreConsoleSample\NetCoreConsoleSample.csproj", "{0040FFAF-4F37-4236-9D9B-A22204E26DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{CD1FE25B-8476-44E2-982B-80DAD5CCC81D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreConsoleSample.Domain", "NetCoreConsoleSample.Domain\NetCoreConsoleSample.Domain.csproj", "{CD1FE25B-8476-44E2-982B-80DAD5CCC81D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

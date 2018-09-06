@@ -1,9 +1,9 @@
 ﻿using System;
 using BE.CQRS.Domain.DomainObjects;
-using Domain.Commands;
-using Domain.Events;
+using NetCoreConsoleSample.Domain.Commands;
+using NetCoreConsoleSample.Domain.Events;
 
-namespace Domain
+namespace NetCoreConsoleSample.Domain
 {
     public sealed class Customer : DomainObjectBase
     {

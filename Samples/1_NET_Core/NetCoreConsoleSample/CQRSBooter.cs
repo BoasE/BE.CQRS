@@ -4,7 +4,7 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using MongoDB.Driver;
 
-namespace RepositorySamples.MongoDb
+namespace NetCoreConsoleSample
 {
     public static class CQRSBooter
     {
