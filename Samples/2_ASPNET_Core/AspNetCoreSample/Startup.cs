@@ -21,7 +21,7 @@ namespace AspNetCoreSample
         {
             Console.WriteLine("Configuring Services...");
             services
-                .AddCors()
+                .AddCqrs(Configuration)
                 .AddMvc();
         }
 
