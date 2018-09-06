@@ -2,7 +2,7 @@
 
 namespace AspNetCoreSample.Domain.Commands
 {
-    public sealed class CreateCustomerFromConsoleCommand : ICommand // All Commands must be dervied from ICommand
+    public sealed class CreateCustomerFromApiCommand : ICommand // All Commands must be dervied from ICommand
     {
         public string DomainObjectId { get; set; }
 

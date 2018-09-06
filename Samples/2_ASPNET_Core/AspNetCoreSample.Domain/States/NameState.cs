@@ -7,7 +7,7 @@ namespace AspNetCoreSample.Domain.States
     {
         public string Name { get; set; }
 
-        public void On(CustomerCreatedFromConsoleEvent @event)
+        public void On(CustomerCreatedFromApiEvent @event)
         {
             Name = @event.Name;
         }

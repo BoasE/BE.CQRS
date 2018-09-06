@@ -11,7 +11,7 @@ namespace AspNetCoreSample.Domain
         {
         }
 
-        public void CreateNewCustomer(CreateCustomerFromConsoleCommand cmd)
+        public void CreateNewCustomer(CreateCustomerFromApiCommand cmd)
         {
             if(string.IsNullOrWhiteSpace(cmd.Name))
             {
@@ -19,7 +19,7 @@ namespace AspNetCoreSample.Domain
             }
 
             Console.WriteLine("Creating Created event.");
-            RaiseEvent<CustomerCreatedFromConsoleEvent>(x =>
+            RaiseEvent<CustomerCreatedFromApiEvent>(x =>
             {
                 x.Name = cmd.Name;
             });

@@ -2,10 +2,10 @@
 
 namespace AspNetCoreSample.Domain.Events
 {
-    public sealed class CustomerCreatedFromConsoleEvent : EventBase
+    public sealed class CustomerCreatedFromApiEvent : EventBase
     {
         public string Name { get; set; }
-        public CustomerCreatedFromConsoleEvent()
+        public CustomerCreatedFromApiEvent()
         {
         }
     }
