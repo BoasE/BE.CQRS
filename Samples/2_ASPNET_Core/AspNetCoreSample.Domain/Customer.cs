@@ -1,6 +1,7 @@
 ﻿using System;
 using AspNetCoreSample.Domain.Commands;
 using AspNetCoreSample.Domain.Events;
+using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.DomainObjects;
 
 namespace AspNetCoreSample.Domain
@@ -11,6 +12,7 @@ namespace AspNetCoreSample.Domain
         {
         }
 
+        [Create]
         public void CreateNewCustomer(CreateCustomerFromApiCommand cmd)
         {
             if(string.IsNullOrWhiteSpace(cmd.Name))
