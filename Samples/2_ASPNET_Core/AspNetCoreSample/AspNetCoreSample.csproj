@@ -16,8 +16,8 @@
           <Version>0.45.0-alpha</Version>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="MongoDB.Driver.Core">
-          <Version>2.4.4</Version>
+        <PackageReference Include="MongoDB.Driver">
+          <Version>2.7.0</Version>
         </PackageReference>
     </ItemGroup>
 
