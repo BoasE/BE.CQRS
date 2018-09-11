@@ -31,6 +31,7 @@ namespace AspNetCoreSample
             Console.WriteLine("Configuring Application...");
 
             app.UseCqrs();
+            app.UseMvc();
 
             if (env.IsDevelopment())
             {
