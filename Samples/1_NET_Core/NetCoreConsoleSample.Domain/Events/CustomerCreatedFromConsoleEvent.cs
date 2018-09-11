@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BE.CQRS.Domain.Events;
+﻿using BE.CQRS.Domain.Events;
 
-namespace RepositorySamples.EventStore.Domain
+namespace NetCoreConsoleSample.Domain.Events
 {
     public sealed class CustomerCreatedFromConsoleEvent : EventBase
     {

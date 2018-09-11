@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>NetCoreConsoleSample.Domain</AssemblyName>
+    <RootNamespace>NetCoreConsoleSample.Domain</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BE.CQRS" Version="0.62.0-alpha" />
+    <PackageReference Include="BE.CQRS.Data.MongoDb" Version="0.46.0-alpha" />
+  </ItemGroup>
+
+</Project>
