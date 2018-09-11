@@ -16,7 +16,8 @@ namespace BE.CQRS.Domain.Commands
         public Task<CommandBusResult> EnqueueAsync(ICommand cmd)
         {
             Precondition.For(cmd, nameof(cmd)).NotNull();
-
+            Precondition.For(cmd.DomainObjectId, nameof(cmd.DomainObjectId)).NotNullOrWhiteSpace();
+            
             if (condition == null || condition(cmd))
             {
                 return EnqueueInternalAsync(cmd);

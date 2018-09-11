@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.Conventions
 {
@@ -67,6 +68,9 @@ namespace BE.CQRS.Domain.Conventions
 
         public Task ExecuteAsync(ICommand cmd)
         {
+            Precondition.For(cmd, nameof(cmd)).NotNull();
+            Precondition.For(cmd.DomainObjectId, nameof(cmd.DomainObjectId)).NotNullOrWhiteSpace();
+            
             Type type = cmd.GetType();
 
             Trace.WriteLine($"Executing \"{type.FullName}\"", Category);
