@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using AspNetCoreSample.Controllers.Models;
 using AspNetCoreSample.Domain.Commands;
 using BE.CQRS.Domain.Commands;
 using Microsoft.AspNetCore.Mvc;
@@ -31,10 +32,5 @@ namespace AspNetCoreSample.Controllers
 
             return acceptedResult;
         }
-    }
-
-    public class CreateCustomerModel
-    {
-        public string Name { get; set; }
     }
 }
