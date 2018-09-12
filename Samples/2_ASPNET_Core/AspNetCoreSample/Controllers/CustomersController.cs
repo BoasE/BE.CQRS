@@ -23,7 +23,7 @@ namespace AspNetCoreSample.Controllers
             await bus.EnqueueAsync(new CreateCustomerFromApiCommand()
             {
                 DomainObjectId = customerId, //Mandatory Id
-                Name = "Contoso" // Should be applied from model
+                Name = model.Name
             });
 
             var acceptedResult = new AcceptedResult();
@@ -35,5 +35,6 @@ namespace AspNetCoreSample.Controllers
 
     public class CreateCustomerModel
     {
+        public string Name { get; set; }
     }
 }
