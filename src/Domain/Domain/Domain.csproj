@@ -5,7 +5,7 @@
     <AssemblyName>BE.CQRS.Domain</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentGuard" Version="1.0.3.8" />
+    <PackageReference Include="FluentGuard" Version="1.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />

@@ -19,13 +19,17 @@ namespace BE.CQRS.Domain.Conventions
 
         public ConventionCommandInvoker(IDomainObjectRepository repository)
         {
-            Precondition.For(() => repository).NotNull();
+            Precondition.For(() => repository).NotNull("Repository has to be set!");
             this.repository = repository;
         }
 
         public async Task InvokeAndSaveAsync(Type domainObjectType, ICommand cmd,
             IEnumerable<CommandMethodMapping> commands)
         {
+            Precondition.For(cmd, nameof(cmd)).IsValidCommand();
+            Precondition.For(domainObjectType, nameof(domainObjectType)).NotNull("Type has to be set!");
+ 
+            
             var currentTry = 0;
 
             while (currentTry < retryCount)

@@ -41,7 +41,7 @@ namespace BE.CQRS.Domain.Commands
 
         protected override async Task<CommandBusResult> EnqueueInternalAsync(ICommand cmd)
         {
-            Precondition.For(cmd, nameof(cmd)).NotNull();
+            Precondition.For(cmd, nameof(cmd)).IsValidCommand();
             CommandBusResult result = await HandleCommand(cmd);
             return result;
         }
