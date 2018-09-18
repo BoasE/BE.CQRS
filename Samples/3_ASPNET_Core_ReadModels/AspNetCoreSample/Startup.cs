@@ -23,6 +23,7 @@ namespace AspNetCoreSample
             services
                 .AddCqrs(Configuration)
                 .AddCustomerDenormalizer(Configuration)
+                .AddMongoDb(Configuration)
                 .AddMvc();
         }
 

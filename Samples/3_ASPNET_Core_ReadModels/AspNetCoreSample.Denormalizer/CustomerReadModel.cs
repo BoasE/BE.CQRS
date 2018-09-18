@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace AspNetCoreSample.Denormalizer.Repositories
 {
-    public sealed class Customer
+    public sealed class CustomerReadModel
     {
         [BsonId]
         public ObjectId Id { get; set; }

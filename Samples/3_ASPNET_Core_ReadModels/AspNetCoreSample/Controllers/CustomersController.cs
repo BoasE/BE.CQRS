@@ -1,14 +1,17 @@
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNetCoreSample.Controllers.Models;
+using AspNetCoreSample.Denormalizer.Repositories;
 using AspNetCoreSample.Domain;
 using AspNetCoreSample.Domain.Commands;
 using AspNetCoreSample.Domain.States;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Commands;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 
 namespace AspNetCoreSample.Controllers
 {
@@ -17,11 +20,13 @@ namespace AspNetCoreSample.Controllers
     {
         private readonly ICommandBus bus;
         private readonly IDomainObjectRepository repository;
+        private readonly IMongoDatabase database;
 
-        public CustomersController(ICommandBus bus, IDomainObjectRepository repository)
+        public CustomersController(ICommandBus bus, IDomainObjectRepository repository, IMongoDatabase database)
         {
             this.bus = bus;
             this.repository = repository;
+            this.database = database;
         }
 
         [HttpPost]
@@ -44,13 +49,10 @@ namespace AspNetCoreSample.Controllers
         [Route("{id}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var customer = await repository.Get<Customer>(id);
-            var model = new ReadCustomerModel()
-            {
-                Name = customer.State<NameState>().Name
-            };
+            var customer = await database.GetCollection<CustomerReadModel>("Customers")
+                .Find(model => model.CustomerId == id).SingleAsync();
 
-            return new ObjectResult(model);
+            return new ObjectResult(customer);
         }
     }
 }
