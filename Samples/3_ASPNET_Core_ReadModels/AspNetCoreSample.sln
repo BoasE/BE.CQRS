@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreSample", "AspNetCoreSample\AspNetCoreSample.csproj", "{8BB41408-19A2-4CB9-BFFE-2E18F3EE940E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreSample.Domain", "AspNetCoreSample.Domain\AspNetCoreSample.Domain.csproj", "{031E1151-1E83-4918-B4DD-7C3FD912ED13}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BB41408-19A2-4CB9-BFFE-2E18F3EE940E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BB41408-19A2-4CB9-BFFE-2E18F3EE940E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BB41408-19A2-4CB9-BFFE-2E18F3EE940E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BB41408-19A2-4CB9-BFFE-2E18F3EE940E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{031E1151-1E83-4918-B4DD-7C3FD912ED13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{031E1151-1E83-4918-B4DD-7C3FD912ED13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{031E1151-1E83-4918-B4DD-7C3FD912ED13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{031E1151-1E83-4918-B4DD-7C3FD912ED13}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
