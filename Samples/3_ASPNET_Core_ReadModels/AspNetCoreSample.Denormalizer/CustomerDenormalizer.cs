@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AspNetCoreSample.Denormalizer.Repositories;
 using AspNetCoreSample.Domain.Events;
 using BE.CQRS.Domain.Conventions;
@@ -12,21 +11,16 @@ namespace AspNetCoreSample.Denormalizer
     {
         private readonly IDenormalizerContext context;
 
-        private readonly CustomerRepository repository;
-
         public CustomerDenormalizer(IDenormalizerContext context)
         {
             this.context = context;
-            this.repository = new CustomerRepository(context);
         }
 
-        public async Task On(CustomerCreatedFromApiEvent @event)
+        public Task On(CustomerCreatedFromApiEvent @event)
         {
             var id = @event.Headers.GetString(EventHeaderKeys.AggregateId);
-            var name = @event.Name;
-            await repository.AddCustomer(id, name);
-
-            Console.WriteLine("started");
+            var customer = new Customer {CustomerId = id, Name = @event.Name};
+            return context.Db.GetCollection<Customer>("Customers").InsertOneAsync(customer);
         }
     }
 }
