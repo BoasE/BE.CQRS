@@ -23,7 +23,8 @@ namespace AspNetCoreSample.Denormalizer
         public async Task On(CustomerCreatedFromApiEvent @event)
         {
             var id = @event.Headers.GetString(EventHeaderKeys.AggregateId);
-            await repository.AddCustomer(id);
+            var name = @event.Name;
+            await repository.AddCustomer(id, name);
 
             Console.WriteLine("started");
         }

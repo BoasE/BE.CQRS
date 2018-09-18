@@ -8,16 +8,17 @@ namespace AspNetCoreSample.Denormalizer.Repositories
     {
         private readonly IDenormalizerContext context;
 
-        public CustomerRepository(IDenormalizerContext context) : base(context.Db, "TraineeStatistics")
+        public CustomerRepository(IDenormalizerContext context) : base(context.Db, "Customer")
         {
             this.context = context;
         }
 
-        public Task AddCustomer(string customerId)
+        public Task AddCustomer(string customerId, string name)
         {
             var dto = new Customer
             {
-                Id = new ObjectId(customerId)
+                CustomerId = customerId,
+                Name = name
             };
 
             return Collection.InsertOneAsync(dto);
