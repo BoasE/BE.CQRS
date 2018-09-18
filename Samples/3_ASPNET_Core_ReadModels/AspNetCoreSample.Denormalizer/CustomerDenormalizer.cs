@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using AspNetCoreSample.Denormalizer.Repositories;
 using AspNetCoreSample.Domain.Events;
 using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.Events;

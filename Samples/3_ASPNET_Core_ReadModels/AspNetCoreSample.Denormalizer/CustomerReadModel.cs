@@ -1,7 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace AspNetCoreSample.Denormalizer.Repositories
+namespace AspNetCoreSample.Denormalizer
 {
     public sealed class CustomerReadModel
     {

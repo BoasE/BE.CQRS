@@ -1,13 +1,8 @@
 using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using AspNetCoreSample.Controllers.Models;
-using AspNetCoreSample.Denormalizer.Repositories;
-using AspNetCoreSample.Domain;
+using AspNetCoreSample.Denormalizer;
 using AspNetCoreSample.Domain.Commands;
-using AspNetCoreSample.Domain.States;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Commands;
 using Microsoft.AspNetCore.Mvc;
