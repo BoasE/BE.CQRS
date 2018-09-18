@@ -22,6 +22,7 @@ namespace AspNetCoreSample
             Console.WriteLine("Configuring Services...");
             services
                 .AddCqrs(Configuration)
+                .AddCustomerDenormalizer(Configuration)
                 .AddMvc();
         }
 
@@ -30,7 +31,10 @@ namespace AspNetCoreSample
         {
             Console.WriteLine("Configuring Application...");
 
-            app.UseCqrs();
+            app
+                .UseCqrs()
+                .UseCustomerDenormalizerAsync().Wait();
+
             app.UseMvc();
 
             if (env.IsDevelopment())

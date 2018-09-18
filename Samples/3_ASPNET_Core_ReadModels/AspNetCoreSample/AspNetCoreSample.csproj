@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AspNetCoreSample.Denormalizer\AspNetCoreSample.Denormalizer.csproj" />
       <ProjectReference Include="..\AspNetCoreSample.Domain\AspNetCoreSample.Domain.csproj" />
     </ItemGroup>
 
