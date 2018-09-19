@@ -143,7 +143,7 @@ The [NameState](Samples/1_NET_Core/NetCoreConsoleSample.Domain/States/NameState.
 Policies are specialized states which result in a boolean value. For example "IsCustomerActiveState"
 
 ### CommandBus
-CommandBus is used so send commands and in order to find their related domainobjects and processes that can handle the given command
+CommandBus is used to send commands and in order to find their related Domain Objects and Processes that can handle the given Command. The CommandBus is registered in the [CQRSBooter.cs](Samples/2_ASPNET_Core/AspNetCoreSample/CQRSBooter.cs#L28) of our second sample. After registration, it can be accessed in the [CustomersController](Samples/2_ASPNET_Core/AspNetCoreSample/Controllers/CustomersController.cs#L31) and enqueue Commmands.
 
 ### EventSubscribers
 EventSubscriber connect to eventstreams and provide notifications on new events
