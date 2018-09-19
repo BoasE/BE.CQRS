@@ -130,10 +130,10 @@ To get started I strongly recommend to have a look at the awesome CQRS Webcasts 
 
 ## Key-Concepts
 ### DomainObject
-The DomainObject is the center of each application logic. A very basic example is the [Customer Domain Object](Samples/1_NET_Core/NetCoreConsoleSample.Domain/Customer.cs) in our first sample. 
+The DomainObject is the center of each application logic. A very basic example is the [Customer](Samples/1_NET_Core/NetCoreConsoleSample.Domain/Customer.cs) Domain Object in our first sample. 
 
 ### DomainObjectRepository
-The DomainObjectRepository is responsible for persisting and reading the eventstreams of the domainobject. A very basic example is the usage of the `MongoDomainObjectRepository` which is registered first in the [CQRSBooter](Samples/1_NET_Core/NetCoreConsoleSample/CQRSBooter.cs) in our first sample. Its usage is show in the [Program.cs](Samples/1_NET_Core/NetCoreConsoleSample/Program.cs#L29) of the same sample.
+The DomainObjectRepository is responsible for persisting and reading the eventstreams of the domainobject. A very basic example is the usage of the `MongoDomainObjectRepository` which is registered first in the [CQRSBooter](Samples/1_NET_Core/NetCoreConsoleSample/CQRSBooter.cs) in our first sample. Its usage is shown in the [Program.cs](Samples/1_NET_Core/NetCoreConsoleSample/Program.cs#L29) of the same sample.
 
 ### States
 States are visitors that are iterating over stream of events to determine a desired state.
