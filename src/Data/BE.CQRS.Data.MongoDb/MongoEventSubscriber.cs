@@ -56,13 +56,21 @@ namespace BE.CQRS.Data.MongoDb
                         }
                     });
 
-                    logger.LogTrace("Processed {count} events", count);
+                    LogProcessedEvents(count);
 
                     await Delay(work);
                 }
 
                 observer.OnCompleted();
             });
+        }
+
+        private void LogProcessedEvents(int count)
+        {
+            if (count > 0)
+            {
+                logger.LogTrace("Processed {count} events", count);
+            }
         }
 
         private async Task Delay(bool work)

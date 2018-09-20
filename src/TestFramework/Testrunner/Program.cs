@@ -8,8 +8,10 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using Serilog;
 
 namespace Testrunner
 {
@@ -17,15 +19,25 @@ namespace Testrunner
     {
         static void Main(string[] args)
         {
-            IMongoDatabase db =
-                new MongoClient("mongodb://localhost:27017/?readPreference=primary").GetDatabase("eventTests");
-            var repo = new MongoDomainObjectRepository(
-                new EventSourceConfiguration() {Activator = new ActivatorDomainObjectActivator()}, db);
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
 
-            StartDenormalizer(db, typeof(Program).GetTypeInfo().Assembly);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var db = serviceProvider.GetRequiredService<IMongoDatabase>();
+
+            var repo = new MongoDomainObjectRepository(
+                new EventSourceConfiguration()
+                {
+                    Activator = new ActivatorDomainObjectActivator(),
+                    LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>()
+                }, db);
+
+            StartDenormalizer(serviceProvider, typeof(Program).GetTypeInfo().Assembly);
 
             Console.WriteLine("next");
             Console.ReadLine();
+
             var bo = new SampleBo("1");
             bo.Execute();
 
@@ -68,10 +80,11 @@ namespace Testrunner
             Console.ReadLine();
         }
 
-        private static void StartDenormalizer(IMongoDatabase db, params Assembly[] normalizerASsemblies)
+        private static void StartDenormalizer(IServiceProvider provider, params Assembly[] normalizerASsemblies)
         {
-            
-            var subs = new MongoEventSubscriber(db);
+            var db = provider.GetRequiredService<IMongoDatabase>();
+            var logger = provider.GetRequiredService<ILoggerFactory>();
+            var subs = new MongoEventSubscriber(db, logger);
             var pos = new MongoStreamPositionGateway(db, null);
             var normalizerFactory = new Func<Type, object>(Activator.CreateInstance);
 
@@ -84,6 +97,20 @@ namespace Testrunner
         private static async Task test(MongoDomainObjectRepository repo)
         {
             SampleBo existing = await repo.Get<SampleBo>("3").FirstAsync();
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddLogging(configure => configure.AddConsole())
+                .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
+
+
+            IMongoDatabase db =
+                new MongoClient(
+                        "mongodb+srv://api:6OiGtayRexX8tSmY@cluster0-fyly5.gcp.mongodb.net/test?retryWrites=true")
+                    .GetDatabase("eventTests");
+
+            services.AddSingleton<IMongoDatabase>(db);
         }
     }
 }
