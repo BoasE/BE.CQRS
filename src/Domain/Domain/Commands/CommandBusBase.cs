@@ -28,6 +28,7 @@ namespace BE.CQRS.Domain.Commands
         public Task<CommandBusResult> EnqueueAsync(ICommand cmd)
         {
             Precondition.For(cmd, nameof(cmd)).IsValidCommand();
+            
             var type = cmd.GetType();
 
             if (condition == null || condition(cmd))

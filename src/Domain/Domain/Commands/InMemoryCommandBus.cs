@@ -57,10 +57,12 @@ namespace BE.CQRS.Domain.Commands
             params Assembly[] domainObjectAssemblies)
         {
             Precondition.For(repository, nameof(repository)).NotNull();
+            Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
             var invoker = new ConventionCommandInvoker(repository);
             var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
                 domainObjectAssemblies);
+            
             var bus = new InMemoryCommandBus(handler, loggerFactory);
 
             return bus;
