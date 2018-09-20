@@ -30,7 +30,7 @@ namespace BE.CQRS.Domain.Conventions
         public static ConventionCommandPipeline CreateDefault(IDomainObjectRepository repo,
             ILoggerFactory loggerFactory, params Assembly[] asm)
         {
-            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo), new DomainObjectLocator(),
+            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo,loggerFactory), new DomainObjectLocator(),
                 loggerFactory, asm);
         }
 

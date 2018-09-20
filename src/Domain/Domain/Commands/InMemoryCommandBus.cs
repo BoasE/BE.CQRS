@@ -59,7 +59,7 @@ namespace BE.CQRS.Domain.Commands
             Precondition.For(repository, nameof(repository)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
-            var invoker = new ConventionCommandInvoker(repository);
+            var invoker = new ConventionCommandInvoker(repository,loggerFactory);
             var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
                 domainObjectAssemblies);
             
