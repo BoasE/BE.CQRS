@@ -130,23 +130,24 @@ To get started I strongly recommend to have a look at the awesome CQRS Webcasts 
 
 ## Key-Concepts
 ### DomainObject
-The DomainObject is the center of each application logic. Each
+The DomainObject is the center of each application logic. A very basic example is the [Customer](Samples/1_NET_Core/NetCoreConsoleSample.Domain/Customer.cs) Domain Object in our first sample. 
 
 ### DomainObjectRepository
-The DomainObjectRepository is responsible for persisting and reading the eventstreams of the domainobject.
+The DomainObjectRepository is responsible for persisting and reading the eventstreams of the domainobject. A very basic example is the usage of the `MongoDomainObjectRepository` which is registered first in the [CQRSBooter](Samples/1_NET_Core/NetCoreConsoleSample/CQRSBooter.cs#L16) in our first sample. Its usage is shown in the [Program.cs](Samples/1_NET_Core/NetCoreConsoleSample/Program.cs#L29) of the same sample.
 
 ### States
 States are visitors that are iterating over stream of events to determine a desired state.
+The [NameState](Samples/1_NET_Core/NetCoreConsoleSample.Domain/States/NameState.cs) for the `Customer` Domain Object determines the `Name` State for a customer. Accessing the `NameState` is also shown in the first sample's [Program.cs](Samples/1_NET_Core/NetCoreConsoleSample/Program.cs#L31).
 
 ### Policies
 Policies are specialized states which result in a boolean value. For example "IsCustomerActiveState"
 
 ### CommandBus
-CommandBus is used so send commands and in order to find their related domainobjects and processes that can handle the given command
+CommandBus is used to send commands and in order to find their related Domain Objects and Processes that can handle the given Command. The CommandBus is registered in the [CQRSBooter.cs](Samples/2_ASPNET_Core/AspNetCoreSample/CQRSBooter.cs#L28) of our second sample. After registration, it can be accessed in the [CustomersController](Samples/2_ASPNET_Core/AspNetCoreSample/Controllers/CustomersController.cs#L31) and enqueue Commmands.
 
 ### EventSubscribers
-EventSubscriber connect to eventstreams and provide notifications on new events
+EventSubscriber connect to eventstreams and provide notifications on new events. The [MongoDbEventSubscriber] is registered in the [CQRSBooter.cs](Samples/3_ASPNET_Core_ReadModels/AspNetCoreSample/CQRSBooter.cs#L54) of our third sample.
 
 ### Denormalizer
-Denormalizers are working with eventsubscriber and are publishing new events to they registered eventhandlers e.g. for projecting informations in databases.
+Denormalizers are working with eventsubscriber and are publishing new events to they registered eventhandlers e.g. for projecting informations in databases. By registering the [CustomerDenormalizer](Samples/3_ASPNET_Core_ReadModels/AspNetCoreSample.Denormalizer/CustomerDenormalizer.cs) in the [CQRSBooter](Samples/3_ASPNET_Core_ReadModels/AspNetCoreSample/CQRSBooter.cs#L74) it can subscribe to the [Notifications](Samples/3_ASPNET_Core_ReadModels/AspNetCoreSample.Denormalizer/CustomerDenormalizer.cs#L18) of the `MongoDbEventSubscriber` and create a [CustomerReadModel](Samples/3_ASPNET_Core_ReadModels/AspNetCoreSample.Denormalizer/CustomerDenormalizer.cs#L22).
 
