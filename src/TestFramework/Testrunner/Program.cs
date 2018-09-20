@@ -8,6 +8,7 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events.Handlers;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Testrunner
@@ -69,6 +70,7 @@ namespace Testrunner
 
         private static void StartDenormalizer(IMongoDatabase db, params Assembly[] normalizerASsemblies)
         {
+            
             var subs = new MongoEventSubscriber(db);
             var pos = new MongoStreamPositionGateway(db, null);
             var normalizerFactory = new Func<Type, object>(Activator.CreateInstance);

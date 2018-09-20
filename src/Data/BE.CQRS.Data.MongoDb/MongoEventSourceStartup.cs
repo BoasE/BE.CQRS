@@ -1,13 +1,16 @@
 ﻿using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Logging;
 using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace BE.CQRS.Data.MongoDb
 {
     public static class MongoEventSourceStartup
     {
-        public static EventSourceConfiguration SetMongoDomainObjectRepository(this EventSourceConfiguration config, IMongoDatabase db)
+        public static EventSourceConfiguration SetMongoDomainObjectRepository(this EventSourceConfiguration config,
+            IMongoDatabase db)
         {
             Precondition.For(() => db).NotNull();
             Precondition.For(() => config).NotNull();
@@ -20,7 +23,8 @@ namespace BE.CQRS.Data.MongoDb
             return config;
         }
 
-        public static DenormalizerConfiguration SetMongoEventPositionGateway(this DenormalizerConfiguration config, IMongoDatabase db)
+        public static DenormalizerConfiguration SetMongoEventPositionGateway(this DenormalizerConfiguration config,
+            IMongoDatabase db)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => db).NotNull();
@@ -29,12 +33,18 @@ namespace BE.CQRS.Data.MongoDb
             return config;
         }
 
-        public static DenormalizerConfiguration SetMongoDbEventSubscriber(this DenormalizerConfiguration config, IMongoDatabase db)
+        public static DenormalizerConfiguration SetMongoDbEventSubscriber(this DenormalizerConfiguration config,
+            IMongoDatabase db, ILoggerFactory loggerFactory = null)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => db).NotNull();
 
-            config.Subscriber = new MongoEventSubscriber(db);
+            if (loggerFactory == null)
+            {
+                loggerFactory = new NoopLoggerFactory();
+            }
+
+            config.Subscriber = new MongoEventSubscriber(db, loggerFactory);
             return config;
         }
     }
