@@ -59,7 +59,8 @@ namespace BE.CQRS.Domain.Commands
             Precondition.For(repository, nameof(repository)).NotNull();
 
             var invoker = new ConventionCommandInvoker(repository);
-            var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), domainObjectAssemblies);
+            var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
+                domainObjectAssemblies);
             var bus = new InMemoryCommandBus(handler, loggerFactory);
 
             return bus;

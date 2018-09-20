@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
 using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Conventions
 {
@@ -23,16 +25,22 @@ namespace BE.CQRS.Domain.Conventions
 
         private static readonly string Category = typeof(ConventionCommandPipeline).FullName;
 
-        public static ConventionCommandPipeline CreateDefault(IDomainObjectRepository repo, params Assembly[] asm)
+        private readonly ILogger logger;
+
+        public static ConventionCommandPipeline CreateDefault(IDomainObjectRepository repo,
+            ILoggerFactory loggerFactory, params Assembly[] asm)
         {
-            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo), new DomainObjectLocator(), asm);
+            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo), new DomainObjectLocator(),
+                loggerFactory, asm);
         }
 
         public ConventionCommandPipeline(IConventionCommandInvoker invoker, IDomainObjectLocator locator,
+            ILoggerFactory loggerFactory,
             params Assembly[] domainObjectAssemblies)
         {
             this.locator = locator;
             this.invoker = invoker;
+            logger = loggerFactory.CreateLogger<ConventionCommandPipeline>();
             BindDomainObjects(domainObjectAssemblies);
         }
 
@@ -63,7 +71,8 @@ namespace BE.CQRS.Domain.Conventions
 
             commandMapping = commandMappings;
 
-            Trace.WriteLine($"Handled {count} domainobjects from {domainObjectAssemblies.Length} assemblies", Category);
+            var assemblyCount = domainObjectAssemblies.Length;
+            logger.LogDebug("Found {count} DomainObjects in {assemblyCount} assemblies", count, assemblyCount);
         }
 
         public Task ExecuteAsync(ICommand cmd)
@@ -72,9 +81,11 @@ namespace BE.CQRS.Domain.Conventions
 
             Type type = cmd.GetType();
 
-            Trace.WriteLine($"Executing \"{type.FullName}\"", Category);
 
             List<CommandMethodMapping> mapping = resolvedMappings.GetOrAdd(type, ResolveMappings);
+
+            int mappingCount = mapping.Count;
+            logger.LogTrace("Executing command \"{type}\" for {mappingCount} recievers", type,mappingCount);
 
             IEnumerable<IGrouping<Type, CommandMethodMapping>> groups = mapping.GroupBy(i => i.DomainObjectType);
 
