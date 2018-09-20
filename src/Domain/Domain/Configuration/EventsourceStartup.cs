@@ -9,7 +9,8 @@ namespace BE.CQRS.Domain.Configuration
 {
     public static class EventsourceStartup
     {
-        public static EventSourceConfiguration AddEventSource(this IServiceCollection collection, EventSourceConfiguration config)
+        public static EventSourceConfiguration AddEventSource(this IServiceCollection collection,
+            EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.Activator).NotNull();
@@ -28,7 +29,8 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
-        public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config, params Assembly[] assembliesWithDomainObjects)
+        public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config,
+            params Assembly[] assembliesWithDomainObjects)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x => x.Any());
@@ -38,13 +40,15 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
-        public static EventSourceConfiguration SetConventionBasedInMemoryCommandBus(this EventSourceConfiguration config)
+        public static EventSourceConfiguration SetConventionBasedInMemoryCommandBus(
+            this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => config.DomainObjectRepository).NotNull();
             Precondition.For(() => config.DomainObjectAssemblies).NotNull();
 
             config.CommandBus = InMemoryCommandBus.CreateConventionCommandBus(config.DomainObjectRepository,
+                config.LoggerFactory,
                 config.DomainObjectAssemblies);
 
             return config;
@@ -53,7 +57,7 @@ namespace BE.CQRS.Domain.Configuration
         public static EventSourceConfiguration SetDefaultActivator(this EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
-            var  activator = new ActivatorDomainObjectActivator();
+            var activator = new ActivatorDomainObjectActivator();
 
             config.Activator = activator;
             config.StateActivator = activator;
