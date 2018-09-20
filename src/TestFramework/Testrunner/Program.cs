@@ -38,7 +38,7 @@ namespace Testrunner
             Console.WriteLine("next");
             Console.ReadLine();
 
-            var bo = new SampleBo("1");
+            var bo = new SampleBo(Guid.NewGuid().ToString());
             bo.Execute();
 
             repo.SaveAsync(bo).Wait();

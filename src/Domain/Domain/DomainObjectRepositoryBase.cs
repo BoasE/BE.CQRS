@@ -68,7 +68,8 @@ namespace BE.CQRS.Domain
                 return AppendResult.NoUpdate;
             }
 
-            Trace.WriteLine("Saving \"{type}\"...", type);
+            var count = domainObject.GetUncommittedEvents().Count;
+            logger.LogTrace("Saving \"{type}\" with {count} events...", type,count);
             Stopwatch watch = Stopwatch.StartNew();
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
@@ -77,7 +78,7 @@ namespace BE.CQRS.Domain
             domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
 
-            logger.LogTrace("Saved \"{type}\" in {watch.ElapsedMilliseconds}ms", type, watch.ElapsedMilliseconds);
+            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms",count, type, watch.ElapsedMilliseconds);
             return result;
         }
 
