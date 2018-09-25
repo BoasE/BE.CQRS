@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Denormalization;
 using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Events.Handlers
 {
@@ -19,13 +20,17 @@ namespace BE.CQRS.Domain.Events.Handlers
         private readonly Dictionary<TypeInfo, object> normalizerInstances = new Dictionary<TypeInfo, object>();
         private readonly Func<Type, object> normalizerFactory;
         private readonly EventHandlerRegistry mapping = new EventHandlerRegistry();
-
+        private readonly ILogger logger;
+        
         public int HandlerCount => denormalizers.Length;
 
-        public ConventionEventHandler(IDenormalizerActivator activator, params Assembly[] projectors) // TODO Unify to one constructor (Breaking changes to geteventstore possible)
+        public ConventionEventHandler(IDenormalizerActivator activator,ILoggerFactory factory, params Assembly[] projectors) // TODO Unify to one constructor (Breaking changes to geteventstore possible)
         {
-            Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any());
-
+            Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any(),"No projector assemblies were passed!");
+            Precondition.For(factory, nameof(factory)).NotNull("LoggerFactory was missing!");
+            
+            logger = factory.CreateLogger<ConventionEventHandler>();
+            
             normalizerFactory = activator.ResolveDenormalizer;
             IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
 
@@ -67,10 +72,13 @@ namespace BE.CQRS.Domain.Events.Handlers
 
         public async Task HandleAsync(IEvent @event)
         {
-            Type type = @event.GetType();
-            List<IGrouping<TypeInfo, EventHandlerMethod>> denormalizerGroups = mapping.Resolve(type).GroupBy(x => x.ParentType).ToList();
+            var type = @event.GetType();
+            var denormalizerGroups = mapping
+                .Resolve(type)
+                .GroupBy(x => x.ParentType)
+                .ToList();
 
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
             foreach (IGrouping<TypeInfo, EventHandlerMethod> denormailzer in denormalizerGroups)
             {
                 KeyValuePair<TypeInfo, object> instance = normalizerInstances.Single(x => x.Key.Equals(denormailzer.Key));
@@ -81,10 +89,10 @@ namespace BE.CQRS.Domain.Events.Handlers
                 }
             }
             watch.Stop();
-            Trace.WriteLine($"\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms", "BE.CQRS.EventHandler");
+            logger.LogTrace("\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms",type.FullName,watch.ElapsedMilliseconds);
         }
 
-        internal static async Task SafeInvoke(IEvent @event, EventHandlerMethod method,
+        private async Task SafeInvoke(IEvent @event, EventHandlerMethod method,
             object instance)
         {
             try
@@ -95,7 +103,7 @@ namespace BE.CQRS.Domain.Events.Handlers
             {
                 string msg = $"Error in event handler {err.Message} when handling {@event.GetType().FullName}";
 
-                Trace.WriteLine(msg, "BE.CQRS.EventHandler");
+                logger.LogError(err,msg);
             }
         }
     }

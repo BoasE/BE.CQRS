@@ -2,6 +2,7 @@
 using System.Reflection;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.Events.Handlers;
+using BE.CQRS.Domain.Logging;
 using BE.FluentGuard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,7 @@ namespace BE.CQRS.Domain.Configuration
             var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
 
             var result = new EventDenormalizer(config.Subscriber,
-                new ConventionEventHandler(config.Activator, config.DenormalizerAssemblies),
+                new ConventionEventHandler(config.Activator,new NoopLoggerFactory(), config.DenormalizerAssemblies),
                 config.StreamPositionGateway);
 
             return result;
