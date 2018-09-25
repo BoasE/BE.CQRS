@@ -2,7 +2,15 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <RootNamespace>BE.CQRS.Domain</RootNamespace>
-    <AssemblyName>BE.CQRS.Domain</AssemblyName>
+    <AssemblyName>BE.CQRS.Domain</AssemblyName> 
+    <PackageId>BE.CQRS</PackageId>
+    <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
+    <PackageReleaseNotes>1.</PackageReleaseNotes>
+    <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
+    <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
+    <PackageVersion>0.63.0-alpha</PackageVersion>
+    <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.5" />
