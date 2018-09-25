@@ -7,44 +7,69 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.States;
+using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain
 {
     public abstract class DomainObjectRepositoryBase : IDomainObjectRepository
     {
-        
         private readonly EventSourceConfiguration configuration;
         private static readonly string TraceCategory = typeof(DomainObjectRepositoryBase).FullName;
+        private readonly ILogger logger;
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration)
         {
+            Precondition.For(configuration, nameof(configuration))
+                .NotNull("Configuration for domainobject repository must not be null!");
+
             this.configuration = configuration;
-            
+            logger = configuration.LoggerFactory.CreateLogger(this.GetType());
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject
         {
             AppendResult result = await SaveAsync(domainObject, false);
 
+            AssertSave(domainObject, result);
+
+            return result;
+        }
+
+        private void AssertSave<T>(T domainObject, AppendResult result) where T : class, IDomainObject
+        {
             if (result.HadWrongVersion)
             {
+                var type = domainObject.GetType();
+                var id = domainObject.Id;
+
+                logger.LogError("Version conflict when saving a {type} with id {id}. Version {CurrentVersion}", type,
+                    id,
+                    result.CurrentVersion);
+
                 throw new VersionConflictException(domainObject.GetType().Name, domainObject.Id,
                     result.CurrentVersion);
             }
-            return result;
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject, bool preventVersionCheck)
             where T : class, IDomainObject
         {
+            Precondition.For(domainObject, nameof(domainObject))
+                .NotNull("The domainObject to be saved must not be null!");
+
             string type = typeof(T).FullName;
 
             if (!domainObject.HasUncommittedEvents)
             {
-                Trace.WriteLine("No events to save");
+                var id = domainObject.Id;
+                logger.LogDebug("\"{type}\"-{id} had no events to save", type, id);
+
                 return AppendResult.NoUpdate;
             }
-            Trace.WriteLine($"Saving \"{type}\"...", TraceCategory);
+
+            var count = domainObject.GetUncommittedEvents().Count;
+            logger.LogTrace("Saving \"{type}\" with {count} events...", type,count);
             Stopwatch watch = Stopwatch.StartNew();
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
@@ -53,7 +78,7 @@ namespace BE.CQRS.Domain
             domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
 
-            Trace.WriteLine($"Saved \"{type}\" in {watch.ElapsedMilliseconds}ms", TraceCategory);
+            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms",count, type, watch.ElapsedMilliseconds);
             return result;
         }
 
@@ -95,7 +120,7 @@ namespace BE.CQRS.Domain
             Type type = typeof(T);
 
             string streamName = ResolveStreamName(id, type);
-            Trace.WriteLine($"Reading \"{type}\" ...", TraceCategory);
+            logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type,id);
             return ReadEvents(streamName, token)
                 .ToArray()
                 .Select(events =>

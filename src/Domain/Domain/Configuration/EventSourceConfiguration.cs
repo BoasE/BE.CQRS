@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.States;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Configuration
 {
@@ -20,5 +22,7 @@ namespace BE.CQRS.Domain.Configuration
         public IDomainObjectRepository DomainObjectRepository { get; set; }
 
         public Assembly[] DomainObjectAssemblies { get; set; }
+
+        public ILoggerFactory LoggerFactory { get; set; } = new NoopLoggerFactory();
     }
 }

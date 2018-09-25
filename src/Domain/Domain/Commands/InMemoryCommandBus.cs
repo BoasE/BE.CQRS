@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.DomainObjects;
 using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Commands
 {
@@ -13,10 +14,12 @@ namespace BE.CQRS.Domain.Commands
     {
         private readonly Subject<ICommand> subject = new Subject<ICommand>();
         private readonly ICommandPipeline handler;
+        private readonly ILogger logger;
 
-        public InMemoryCommandBus(ICommandPipeline handler)
+        public InMemoryCommandBus(ICommandPipeline handler, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             Precondition.For(() => handler).NotNull();
+            logger = loggerFactory.CreateLogger<InMemoryCommandBus>();
             this.handler = handler;
 
             subject.Subscribe(async msg => await HandleCommand(msg));
@@ -32,7 +35,10 @@ namespace BE.CQRS.Domain.Commands
             }
             catch (Exception err)
             {
-                Debug.WriteLine($"Error handling command \"{cmd.GetType().Name}\" - {err.Message}");
+                var type = cmd.GetType();
+                var msg = err.Message;
+                logger.LogError(err, "Error handling command \"{type}\" - {msg}", type, msg);
+
                 result = CommandBusResult.Failed(err);
             }
 
@@ -47,13 +53,17 @@ namespace BE.CQRS.Domain.Commands
         }
 
         public static InMemoryCommandBus CreateConventionCommandBus(IDomainObjectRepository repository,
+            ILoggerFactory loggerFactory,
             params Assembly[] domainObjectAssemblies)
         {
             Precondition.For(repository, nameof(repository)).NotNull();
+            Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
-            var invoker = new ConventionCommandInvoker(repository);
-            var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), domainObjectAssemblies);
-            var bus = new InMemoryCommandBus(handler);
+            var invoker = new ConventionCommandInvoker(repository,loggerFactory);
+            var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
+                domainObjectAssemblies);
+            
+            var bus = new InMemoryCommandBus(handler, loggerFactory);
 
             return bus;
         }
