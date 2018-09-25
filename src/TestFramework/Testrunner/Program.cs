@@ -107,7 +107,7 @@ namespace Testrunner
 
             IMongoDatabase db =
                 new MongoClient(
-                        "mongodb+srv://api:6OiGtayRexX8tSmY@cluster0-fyly5.gcp.mongodb.net/test?retryWrites=true")
+                        "mongodb+srv://api:pHWjNc5A6nBqUGmp@cluster0-fyly5.gcp.mongodb.net/test?retryWrites=true")
                     .GetDatabase("eventTests");
 
             services.AddSingleton<IMongoDatabase>(db);
