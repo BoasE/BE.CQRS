@@ -2,6 +2,7 @@
 {
     public static class EventHeaderKeys
     {
+        public const string AggregateType = "AggregateType";
         public const string AggregateId = "AggregateId";
         public const string CommitId = "CommitId";
         public const string Created = "Created";

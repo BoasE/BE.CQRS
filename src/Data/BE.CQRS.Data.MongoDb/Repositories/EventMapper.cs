@@ -42,6 +42,7 @@ namespace BE.CQRS.Data.MongoDb.Repositories
             foreach (KeyValuePair<string, EventDto> @event in commit.Events)
             {
                 @event.Value.Headers.Add(EventHeaderKeys.AggregateId, commit.AggregateId);
+                @event.Value.Headers.Add(EventHeaderKeys.AggregateType, commit.AggregateType);
                 @event.Value.Headers.Add(EventHeaderKeys.CommitId, commit.Ordinal.ToString());
                 yield return serializer.DeserializeEvent(@event.Value.Headers, @event.Value.Body);
             }
