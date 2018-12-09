@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using Xunit;
 
@@ -21,6 +23,10 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests.Visiting
             };
 
             sut.ApplyEvents(events);
+            sut.ApplyConfig(new EventSourceConfiguration
+            {
+                StateActivator = new ActivatorDomainObjectActivator()
+            });
 
             sut.RaiseEvent();
             VisitorState = sut.State<SampleVisitor>();
