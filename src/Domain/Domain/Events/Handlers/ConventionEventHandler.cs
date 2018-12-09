@@ -89,7 +89,7 @@ namespace BE.CQRS.Domain.Events.Handlers
                 }
             }
             watch.Stop();
-            logger.LogTrace("\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms",type.FullName,watch.ElapsedMilliseconds);
+            logger?.LogTrace("\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms",type.FullName,watch.ElapsedMilliseconds);
         }
 
         private async Task SafeInvoke(IEvent @event, EventHandlerMethod method,
