@@ -142,7 +142,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         public Task<long> Count()
         {
-            return Collection.CountAsync(Filters.Empty);
+            return Collection.CountDocumentsAsync(Filters.Empty);
         }
     }
 
