@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
     <AssemblyName>BE.CQRS.Data.MongoDb</AssemblyName>
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>	BE.CQRS.Data.MongoDb</PackageId>
