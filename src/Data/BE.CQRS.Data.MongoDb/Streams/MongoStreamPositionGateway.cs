@@ -24,9 +24,10 @@ namespace BE.CQRS.Data.MongoDb.Streams
 
         private Task PrepareCollectionAsync()
         {
-            IndexKeysDefinition<StreamPosition> index = Builders<StreamPosition>.IndexKeys.Ascending(x => x.StreamName);
-
-            return collection.Indexes.CreateOneAsync(index);
+            return collection.Indexes
+                .CreateOneAsync(
+                    new CreateIndexModel<StreamPosition>(
+                        Builders<StreamPosition>.IndexKeys.Ascending(x => x.StreamName)));
         }
 
         public async Task SaveAsync(string streamName, long pos)

@@ -105,8 +105,8 @@ namespace BE.CQRS.Data.MongoDb.Repositories
             Precondition.For(index, nameof(index)).NotNull();
 
             Task<string> task = index.Options == null
-                ? Collection.Indexes.CreateOneAsync(index.Definition)
-                : Collection.Indexes.CreateOneAsync(index.Definition, index.Options);
+                ? Collection.Indexes.CreateOneAsync(new CreateIndexModel<TDto>(null,index.Options))
+                : Collection.Indexes.CreateOneAsync(new CreateIndexModel<TDto>(index.Definition, index.Options));
             return task;
         }
     }

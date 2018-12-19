@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using BE.FluentGuard;
 using MongoDB.Driver;
@@ -34,32 +35,13 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return collection;
         }
 
-        private Task PrepareCollection(IMongoCollection<EventCommit> collection)
+        private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
-            return Task.WhenAll(
-                collection.Indexes.CreateOneAsync(Indexes.Descending(x => x.Ordinal), new CreateIndexOptions
-                {
-                    Unique = true
-                }),
-                collection.Indexes.CreateOneAsync(Indexes.Descending(x => x.AggregateId)),
-                collection.Indexes.CreateOneAsync(Indexes.Descending(x => x.AggregateType)),
-                collection.Indexes.CreateOneAsync(Indexes.Descending(x => x.AggregateId)
-                    .Descending(x => x.AggregateType)),
-                collection.Indexes.CreateOneAsync(
-                    Indexes.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionEvents),
-                    new CreateIndexOptions
-                    {
-                        Unique = true
-                    }),
-                collection.Indexes.CreateOneAsync(
-                    Indexes.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionCommit),
-                    new CreateIndexOptions
-                    {
-                        Unique = true
-                    })
-            );
+            var indexModels = IndexDefinitions.ProvideIndexModels().ToList();
+            await indexModels.ForEachAsync(async model =>
+            {
+                await collection.Indexes.CreateOneAsync(model);
+            });
         }
 
         public static string GetCollectionNameByCommit(string type)
