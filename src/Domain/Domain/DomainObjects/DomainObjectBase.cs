@@ -190,8 +190,10 @@ namespace BE.CQRS.Domain.DomainObjects
             return StateInternal<T>(excludeUncommitted);
         }
 
-        private T StateInternal<T>(bool excludeUncommitted) where T : class,IState 
+        private T StateInternal<T>(bool excludeUncommitted) where T : class,IState
         {
+            Precondition.For(this.stateActivator, nameof(this.stateActivator)).NotNull();
+
             var state = this.stateActivator.ResolveState<T>();
 
             ExecuteState(excludeUncommitted, state);
