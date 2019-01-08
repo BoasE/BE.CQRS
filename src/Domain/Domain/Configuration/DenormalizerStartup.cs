@@ -6,6 +6,7 @@ using BE.CQRS.Domain.Logging;
 using BE.FluentGuard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Configuration
 {
@@ -24,14 +25,14 @@ namespace BE.CQRS.Domain.Configuration
             return services;
         }
 
-        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app) // TODO Extract Object Factory like the DomainObjectFacotry
+        public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app,ILoggerFactory logger) // TODO Extract Object Factory like the DomainObjectFacotry
         {
             Precondition.For(() => app).NotNull();
 
             var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
 
             var result = new EventDenormalizer(config.Subscriber,
-                new ConventionEventHandler(config.Activator,new NoopLoggerFactory(), config.DenormalizerAssemblies),
+                new ConventionEventHandler(config.Activator,logger, config.DenormalizerAssemblies),
                 config.StreamPositionGateway);
 
             return result;
