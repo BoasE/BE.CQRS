@@ -38,6 +38,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
             var indexModels = IndexDefinitions.ProvideIndexModels().ToList();
+
             await indexModels.ForEachAsync(async model =>
             {
                 await collection.Indexes.CreateOneAsync(model);

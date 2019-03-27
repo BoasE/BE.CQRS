@@ -9,14 +9,14 @@ namespace BE.CQRS.Domain.Tests.EventMethodCoventionTests
     {
         private readonly EventHandlerMethod[] sutState;
 
-        protected EventMethodConvetion GetSut()
+        protected OnPrefixEventMethodConvetion GetSut()
         {
-            return new EventMethodConvetion();
+            return new OnPrefixEventMethodConvetion();
         }
 
         public GivenEventMethodConvetion()
         {
-            EventMethodConvetion sut = GetSut();
+            OnPrefixEventMethodConvetion sut = GetSut();
             sutState = sut.ResolveEventMethods(typeof(SampleDenormalizer)).ToArray();
         }
 

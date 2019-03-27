@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace BE.CQRS.Domain.Events.Handlers
 {
-    public sealed class EventMethodConvetion : IEventMethodConvetion
+    public sealed class OnPrefixEventMethodConvetion : IEventMethodConvetion
     {
         private static readonly TypeInfo EventType = typeof(IEvent).GetTypeInfo();
 

@@ -51,5 +51,9 @@ namespace BE.CQRS.Data.MongoDb.Commits
         [BsonRequired]
         [BsonElement("eve")]
         public Dictionary<string, EventDto> Events { get; set; }
+
+        [BsonRequired]
+        [BsonElement("aet")]
+        public List<string> AllEventTypes { get; set; }
     }
 }

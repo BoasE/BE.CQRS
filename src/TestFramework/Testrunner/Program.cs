@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,6 +13,8 @@ using BE.CQRS.Domain.Events.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using System.Reactive;
+using System.Threading;
 using Serilog;
 
 namespace Testrunner
@@ -33,6 +37,11 @@ namespace Testrunner
                     LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>()
                 }, db);
 
+            List<Type> types = new List<Type>();
+            types.Add(typeof(SecondEvent));
+
+            var filteresEvents = repo.Get<SampleBo>("390364cd-9e4c-4ab4-95ab-7a83143ab39c", types.ToHashSet(), CancellationToken.None).LastOrDefault();
+
             StartDenormalizer(serviceProvider, typeof(Program).GetTypeInfo().Assembly);
 
             Console.WriteLine("next");
@@ -40,6 +49,8 @@ namespace Testrunner
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
             bo.Execute();
+
+            bo.Next();
 
             repo.SaveAsync(bo).Wait();
             repo.SaveAsync(bo).Wait();
@@ -103,7 +114,6 @@ namespace Testrunner
         {
             services.AddLogging(configure => configure.AddConsole())
                 .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
-
 
             IMongoDatabase db =
                 new MongoClient(

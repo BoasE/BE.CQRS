@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using BE.CQRS.Data.MongoDb.Commits;
 using BE.CQRS.Domain.Events;
@@ -34,7 +35,17 @@ namespace BE.CQRS.Data.MongoDb.Repositories
                 Events = items
             };
 
+            PreAggregateEventTypes(events, commit);
+
             return commit;
+        }
+
+        private static void PreAggregateEventTypes(IEnumerable<IEvent> events, EventCommit commit)
+        {
+            commit.AllEventTypes = events
+                .Select(x => x.Headers.GetString(EventHeaderKeys.AssemblyEventType))
+                .Distinct()
+                .ToList();
         }
 
         public IEnumerable<IEvent> ExtractEvents(EventCommit commit)
@@ -56,9 +67,7 @@ namespace BE.CQRS.Data.MongoDb.Repositories
             {
                 IEvent @event = events[i];
                 if (!domainObjectId.Equals(@event.Headers.AggregateId))
-                {
                     throw new InvalidOperationException("Domainobject id did not match!");
-                }
 
                 string content = serializer.SerializeEvent(@event);
 
@@ -72,6 +81,7 @@ namespace BE.CQRS.Data.MongoDb.Repositories
                 dto.Headers.Remove(EventHeaderKeys.AggregateId);
                 items.Add(i.ToString(), dto);
             }
+
             return items;
         }
     }

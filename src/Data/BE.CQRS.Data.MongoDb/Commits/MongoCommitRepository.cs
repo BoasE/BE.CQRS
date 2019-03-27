@@ -25,13 +25,31 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         public Task<bool> Exists(string type, string id)
         {
-            var query = CommitFilters.ByAggregate(type, id);
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
             return Collection.Find(query).AnyAsync();
         }
 
         public async Task EnumerateCommits(string type, string id, Action<EventCommit> consumer, Action completed)
         {
-            var query = CommitFilters.ByAggregate(type, id);
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
+            await Enumerate(consumer, query);
+
+            completed();
+        }
+
+        public async Task EnumerateCommits(string type, string id, ISet<Type> eventTypes, Action<EventCommit> consumer, Action completed)
+        {
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregateAnyType(type, id, eventTypes);
+
+            await Enumerate(consumer, query);
+
+            completed();
+        }
+
+        public async Task EnumerateCommits(string type, string id, ISet<Type> eventTypes, int maxVersion, Action<EventCommit> consumer, Action completed)
+        {
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregateAnyTypeBelowOrdinal(type, id, eventTypes, maxVersion);
+
             await Enumerate(consumer, query);
 
             completed();
@@ -39,15 +57,15 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         public Task EnumerateStartingAfter(long ordinal, Action<EventCommit> consumer)
         {
-            var query = Filters.Gt(x => x.Ordinal, ordinal);
+            FilterDefinition<EventCommit> query = Filters.Gt(x => x.Ordinal, ordinal);
             return Enumerate(consumer, query);
         }
 
         public async Task<long> GetVersion(string type, string id)
         {
-            var query = CommitFilters.ByAggregate(type, id);
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
 
-            var result = await Collection.Find(query).Sort(Sorts.Descending(x => x.VersionEvents))
+            EventCommit result = await Collection.Find(query).Sort(Sorts.Descending(x => x.VersionEvents))
                 .FirstOrDefaultAsync();
 
             return result.VersionEvents;
@@ -55,18 +73,16 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
-            var indexModels = IndexDefinitions.ProvideIndexModels().ToList();
+            List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
             await indexModels.ForEachAsync(async model =>
             {
                 await collection.Indexes.CreateOneAsync(model);
             });
         }
 
-       
-
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
         {
-            var commit = Mapper.ToCommit(domainObject.Id, domainObject.GetType(), domainObject.OriginVersion,
+            EventCommit commit = Mapper.ToCommit(domainObject.Id, domainObject.GetType(), domainObject.OriginVersion,
                 domainObject.CommitVersion + 1,
                 domainObject.GetUncommittedEvents().ToList());
 
@@ -106,8 +122,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
         [Obsolete]
         private async Task<UpdateResult> InsertIfNoNewer(EventCommit commit)
         {
-            var ordinal = await identifier.Next("commit");
-            var update = Updates
+            long ordinal = await identifier.Next("commit");
+            UpdateDefinition<EventCommit> update = Updates
                 .SetOnInsert(x => x.Events, commit.Events)
                 .SetOnInsert(x => x.Ordinal, ordinal)
                 .SetOnInsert(x => x.VersionEvents, commit.VersionEvents)
@@ -119,7 +135,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 .SetOnInsert(x => x.Timestamp, commit.Timestamp)
                 .CurrentDate(x => x.ServerTimestamp);
 
-            var versionQuery =
+            FilterDefinition<EventCommit> versionQuery =
                 Filters.And(
                     Filters.Eq(x => x.AggregateId, commit.AggregateId),
                     Filters.Gt(x => x.VersionEvents, commit.VersionEvents));
@@ -150,8 +166,11 @@ namespace BE.CQRS.Data.MongoDb.Commits
     {
         public static async Task ForEachAsync<T>(this List<T> enumerable, Action<T> action)
         {
-            foreach (var item in enumerable)
-                await Task.Run(() => { action(item); }).ConfigureAwait(false);
+            foreach (T item in enumerable)
+                await Task.Run(() =>
+                {
+                    action(item);
+                }).ConfigureAwait(false);
         }
     }
 
@@ -162,18 +181,31 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return new List<CreateIndexModel<EventCommit>>
             {
                 new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.Ordinal), new CreateIndexOptions {Unique = true}),
+                    Builders<EventCommit>.IndexKeys.Descending(x => x.Ordinal), new CreateIndexOptions { Unique = true }),
+
                 new CreateIndexModel<EventCommit>(
                     Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId)),
+
                 new CreateIndexModel<EventCommit>(Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateType)),
+
                 new CreateIndexModel<EventCommit>(Builders<EventCommit>.IndexKeys
                     .Descending(x => x.AggregateId).Descending(x => x.AggregateType)),
+
                 new CreateIndexModel<EventCommit>(
                     Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionEvents), new CreateIndexOptions {Unique = true}),
+                        .Descending(x => x.VersionEvents), new CreateIndexOptions { Unique = true }),
+
                 new CreateIndexModel<EventCommit>(
                     Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionCommit), new CreateIndexOptions {Unique = true})
+                        .Descending(x => x.VersionCommit), new CreateIndexOptions { Unique = true }),
+
+                new CreateIndexModel<EventCommit>(
+                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
+                        .Ascending(x => x.AllEventTypes)),
+
+                new CreateIndexModel<EventCommit>(
+                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
+                        .Ascending(x => x.AllEventTypes).Descending(x => x.Ordinal))
             };
         }
     }

@@ -4,6 +4,7 @@ using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
+using BE.CQRS.Domain.States;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
@@ -25,12 +26,14 @@ namespace BE.CQRS.Domain.DomainObjects
 
         IReadOnlyCollection<IEvent> GetUncommittedEvents();
 
+        IReadOnlyCollection<IEvent> GetCommittedEvents();
+
         void CommitChanges(long commitVersion);
 
         void RevertChanges();
 
-        void ApplyEvents(ICollection<IEvent> eventsToCommit);
-        
+        void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEventTypes);
+
         void ApplyConfig(EventSourceConfiguration configuration);
 
         bool Policy<T>() where T : PolicyBase, new();
@@ -38,5 +41,9 @@ namespace BE.CQRS.Domain.DomainObjects
         bool Policy<T>(ICommand command) where T : PolicyBase;
 
         bool Policy(Type policy, ICommand command);
+
+        T State<T>() where T : StateBase, new();
+
+        T State<T>(bool includeUnComitted) where T : StateBase, new();
     }
 }
