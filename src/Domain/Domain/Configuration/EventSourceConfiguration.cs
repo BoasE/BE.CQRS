@@ -1,6 +1,8 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.States;
 using Microsoft.Extensions.Logging;
@@ -26,5 +28,7 @@ namespace BE.CQRS.Domain.Configuration
         public ILoggerFactory LoggerFactory { get; set; } = new NoopLoggerFactory();
 
         public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
+
+        public Action<IEvent> PostSavePipeline { get; set; }
     }
 }

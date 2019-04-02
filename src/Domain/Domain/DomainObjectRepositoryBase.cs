@@ -33,6 +33,7 @@ namespace BE.CQRS.Domain
 
             AssertSave(domainObject, result);
 
+
             return result;
         }
 
@@ -75,10 +76,23 @@ namespace BE.CQRS.Domain
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
 
+            if (!result.HadWrongVersion)
+            {
+                if (configuration.PostSavePipeline != null)
+                {
+                    foreach (var @event in domainObject.GetUncommittedEvents())
+                    {
+                        configuration.PostSavePipeline(@event);
+                    }
+                }
+            }
+
             domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
 
-            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms", count, type, watch.ElapsedMilliseconds);
+
+            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms", count, type,
+                watch.ElapsedMilliseconds);
             return result;
         }
 
@@ -115,7 +129,8 @@ namespace BE.CQRS.Domain
             return Get<T>(id, CancellationToken.None);
         }
 
-        public IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject
+        public IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token)
+            where T : class, IDomainObject
         {
             Type type = typeof(T);
 
@@ -184,7 +199,8 @@ namespace BE.CQRS.Domain
 
         protected abstract IObservable<IEvent> ReadEvents(string streamName, CancellationToken token);
 
-        protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token);
+        protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
+            CancellationToken token);
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {
