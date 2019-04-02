@@ -73,11 +73,19 @@ namespace BE.CQRS.Domain
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
 
-            if (!result.HadWrongVersion && configuration.PostSavePipeline != null)
+            if (!result.HadWrongVersion)
             {
                 foreach (var @event in domainObject.GetUncommittedEvents())
                 {
-                    configuration.PostSavePipeline(@event);
+                    if (configuration.PostSavePipeline != null)
+                    {
+                        configuration.PostSavePipeline(@event);
+                    }
+
+                    if (configuration.DirectDenormalizers != null)
+                    {
+                        await configuration.DirectDenormalizers.HandleAsync(@event);
+                    }
                 }
             }
 

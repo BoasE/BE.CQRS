@@ -12,8 +12,7 @@ using MongoDB.Driver;
 
 namespace BE.CQRS.Data.MongoDb
 {
-    public sealed class
-        MongoEventSubscriber : IEventSubscriber //TODO should be transformed to MongoDb Observable Collections
+    public sealed class MongoEventSubscriber : IEventSubscriber //TODO should be transformed to MongoDb Observable Collections
     {
         private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
         private readonly MongoCommitRepository repo;
