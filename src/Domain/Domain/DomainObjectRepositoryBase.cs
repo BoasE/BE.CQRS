@@ -30,10 +30,7 @@ namespace BE.CQRS.Domain
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject
         {
             AppendResult result = await SaveAsync(domainObject, false);
-
             AssertSave(domainObject, result);
-
-
             return result;
         }
 
