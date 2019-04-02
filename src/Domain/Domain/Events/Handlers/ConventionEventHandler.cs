@@ -14,7 +14,7 @@ namespace BE.CQRS.Domain.Events.Handlers
     {
         private static readonly EventHandlerInvoker Invoker = new EventHandlerInvoker();
         private static readonly IDenormalizerLocator Locator = new DenormalizerLocator();
-        private static readonly IEventMethodConvetion EventMethodConvetion = new EventMethodConvetion();
+        private static readonly IEventMethodConvetion EventMethodConvetion = new OnPrefixEventMethodConvetion();
 
         private readonly Type[] denormalizers;
         private readonly Dictionary<TypeInfo, object> normalizerInstances = new Dictionary<TypeInfo, object>();

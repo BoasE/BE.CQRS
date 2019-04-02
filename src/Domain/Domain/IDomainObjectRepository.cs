@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.DomainObjects;
@@ -13,6 +14,8 @@ namespace BE.CQRS.Domain
         IObservable<T> Get<T>(string id) where T : class, IDomainObject;
 
         IObservable<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject;
+
+        IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject;
 
         IObservable<IDomainObject> Get(string id, Type domainObjectType);
 

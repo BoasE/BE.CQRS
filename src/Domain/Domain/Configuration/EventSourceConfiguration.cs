@@ -24,5 +24,7 @@ namespace BE.CQRS.Domain.Configuration
         public Assembly[] DomainObjectAssemblies { get; set; }
 
         public ILoggerFactory LoggerFactory { get; set; } = new NoopLoggerFactory();
+
+        public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
     }
 }

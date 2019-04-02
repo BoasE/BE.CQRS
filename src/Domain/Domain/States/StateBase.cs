@@ -10,7 +10,7 @@ namespace BE.CQRS.Domain.States
 {
     public abstract class StateBase : IFreezeableState
     {
-        private static readonly IEventMethodConvetion MethodConvetion = new EventMethodConvetion();
+        private static readonly IEventMethodConvetion MethodConvetion = new OnPrefixEventMethodConvetion();
         private static readonly EventHandlerInvoker Invoker = new EventHandlerInvoker();
 
         private bool breakRequested;
@@ -65,7 +65,7 @@ namespace BE.CQRS.Domain.States
 
             foreach (EventHandlerMethod method in methods)
             {
-                await Invoker.InvokeAsync(@event, method, this); //Todo get events    
+                await Invoker.InvokeAsync(@event, method, this); //Todo get events
             }
         }
 

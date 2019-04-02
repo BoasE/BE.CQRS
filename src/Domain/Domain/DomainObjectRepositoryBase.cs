@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading;
@@ -6,7 +7,6 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
-using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +24,7 @@ namespace BE.CQRS.Domain
                 .NotNull("Configuration for domainobject repository must not be null!");
 
             this.configuration = configuration;
-            logger = configuration.LoggerFactory.CreateLogger(this.GetType());
+            logger = configuration.LoggerFactory.CreateLogger(GetType());
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject
@@ -40,8 +40,8 @@ namespace BE.CQRS.Domain
         {
             if (result.HadWrongVersion)
             {
-                var type = domainObject.GetType();
-                var id = domainObject.Id;
+                Type type = domainObject.GetType();
+                string id = domainObject.Id;
 
                 logger.LogError("Version conflict when saving a {type} with id {id}. Version {CurrentVersion}", type,
                     id,
@@ -62,14 +62,14 @@ namespace BE.CQRS.Domain
 
             if (!domainObject.HasUncommittedEvents)
             {
-                var id = domainObject.Id;
+                string id = domainObject.Id;
                 logger.LogDebug("\"{type}\"-{id} had no events to save", type, id);
 
                 return AppendResult.NoUpdate;
             }
 
-            var count = domainObject.GetUncommittedEvents().Count;
-            logger.LogTrace("Saving \"{type}\" with {count} events...", type,count);
+            int count = domainObject.GetUncommittedEvents().Count;
+            logger.LogTrace("Saving \"{type}\" with {count} events...", type, count);
             Stopwatch watch = Stopwatch.StartNew();
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
@@ -78,7 +78,7 @@ namespace BE.CQRS.Domain
             domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
 
-            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms",count, type, watch.ElapsedMilliseconds);
+            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms", count, type, watch.ElapsedMilliseconds);
             return result;
         }
 
@@ -115,18 +115,39 @@ namespace BE.CQRS.Domain
             return Get<T>(id, CancellationToken.None);
         }
 
+        public IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject
+        {
+            Type type = typeof(T);
+
+            string streamName = ResolveStreamName(id, type);
+            logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
+
+            return ReadEvents(streamName, eventTypes, token)
+                .ToArray()
+                .Select(events =>
+                    {
+                        var instance = configuration.Activator.Resolve<T>(id);
+
+                        instance.ApplyEvents(events, eventTypes);
+                        instance.ApplyConfig(configuration);
+                        return instance;
+                    }
+                );
+        }
+
         public IObservable<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject
         {
             Type type = typeof(T);
 
             string streamName = ResolveStreamName(id, type);
-            logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type,id);
+            logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
+
             return ReadEvents(streamName, token)
                 .ToArray()
                 .Select(events =>
                     {
                         var instance = configuration.Activator.Resolve<T>(id);
-                        instance.ApplyEvents(events);
+                        instance.ApplyEvents(events, null);
                         instance.ApplyConfig(configuration);
                         return instance;
                     }
@@ -147,7 +168,7 @@ namespace BE.CQRS.Domain
                 .Select(events =>
                     {
                         IDomainObject instance = configuration.Activator.Resolve(domainObjectType, id);
-                        instance.ApplyEvents(events);
+                        instance.ApplyEvents(events, null);
                         instance.ApplyConfig(configuration);
                         return instance;
                     }
@@ -162,6 +183,8 @@ namespace BE.CQRS.Domain
             where T : class, IDomainObject;
 
         protected abstract IObservable<IEvent> ReadEvents(string streamName, CancellationToken token);
+
+        protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token);
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {

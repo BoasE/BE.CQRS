@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>BE.CQRS.Data.MongoDb</AssemblyName>
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
-    <PackageId>	BE.CQRS.Data.MongoDb</PackageId>
+    <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>NetFx Support</PackageReleaseNotes>
+    <PackageReleaseNotes>LazyEvents</PackageReleaseNotes>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
-    <PackageVersion>0.47.0-alpha</PackageVersion>
+    <PackageVersion>0.48.0-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.5" />

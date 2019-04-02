@@ -45,7 +45,7 @@ namespace DiTests
         [Fact]
         public void UnComittedEventsNotNull()
         {
-            Assert.NotNull(domainObject.UnCommittedEvents);
+            Assert.NotNull(domainObject.GetUncommittedEvents());
         }
     }
 }

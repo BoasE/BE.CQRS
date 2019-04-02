@@ -14,25 +14,27 @@ namespace BE.CQRS.Domain.DomainObjects
     {
         private const bool includeUncommittedStreamsDefault = false;
         private readonly List<IEvent> committedEvents = new List<IEvent>();
-        private readonly List<IEvent> unCommittedEvents = new List<IEvent>();
         private readonly IEventMapper mapper;
-        private IStateActivator stateActivator;
-        
+
+        private DomainObjectStateRuntime stateRuntime;
+
         public string Id { get; }
 
-        public bool HasUncommittedEvents => unCommittedEvents.Any();
+        public bool HasUncommittedEvents => UnCommittedEvents.Any();
 
-        public List<IEvent> UnCommittedEvents => unCommittedEvents;
+        private List<IEvent> UnCommittedEvents { get; } = new List<IEvent>();
 
         public virtual bool CheckVersionOnSave { get; } = true;
 
         public virtual string Namespace { get; } = null;
 
-        public long Version => committedEvents.Count + unCommittedEvents.Count;
+        public long Version => committedEvents.Count + UnCommittedEvents.Count;
 
         public long OriginVersion => committedEvents.Count;
 
         public long CommitVersion { get; private set; }
+
+        protected ISet<Type> LoadedEventTypes { get; private set; }
 
         protected DomainObjectBase(string id, IEventMapper mapper = null)
         {
@@ -43,9 +45,34 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public void ApplyConfig(EventSourceConfiguration configuration)
         {
-            this.stateActivator = configuration.StateActivator;
+            stateRuntime = new DomainObjectStateRuntime(this, configuration);
         }
-        
+
+        public bool Policy<T>() where T : PolicyBase, new()
+        {
+            return stateRuntime.Policy<T>(includeUncommittedStreamsDefault);
+        }
+
+        public bool Policy<T>(ICommand command) where T : PolicyBase
+        {
+            return stateRuntime.Policy<T>(command, includeUncommittedStreamsDefault);
+        }
+
+        public bool Policy(Type policy, ICommand command)
+        {
+            return stateRuntime.Policy(policy, command, includeUncommittedStreamsDefault);
+        }
+
+        public T State<T>() where T : StateBase, new()
+        {
+            return stateRuntime.State<T>(includeUncommittedStreamsDefault);
+        }
+
+        public T State<T>(bool includeUnComitted) where T : StateBase, new()
+        {
+            return stateRuntime.State<T>(includeUnComitted);
+        }
+
         protected T RaiseEvent<T, U>(U mappingSource) where T : IEvent, new()
         {
             Precondition.For(mappingSource, nameof(mappingSource)).NotNull();
@@ -53,7 +80,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
             T @event = mapper.MapToEvent<U, T>(mappingSource);
             @event = RaiseEventInternal(@event, null);
-            
+
             return @event;
         }
 
@@ -69,7 +96,7 @@ namespace BE.CQRS.Domain.DomainObjects
             return @event;
         }
 
-        protected T RaiseEvent<T>(Action<T> modification) where T : IEvent,new()
+        protected T RaiseEvent<T>(Action<T> modification) where T : IEvent, new()
         {
             Precondition.For(modification, nameof(modification)).NotNull();
 
@@ -94,7 +121,7 @@ namespace BE.CQRS.Domain.DomainObjects
             modification?.Invoke(@event);
 
             @event.AssertValidation();
-            unCommittedEvents.Add(@event);
+            UnCommittedEvents.Add(@event);
 
             return @event;
         }
@@ -107,26 +134,40 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public IReadOnlyCollection<IEvent> GetUncommittedEvents()
         {
-            return unCommittedEvents;
+            return UnCommittedEvents;
+        }
+
+        public IReadOnlyCollection<IEvent> GetCommittedEvents()
+        {
+            return UnCommittedEvents;
         }
 
         public void CommitChanges(long commitVersion)
         {
-            committedEvents.AddRange(unCommittedEvents);
-            unCommittedEvents.Clear();
+            committedEvents.AddRange(UnCommittedEvents);
+            UnCommittedEvents.Clear();
             CommitVersion = commitVersion;
         }
 
         public void RevertChanges()
         {
-            unCommittedEvents.Clear();
+            UnCommittedEvents.Clear();
         }
 
-        public void ApplyEvents(ICollection<IEvent> eventsToCommit)
+        public void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEvents)
         {
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull().True(i => i.Count > 0);
 
+            LoadedEventTypes = allowedEvents;
             ApplyCommitId(eventsToCommit);
+
+            if (allowedEvents != null && allowedEvents.Any())
+                eventsToCommit = eventsToCommit.Where(x =>
+                {
+                    string eventType = x.Headers.GetString(EventHeaderKeys.AssemblyEventType);
+
+                    return allowedEvents.Any(type => type.AssemblyQualifiedName.Equals(eventType));
+                }).ToList();
 
             committedEvents.AddRange(eventsToCommit);
         }
@@ -136,81 +177,7 @@ namespace BE.CQRS.Domain.DomainObjects
             IEvent[] itemsWithCommitId = eventsToCommit.Where(i => i.Headers.HasKey(EventHeaderKeys.CommitId)).ToArray();
 
             if (itemsWithCommitId.Any())
-            {
                 CommitVersion = itemsWithCommitId.Max(x => x.Headers.GetInteger(EventHeaderKeys.CommitId));
-            }
-        }
-
-        // TODO Extract Policy and StateExecutor
-        public bool Policy<T>() where T : PolicyBase, new()
-        {
-            var state = new T();
-
-            ExecuteState(includeUncommittedStreamsDefault, state);
-
-            return state.IsValid();
-        }
-
-        public bool Policy<T>(ICommand command) where T : PolicyBase
-        {
-            return Policy(typeof(T), command);
-        }
-
-        private readonly Type commandPolicyType = typeof(CommandPolicyBase<>);
-
-        public bool Policy(Type policy, ICommand command)
-        {
-            PolicyBase state;
-            if (commandPolicyType.IsAssignableFrom(policy))
-            {
-                state = Activator.CreateInstance(policy, command) as PolicyBase;
-            }
-            else
-            {
-                state = Activator.CreateInstance(policy) as PolicyBase;
-            }
-
-            if (state == null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            ExecuteState(includeUncommittedStreamsDefault, state);
-
-            return state.IsValid();
-        }
-
-        public T State<T>() where T :  class,IState  
-        {
-            return StateInternal<T>(includeUncommittedStreamsDefault);
-        }
-
-        public T State<T>(bool excludeUncommitted) where T : class,IState  
-        {
-            return StateInternal<T>(excludeUncommitted);
-        }
-
-        private T StateInternal<T>(bool excludeUncommitted) where T : class,IState
-        {
-            Precondition.For(this.stateActivator, nameof(this.stateActivator)).NotNull();
-
-            var state = this.stateActivator.ResolveState<T>();
-
-            ExecuteState(excludeUncommitted, state);
-
-            return state;
-        }
-
-        private void ExecuteState(bool excludeUncommitted, IState state)
-        {
-            var events = new List<IEvent>(committedEvents);
-
-            if (!excludeUncommitted)
-            {
-                events.AddRange(unCommittedEvents);
-            }
-
-            state.Execute(events);
         }
     }
 }

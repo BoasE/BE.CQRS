@@ -40,5 +40,10 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
             var temp = new List<IEvent>();
             return temp.ToObservable();
         }
+
+        protected override IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

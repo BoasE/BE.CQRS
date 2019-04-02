@@ -21,7 +21,7 @@ namespace BE.CQRS.Data.MongoDb
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration,IMongoDatabase db) : base(configuration)
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(configuration)
         {
             repository = new MongoCommitRepository(db);
         }
@@ -55,6 +55,29 @@ namespace BE.CQRS.Data.MongoDb
         protected override Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
         {
             return repository.SaveAsync(domainObject, versionCheck);
+        }
+
+        protected override IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
+        {
+            string id = namer.IdByStreamName(streamName);
+            string type = namer.TypeNameByStreamName(streamName);
+
+            return Observable.Create<IEvent>(async observer =>
+            {
+                await repository.EnumerateCommits(type, id, eventTypes,
+                    x =>
+                    {
+                        IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+
+                        foreach (IEvent @event in events)
+                        {
+                            observer.OnNext(@event);
+                        }
+                    }, observer.OnCompleted);
+                return () =>
+                {
+                };
+            });
         }
 
         protected override IObservable<IEvent> ReadEvents(string streamName, CancellationToken token)
