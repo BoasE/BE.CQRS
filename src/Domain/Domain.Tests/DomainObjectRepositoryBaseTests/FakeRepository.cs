@@ -45,5 +45,10 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
         {
             throw new NotImplementedException();
         }
+
+        public override Task EnumerateAll(Func<IEvent, Task> callback)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

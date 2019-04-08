@@ -29,6 +29,13 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return Collection.Find(query).AnyAsync();
         }
 
+        public async Task EnumerateAllCommits(Func<EventCommit, Task> consumer)
+        {
+            FilterDefinition<EventCommit> query = CommitFilters.All;
+
+            await Collection.Find(query).ForEachAsync(async x => await consumer(x));
+        }
+
         public async Task EnumerateCommits(string type, string id, Action<EventCommit> consumer, Action completed)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);

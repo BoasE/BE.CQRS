@@ -74,20 +74,14 @@ namespace BE.CQRS.Domain
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
 
             if (!result.HadWrongVersion)
-            {
-                foreach (var @event in domainObject.GetUncommittedEvents())
+                foreach (IEvent @event in domainObject.GetUncommittedEvents())
                 {
                     if (configuration.PostSavePipeline != null)
-                    {
                         configuration.PostSavePipeline(@event);
-                    }
 
                     if (configuration.DirectDenormalizers != null)
-                    {
                         await configuration.DirectDenormalizers.HandleAsync(@event);
-                    }
                 }
-            }
 
             domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
@@ -183,6 +177,7 @@ namespace BE.CQRS.Domain
         }
 
         protected abstract Task<bool> ExistsStream(string streamName);
+
         protected abstract string ResolveStreamName(string id, Type aggregateType);
 
         protected abstract Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
@@ -192,6 +187,8 @@ namespace BE.CQRS.Domain
 
         protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token);
+
+        public abstract Task EnumerateAll(Func<IEvent,Task> callback);
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {

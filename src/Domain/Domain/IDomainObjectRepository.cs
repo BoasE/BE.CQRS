@@ -28,5 +28,7 @@ namespace BE.CQRS.Domain
         Task<bool> Exists<T>(T domainobject) where T : class, IDomainObject;
 
         Task<bool> Exists<T>(string id) where T : class, IDomainObject;
+
+        Task EnumerateAll(Func<IEvent, Task> callback);
     }
 }

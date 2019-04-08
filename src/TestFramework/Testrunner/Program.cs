@@ -25,7 +25,7 @@ namespace Testrunner
         {
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
-
+            
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var db = serviceProvider.GetRequiredService<IMongoDatabase>();
@@ -36,6 +36,9 @@ namespace Testrunner
                     Activator = new ActivatorDomainObjectActivator(),
                     LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>()
                 }, db);
+            
+            
+                 
 
             List<Type> types = new List<Type>();
             types.Add(typeof(SecondEvent));

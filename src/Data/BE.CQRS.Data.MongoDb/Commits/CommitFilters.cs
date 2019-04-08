@@ -9,6 +9,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
     {
         private static FilterDefinitionBuilder<EventCommit> Filters { get; } = Builders<EventCommit>.Filter;
 
+        public static FilterDefinition<EventCommit> All => Filters.Empty;
+
         internal static FilterDefinition<EventCommit> ByAggregate(string type, string id)
         {
             FilterDefinition<EventCommit> query = Filters.And(Filters.Eq(x => x.AggregateType, type), Filters.Eq(x => x.AggregateId, id));

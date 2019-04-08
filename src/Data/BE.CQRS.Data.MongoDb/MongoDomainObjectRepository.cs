@@ -8,7 +8,6 @@ using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
-using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
 using MongoDB.Driver;
@@ -70,13 +69,22 @@ namespace BE.CQRS.Data.MongoDb
                         IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
                         foreach (IEvent @event in events)
-                        {
                             observer.OnNext(@event);
-                        }
                     }, observer.OnCompleted);
                 return () =>
                 {
                 };
+            });
+        }
+
+        public override Task EnumerateAll(Func<IEvent, Task> callback)
+        {
+            return repository.EnumerateAllCommits(async x =>
+            {
+                IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+
+                foreach (IEvent @event in events)
+                    await callback(@event);
             });
         }
 
@@ -93,9 +101,7 @@ namespace BE.CQRS.Data.MongoDb
                         IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
                         foreach (IEvent @event in events)
-                        {
                             observer.OnNext(@event);
-                        }
                     }, observer.OnCompleted);
                 return () =>
                 {
