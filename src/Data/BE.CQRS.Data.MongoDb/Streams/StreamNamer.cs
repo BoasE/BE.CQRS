@@ -19,13 +19,13 @@ namespace BE.CQRS.Data.MongoDb.Streams
 
         public string TypeNameByStreamName(string streamName)
         {
-            int index = streamName.IndexOf(seperator, StringComparison.OrdinalIgnoreCase);
+            int index = streamName.LastIndexOf(seperator, StringComparison.OrdinalIgnoreCase);
             return streamName.Substring(index + 1);
         }
 
         public string IdByStreamName(string streamName)
         {
-            int index = streamName.IndexOf(seperator, StringComparison.OrdinalIgnoreCase);
+            int index = streamName.LastIndexOf(seperator, StringComparison.OrdinalIgnoreCase);
             return streamName.Substring(0, index);
         }
     }
