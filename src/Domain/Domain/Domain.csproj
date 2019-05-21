@@ -4,10 +4,10 @@
     <AssemblyName>BE.CQRS.Domain</AssemblyName> 
     <PackageId>BE.CQRS</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Lazy States.</PackageReleaseNotes>
+    <PackageReleaseNotes>Bugfix in comitted events</PackageReleaseNotes>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
-    <PackageVersion>0.66.0-alpha</PackageVersion>
+    <PackageVersion>0.67.0-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TargetFramework>netstandard2.0</TargetFramework>
