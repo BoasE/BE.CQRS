@@ -7,7 +7,7 @@
     <PackageReleaseNotes>Bugfix in comitted events</PackageReleaseNotes>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
-    <PackageVersion>0.67.0-alpha</PackageVersion>
+    <PackageVersion>0.68.0-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TargetFramework>netstandard2.0</TargetFramework>
