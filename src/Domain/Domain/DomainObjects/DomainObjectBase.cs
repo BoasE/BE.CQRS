@@ -139,7 +139,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public IReadOnlyCollection<IEvent> GetCommittedEvents()
         {
-            return UnCommittedEvents;
+            return committedEvents;
         }
 
         public void CommitChanges(long commitVersion)

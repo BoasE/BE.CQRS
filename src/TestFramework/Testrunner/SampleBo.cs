@@ -18,6 +18,7 @@ namespace Testrunner
         [Update]
         public void Next()
         {
+            var foo = State<MyState>();
             RaiseEvent<SecondEvent>(x =>
             {
             });

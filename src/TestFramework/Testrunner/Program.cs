@@ -21,36 +21,32 @@ namespace Testrunner
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
-            
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var db = serviceProvider.GetRequiredService<IMongoDatabase>();
 
-            var repo = new MongoDomainObjectRepository(
-                new EventSourceConfiguration()
-                {
-                    Activator = new ActivatorDomainObjectActivator(),
-                    LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>()
-                }, db);
+            var cfg = new EventSourceConfiguration()
+            {
+                Activator = new ActivatorDomainObjectActivator(),
+                LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>(),
+                StateActivator =  new ActivatorDomainObjectActivator()
+            };
+
+            var repo = new MongoDomainObjectRepository(cfg, db);
+
+            var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
+            bo2.Next();
             
-            
-                 
-
-            List<Type> types = new List<Type>();
-            types.Add(typeof(SecondEvent));
-
-            var filteresEvents = repo.Get<SampleBo>("390364cd-9e4c-4ab4-95ab-7a83143ab39c", types.ToHashSet(), CancellationToken.None).LastOrDefault();
-
-            StartDenormalizer(serviceProvider, typeof(Program).GetTypeInfo().Assembly);
-
             Console.WriteLine("next");
             Console.ReadLine();
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
+            bo.ApplyConfig(cfg);
             bo.Execute();
 
             bo.Next();
