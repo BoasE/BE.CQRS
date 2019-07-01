@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
@@ -17,6 +19,7 @@ namespace BE.CQRS.Domain.DomainObjects
         private readonly IEventMapper mapper;
 
         private DomainObjectStateRuntime stateRuntime;
+        private IDomainObjectRepository domainObjectRepository;
 
         public string Id { get; }
 
@@ -46,6 +49,7 @@ namespace BE.CQRS.Domain.DomainObjects
         public void ApplyConfig(EventSourceConfiguration configuration)
         {
             stateRuntime = new DomainObjectStateRuntime(this, configuration);
+            domainObjectRepository = configuration.DomainObjectRepository;
         }
 
         public bool Policy<T>() where T : PolicyBase, new()
@@ -174,10 +178,20 @@ namespace BE.CQRS.Domain.DomainObjects
 
         private void ApplyCommitId(IEnumerable<IEvent> eventsToCommit)
         {
-            IEvent[] itemsWithCommitId = eventsToCommit.Where(i => i.Headers.HasKey(EventHeaderKeys.CommitId)).ToArray();
+            IEvent[] itemsWithCommitId =
+                eventsToCommit.Where(i => i.Headers.HasKey(EventHeaderKeys.CommitId)).ToArray();
 
             if (itemsWithCommitId.Any())
                 CommitVersion = itemsWithCommitId.Max(x => x.Headers.GetInteger(EventHeaderKeys.CommitId));
+        }
+
+        public async Task<TState> StateFor<TDomainObject, TState>(string domainObjectId)
+            where TDomainObject : class, IDomainObject
+            where TState : StateBase, new()
+        {
+            TDomainObject domainObject = await domainObjectRepository.Get<TDomainObject>(domainObjectId).ToTask();
+
+            return domainObject.State<TState>();
         }
     }
 }
