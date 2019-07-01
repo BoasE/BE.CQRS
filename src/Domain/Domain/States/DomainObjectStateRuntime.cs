@@ -6,7 +6,6 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
-using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.States
 {
@@ -86,7 +85,7 @@ namespace BE.CQRS.Domain.States
             if (requiredEventTypes == null || requiredEventTypes.Count <= 0)
                 return events;
 
-            return events.Where(x => requiredEventTypes.Contains(x.GetType()));
+            return events.Where(x => requiredEventTypes.Any(required => required.IsInstanceOfType(x)));
         }
     }
 }
