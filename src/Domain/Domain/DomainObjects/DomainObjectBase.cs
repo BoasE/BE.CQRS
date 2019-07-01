@@ -185,11 +185,24 @@ namespace BE.CQRS.Domain.DomainObjects
                 CommitVersion = itemsWithCommitId.Max(x => x.Headers.GetInteger(EventHeaderKeys.CommitId));
         }
 
-        public async Task<TState> StateFor<TDomainObject, TState>(string domainObjectId)
+        public Task<TState> StateFor<TState>(string domainObjectId)
+            where TState : StateBase, new()
+        {
+            return StateFor<TState>(domainObjectId, GetType());
+        }
+
+        public Task<TState> StateFor<TDomainObject, TState>(string domainObjectId)
             where TDomainObject : class, IDomainObject
             where TState : StateBase, new()
         {
-            TDomainObject domainObject = await domainObjectRepository.Get<TDomainObject>(domainObjectId).ToTask();
+            return StateFor<TState>(domainObjectId, typeof(TDomainObject));
+        }
+
+        public async Task<TState> StateFor<TState>(string domainObjectId, Type domainObjectType)
+            where TState : StateBase, new()
+        {
+            IDomainObject domainObject =
+                await domainObjectRepository.Get(domainObjectId, domainObjectType).ToTask();
 
             return domainObject.State<TState>();
         }
