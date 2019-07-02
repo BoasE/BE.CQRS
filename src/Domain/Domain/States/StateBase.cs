@@ -33,7 +33,7 @@ namespace BE.CQRS.Domain.States
 
             if (IsFrozen)
             {
-                throw new InvalidOperationException("State is freezed and can't be executed again!");
+                throw new InvalidOperationException("State is frozen and can't be executed again!");
             }
 
             foreach (IEvent entry in source)
