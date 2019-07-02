@@ -33,7 +33,7 @@ namespace BE.CQRS.Domain.Tests.StateTests
         }
 
         [Fact]
-        public void FreezedIsTrue()
+        public void FrozenIsTrue()
         {
             Assert.Equal(true, State.IsFrozen);
         }
