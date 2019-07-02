@@ -18,7 +18,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests
                 @event
             };
 
-            sut.ApplyEvents(events, null);
+            sut.ApplyEvents(events);
         }
 
         [Fact]

@@ -32,7 +32,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
         void RevertChanges();
 
-        void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEventTypes);
+        void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEventTypes = null);
 
         void ApplyConfig(EventSourceConfiguration configuration);
 

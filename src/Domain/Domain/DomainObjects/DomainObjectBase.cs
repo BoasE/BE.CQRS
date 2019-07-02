@@ -158,7 +158,7 @@ namespace BE.CQRS.Domain.DomainObjects
             UnCommittedEvents.Clear();
         }
 
-        public void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEvents)
+        public void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEvents = null)
         {
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull().True(i => i.Count > 0);
 
