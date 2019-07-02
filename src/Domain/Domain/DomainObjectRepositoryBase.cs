@@ -76,8 +76,7 @@ namespace BE.CQRS.Domain
             if (!result.HadWrongVersion)
                 foreach (IEvent @event in domainObject.GetUncommittedEvents())
                 {
-                    if (configuration.PostSavePipeline != null)
-                        configuration.PostSavePipeline(@event);
+                    configuration.PostSavePipeline?.Invoke(@event);
 
                     if (configuration.DirectDenormalizers != null)
                         await configuration.DirectDenormalizers.HandleAsync(@event);
@@ -149,7 +148,7 @@ namespace BE.CQRS.Domain
                 .Select(events =>
                     {
                         var instance = configuration.Activator.Resolve<T>(id);
-                        instance.ApplyEvents(events, null);
+                        instance.ApplyEvents(events);
                         instance.ApplyConfig(configuration);
                         return instance;
                     }
@@ -169,7 +168,7 @@ namespace BE.CQRS.Domain
                 .Select(events =>
                     {
                         IDomainObject instance = configuration.Activator.Resolve(domainObjectType, id);
-                        instance.ApplyEvents(events, null);
+                        instance.ApplyEvents(events);
                         instance.ApplyConfig(configuration);
                         return instance;
                     }
@@ -188,7 +187,7 @@ namespace BE.CQRS.Domain
         protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token);
 
-        public abstract Task EnumerateAll(Func<IEvent,Task> callback);
+        public abstract Task EnumerateAll(Func<IEvent, Task> callback);
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {

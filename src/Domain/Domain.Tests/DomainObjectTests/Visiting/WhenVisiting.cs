@@ -22,7 +22,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests.Visiting
                 @event
             };
 
-            sut.ApplyEvents(events,null);
+            sut.ApplyEvents(events);
             sut.ApplyConfig(new EventSourceConfiguration
             {
                 StateActivator = new ActivatorDomainObjectActivator()
