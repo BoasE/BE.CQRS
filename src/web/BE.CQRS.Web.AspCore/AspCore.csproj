@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <PackageId>BE.CQRS.Di.AspCore</PackageId>
+    <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
+    <PackageReleaseNotes>Fluentguard dependency ugprade</PackageReleaseNotes>
+      <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
+    <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
+    <PackageVersion>0.45.1-alpha</PackageVersion>
+    <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
