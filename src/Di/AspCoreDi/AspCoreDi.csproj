@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>BE.CQRS.Di.AspCore</RootNamespace>
     <AssemblyName>BE.CQRS.Di.AspCore</AssemblyName>
     <PackageId>BE.CQRS.Di.AspCore</PackageId>
@@ -12,6 +12,7 @@
     <PackageVersion>0.45.2-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
