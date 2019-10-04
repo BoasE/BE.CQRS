@@ -57,7 +57,7 @@ namespace BE.CQRS.Data.MongoDb
             return repository.SaveAsync(domainObject, versionCheck);
         }
 
-        protected override async IAsyncEnumerator<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
@@ -69,13 +69,13 @@ namespace BE.CQRS.Data.MongoDb
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
                 foreach (IEvent @event in events)
-                    yield return event
+                    yield return @event;
                 ;
             }
         }
 
 
-        public override async IAsyncEnumerator<IEvent> EnumerateAll(CancellationToken token)
+        public override async IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token)
         {
             await foreach (var x in repository.EnumerateAllCommits(token))
             {
@@ -86,23 +86,18 @@ namespace BE.CQRS.Data.MongoDb
             }
         }
 
-        protected override IAsyncEnumerator<IEvent> ReadEvents(string streamName, CancellationToken token)
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
-
             string type = namer.TypeNameByStreamName(streamName);
-            return Observable.Create<IEvent>(async observer =>
-            {
-                await repository.EnumerateCommits(type, id,
-                    x =>
-                    {
-                        IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
-                        foreach (IEvent @event in events)
-                            observer.OnNext(@event);
-                    }, observer.OnCompleted);
-                return () => { };
-            });
+            await foreach (var x in repository.EnumerateCommits(type, id))
+            {
+                IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+
+                foreach (IEvent @event in events)
+                    yield return @event;
+            }
         }
     }
 }

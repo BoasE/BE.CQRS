@@ -106,7 +106,7 @@ namespace Testrunner
 
         private static async Task test(MongoDomainObjectRepository repo)
         {
-            SampleBo existing = await repo.Get<SampleBo>("3").FirstAsync();
+            SampleBo existing = await repo.Get<SampleBo>("3");
         }
 
         private static void ConfigureServices(IServiceCollection services)

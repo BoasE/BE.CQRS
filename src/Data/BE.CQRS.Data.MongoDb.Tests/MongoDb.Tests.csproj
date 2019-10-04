@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>    
-    <TargetFramework>netcoreapp2.0</TargetFramework>    
+    <TargetFramework>netcoreapp3.0</TargetFramework>    
     <RootNamespace>BE.CQRS.Data.MongoDb.Tests</RootNamespace>    
-    <AssemblyName>BE.CQRS.Data.MongoDb.Tests</AssemblyName>
+    <AssemblyName>BE.CQRS.Data.MongoDb.Tests</AssemblyName>    
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>    
-    <TargetFramework>netcoreapp2.0</TargetFramework>    
+    <TargetFramework>netcoreapp3.0</TargetFramework>    
     <RootNamespace>BE.CQRS.Domain.Tests</RootNamespace>    
-    <AssemblyName>BE.CQRS.Domain.Tests</AssemblyName>
+    <AssemblyName>BE.CQRS.Domain.Tests</AssemblyName>    
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

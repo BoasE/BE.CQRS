@@ -24,6 +24,19 @@ namespace BE.CQRS.Data.MongoDb.Commits
             PrepareCollection(Collection).Wait();
         }
 
+        private Task PrepareCollection(IMongoCollection<EventCommit> collection)
+        {
+            List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
+
+            List<Task> tasks = new List<Task>(indexModels.Count);
+            foreach (var model in indexModels)
+            {
+                tasks.Add(collection.Indexes.CreateOneAsync(model));
+            }
+
+            return Task.WhenAll(tasks);
+        }
+
         public Task<bool> Exists(string type, string id)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
@@ -73,11 +86,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return result.VersionEvents;
         }
 
-        private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
-        {
-            List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
-            await indexModels.ForEachAsync(async model => { await collection.Indexes.CreateOneAsync(model); });
-        }
 
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
         {
