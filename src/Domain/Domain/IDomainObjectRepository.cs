@@ -11,15 +11,15 @@ namespace BE.CQRS.Domain
     {
         IDomainObject New(Type domainObjectType, string id);
 
-        IObservable<T> Get<T>(string id) where T : class, IDomainObject;
+        Task<T> Get<T>(string id) where T : class, IDomainObject;
 
-        IObservable<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject;
+        Task<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject;
 
-        IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject;
+        Task<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject;
 
-        IObservable<IDomainObject> Get(string id, Type domainObjectType);
+        Task<IDomainObject> Get(string id, Type domainObjectType);
 
-        IObservable<IDomainObject> Get(string id, Type domainObjectType, CancellationToken token);
+        Task<IDomainObject> Get(string id, Type domainObjectType, CancellationToken token);
 
         Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject;
 
@@ -29,6 +29,6 @@ namespace BE.CQRS.Domain
 
         Task<bool> Exists<T>(string id) where T : class, IDomainObject;
 
-        Task EnumerateAll(Func<IEvent, Task> callback);
+        IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
     }
 }

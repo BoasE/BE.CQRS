@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Commits;
@@ -12,7 +13,8 @@ using MongoDB.Driver;
 
 namespace BE.CQRS.Data.MongoDb
 {
-    public sealed class MongoEventSubscriber : IEventSubscriber //TODO should be transformed to MongoDb Observable Collections
+    public sealed class
+        MongoEventSubscriber : IEventSubscriber //TODO should be transformed to MongoDb Observable Collections
     {
         private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
         private readonly MongoCommitRepository repo;
@@ -31,37 +33,31 @@ namespace BE.CQRS.Data.MongoDb
             repo = new MongoCommitRepository(db);
         }
 
-        public IObservable<OccuredEvent> Start(long? position)
+        public async IAsyncEnumerable<OccuredEvent> Start(long? position) //TODO Check Callers!
         {
             long ordinal = position ?? 0;
             running = true;
-
-            return Observable.Create<OccuredEvent>(async observer =>
+            while (running)
             {
-                while (running)
-                {
-                    int count = 0;
-                    var work = false;
+                int count = 0;
+                var work = false;
 
-                    await repo.EnumerateStartingAfter(ordinal, commit =>
+                await foreach (var commit in repo.EnumerateStartingAfter(ordinal))
+                {
+                    ordinal = commit.Ordinal;
+                    foreach (IEvent @event in mapper.ExtractEvents(commit))
                     {
-                        ordinal = commit.Ordinal;
-                        foreach (IEvent @event in mapper.ExtractEvents(commit))
-                        {
-                            work = true;
-                            var dto = new OccuredEvent(@event.Headers.GetLong(EventHeaderKeys.CommitId), @event);
-                            observer.OnNext(dto);
-                            count++;
-                        }
-                    });
+                        work = true;
+                        var dto = new OccuredEvent(@event.Headers.GetLong(EventHeaderKeys.CommitId), @event);
+                        yield return dto;
+                        count++;
+                    }
 
                     LogProcessedEvents(count);
 
                     await Delay(work);
                 }
-
-                observer.OnCompleted();
-            });
+            }
         }
 
         private void LogProcessedEvents(int count)

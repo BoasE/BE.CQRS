@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
@@ -16,9 +17,12 @@ namespace BE.CQRS.Domain.Denormalization
             this.eventHandler = eventHandler;
         }
 
-        public Task Execute()
+        public async Task Execute(CancellationToken token)
         {
-            return repo.EnumerateAll(Process);
+            await foreach (var item in repo.EnumerateAll(token))
+            {
+                await Process(item);
+            }
         }
 
         private Task Process(IEvent @event)

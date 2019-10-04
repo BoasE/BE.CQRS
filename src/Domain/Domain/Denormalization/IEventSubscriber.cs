@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BE.CQRS.Domain.Denormalization
 {
     public interface IEventSubscriber
     {
-        IObservable<OccuredEvent> Start(long? position);
+        IAsyncEnumerable<OccuredEvent> Start(long? position);
 
         void Stop();
 

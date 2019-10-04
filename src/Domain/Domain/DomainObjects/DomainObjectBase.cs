@@ -158,31 +158,34 @@ namespace BE.CQRS.Domain.DomainObjects
             UnCommittedEvents.Clear();
         }
 
-        public void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEvents = null)
+        public async Task ApplyEvents(IAsyncEnumerable<IEvent> eventsToCommit, ISet<Type> allowedEvents = null)
         {
-            Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull().True(i => i.Count > 0);
+            Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull();
 
             LoadedEventTypes = allowedEvents;
-            ApplyCommitId(eventsToCommit);
 
-            if (allowedEvents != null && allowedEvents.Any())
-                eventsToCommit = eventsToCommit.Where(x =>
+            long maxVersion = 0;
+            List<IEvent> events = new List<IEvent>();
+            await foreach (IEvent @event in eventsToCommit)
+            {
+                var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
+                maxVersion = Math.Max(maxVersion, version);
+
+
+                if (allowedEvents != null && allowedEvents.Any())
                 {
-                    string eventType = x.Headers.GetString(EventHeaderKeys.AssemblyEventType);
+                    string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
+                    if (allowedEvents.Any(type =>
+                        type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
+                        type.AssemblyQualifiedName.Equals(eventType)))
+                    {
+                        @events.Add(@event);
+                    }
+                }
+            }
 
-                    return allowedEvents.Any(type => type.AssemblyQualifiedName.Equals(eventType));
-                }).ToList();
-
-            committedEvents.AddRange(eventsToCommit);
-        }
-
-        private void ApplyCommitId(IEnumerable<IEvent> eventsToCommit)
-        {
-            IEvent[] itemsWithCommitId =
-                eventsToCommit.Where(i => i.Headers.HasKey(EventHeaderKeys.CommitId)).ToArray();
-
-            if (itemsWithCommitId.Any())
-                CommitVersion = itemsWithCommitId.Max(x => x.Headers.GetInteger(EventHeaderKeys.CommitId));
+            CommitVersion = maxVersion;
+            committedEvents.AddRange(events);
         }
 
         public Task<TState> StateFor<TState>(string domainObjectId)
@@ -201,8 +204,7 @@ namespace BE.CQRS.Domain.DomainObjects
         public async Task<TState> StateFor<TState>(string domainObjectId, Type domainObjectType)
             where TState : StateBase, new()
         {
-            IDomainObject domainObject =
-                await domainObjectRepository.Get(domainObjectId, domainObjectType).ToTask();
+            IDomainObject domainObject = await domainObjectRepository.Get(domainObjectId, domainObjectType);
 
             return domainObject.State<TState>();
         }

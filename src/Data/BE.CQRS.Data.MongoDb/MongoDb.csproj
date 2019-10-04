@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>BE.CQRS.Data.MongoDb</AssemblyName>
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
@@ -13,6 +12,8 @@
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />

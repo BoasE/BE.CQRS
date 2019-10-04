@@ -10,7 +10,8 @@
     <PackageVersion>0.69.1-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />
