@@ -163,7 +163,8 @@ namespace BE.CQRS.Domain.DomainObjects
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull();
             LoadedEventTypes = allowedEvents;
 
-               await foreach (IEvent @event in eventsToCommit)
+
+            await foreach (IEvent @event in eventsToCommit)
             {
                 ApplyEvent(@event, allowedEvents);
             }
@@ -171,8 +172,11 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public void ApplyEvent(IEvent @event, ISet<Type> allowedEvents = null)
         {
-            var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
-            CommitVersion = Math.Max(CommitVersion, version);
+            if (@event.Headers.HasKey(EventHeaderKeys.CommitId))
+            {
+                var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
+                CommitVersion = Math.Max(CommitVersion, version);
+            }
 
             string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
             if (allowedEvents == null ||
