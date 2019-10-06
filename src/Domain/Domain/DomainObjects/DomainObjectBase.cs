@@ -161,31 +161,27 @@ namespace BE.CQRS.Domain.DomainObjects
         public async Task ApplyEvents(IAsyncEnumerable<IEvent> eventsToCommit, ISet<Type> allowedEvents = null)
         {
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull();
-
             LoadedEventTypes = allowedEvents;
 
-            long maxVersion = 0;
-            List<IEvent> events = new List<IEvent>();
-            await foreach (IEvent @event in eventsToCommit)
+               await foreach (IEvent @event in eventsToCommit)
             {
-                var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
-                maxVersion = Math.Max(maxVersion, version);
-
-
-                if (allowedEvents != null && allowedEvents.Any())
-                {
-                    string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
-                    if (allowedEvents.Any(type =>
-                        type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
-                        type.AssemblyQualifiedName.Equals(eventType)))
-                    {
-                        @events.Add(@event);
-                    }
-                }
+                ApplyEvent(@event, allowedEvents);
             }
+        }
 
-            CommitVersion = maxVersion;
-            committedEvents.AddRange(events);
+        public void ApplyEvent(IEvent @event, ISet<Type> allowedEvents = null)
+        {
+            var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
+            CommitVersion = Math.Max(CommitVersion, version);
+
+            string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
+            if (allowedEvents == null ||
+                (allowedEvents.Count > 0 && allowedEvents.Any(type =>
+                     type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
+                     type.AssemblyQualifiedName.Equals(eventType))))
+            {
+                @committedEvents.Add(@event);
+            }
         }
 
         public Task<TState> StateFor<TState>(string domainObjectId)
