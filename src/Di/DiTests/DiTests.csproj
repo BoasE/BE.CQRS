@@ -3,6 +3,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <LangVersion>default</LangVersion>
+    <PackageReleaseNotes>Core 3.0 Migration </PackageReleaseNotes>
+    <PackageVersion>0.70.0-alpha</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
