@@ -1,9 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <RootNamespace>BE.CQRS.Di.Unity</RootNamespace>
     <AssemblyName>BE.CQRS.Di.Unity</AssemblyName>
+    
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+    <PackageId>BE.CQRS.Di.Unity</PackageId>
+    <PackageReleaseNotes>Core 3.0 Migration </PackageReleaseNotes>
+    <PackageVersion>0.70.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

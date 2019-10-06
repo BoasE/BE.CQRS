@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Events.Handlers;
 
@@ -26,12 +27,21 @@ namespace BE.CQRS.Domain.Denormalization
         {
             long? pos = await gtw.GetAsync(subscriber.StreamName);
 
-            IObservable<OccuredEvent> feed = subscriber.Start(pos);
+            IAsyncEnumerable<OccuredEvent> eventStream = subscriber.Start(pos);
 
+
+            Subject<OccuredEvent> feed = new Subject<OccuredEvent>();
             feed
                 .Do(x => handler.HandleAsync(x.Event).Wait())
                 .Buffer(updateInvervall)
                 .Subscribe(i => UpdatePosition(i).Wait());
+
+            await foreach (var @event in eventStream)
+            {
+                feed.OnNext(@event);
+            }
+
+            feed.OnCompleted();
         }
 
         private async Task UpdatePosition(IList<OccuredEvent> i)

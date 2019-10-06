@@ -17,12 +17,9 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests.Visiting
             TestDomainObject sut = GetSut("11");
 
             var @event = new TestEvent();
-            var events = new List<IEvent>
-            {
-                @event
-            };
+       
 
-            sut.ApplyEvents(events);
+            sut.ApplyEvent(@event);
             sut.ApplyConfig(new EventSourceConfiguration
             {
                 StateActivator = new ActivatorDomainObjectActivator()

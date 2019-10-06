@@ -1,7 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0,net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+    <PackageId>BE.CQRS.Mapping</PackageId>
+    <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
+    <PackageReleaseNotes>Core 3.0 Migration </PackageReleaseNotes>
+    <PackageVersion>0.70.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

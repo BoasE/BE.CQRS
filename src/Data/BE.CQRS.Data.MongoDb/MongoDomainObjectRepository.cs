@@ -20,7 +20,8 @@ namespace BE.CQRS.Data.MongoDb
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(configuration)
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(
+            configuration)
         {
             repository = new MongoCommitRepository(db);
         }
@@ -56,57 +57,47 @@ namespace BE.CQRS.Data.MongoDb
             return repository.SaveAsync(domainObject, versionCheck);
         }
 
-        protected override IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
+            CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            return Observable.Create<IEvent>(async observer =>
-            {
-                await repository.EnumerateCommits(type, id, eventTypes,
-                    x =>
-                    {
-                        IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
-                        foreach (IEvent @event in events)
-                            observer.OnNext(@event);
-                    }, observer.OnCompleted);
-                return () =>
-                {
-                };
-            });
-        }
-
-        public override Task EnumerateAll(Func<IEvent, Task> callback)
-        {
-            return repository.EnumerateAllCommits(async x =>
+            await foreach (var x in repository.EnumerateCommits(type, id, eventTypes))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
                 foreach (IEvent @event in events)
-                    await callback(@event);
-            });
+                    yield return @event;
+                ;
+            }
         }
 
-        protected override IObservable<IEvent> ReadEvents(string streamName, CancellationToken token)
+
+        public override async IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token)
+        {
+            await foreach (var x in repository.EnumerateAllCommits(token))
+            {
+                IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+
+                foreach (IEvent @event in events)
+                    yield return @event;
+            }
+        }
+
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            return Observable.Create<IEvent>(async observer =>
+            await foreach (var x in repository.EnumerateCommits(type, id))
             {
-                await repository.EnumerateCommits(type, id,
-                    x =>
-                    {
-                        IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+                IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
-                        foreach (IEvent @event in events)
-                            observer.OnNext(@event);
-                    }, observer.OnCompleted);
-                return () =>
-                {
-                };
-            });
+                foreach (IEvent @event in events)
+                    yield return @event;
+            }
         }
     }
 }

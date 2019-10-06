@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
@@ -32,7 +33,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
         void RevertChanges();
 
-        void ApplyEvents(ICollection<IEvent> eventsToCommit, ISet<Type> allowedEventTypes = null);
+        Task ApplyEvents(IAsyncEnumerable<IEvent> eventsToCommit, ISet<Type> allowedEventTypes = null);
 
         void ApplyConfig(EventSourceConfiguration configuration);
 

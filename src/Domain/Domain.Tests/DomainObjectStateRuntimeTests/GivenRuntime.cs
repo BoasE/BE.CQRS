@@ -9,7 +9,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectStateRuntimeTests
         {
             var domainObject = new TestDomainObject("1");
 
-            domainObject.ApplyEvents(new[] { new TestEvent() });
+            domainObject.ApplyEvent( new TestEvent() );
 
             return new DomainObjectStateRuntime(
                 domainObject,

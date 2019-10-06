@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
+using Xunit.Sdk;
 
 namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
@@ -35,20 +36,20 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
             return Task.FromResult(new AppendResult(false, 3));
         }
 
-        protected override IObservable<IEvent> ReadEvents(string streamName, CancellationToken token)
+        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
         {
-            var temp = new List<IEvent>();
-            return temp.ToObservable();
+            throw new NotEmptyException(); //TODO How to return empty?
+            
         }
 
-        protected override IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
+        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
         {
             throw new NotImplementedException();
         }
 
-        public override Task EnumerateAll(Func<IEvent, Task> callback)
+        public override IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token)
         {
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
     }
 }

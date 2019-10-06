@@ -115,64 +115,61 @@ namespace BE.CQRS.Domain
             return ExistsStream(stream);
         }
 
-        public IObservable<T> Get<T>(string id) where T : class, IDomainObject
+        public Task<T> Get<T>(string id) where T : class, IDomainObject
         {
             return Get<T>(id, CancellationToken.None);
         }
 
-        public IObservable<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token)
+        public async Task<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token)
             where T : class, IDomainObject
         {
             Type type = typeof(T);
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
-            return ReadEvents(streamName, eventTypes, token)
-                .ToArray()
-                .Select(events =>
-                    {
-                        var instance = configuration.Activator.Resolve<T>(id);
-                        instance.ApplyEvents(events, eventTypes);
-                        instance.ApplyConfig(configuration);
-                        return instance;
-                    }
-                );
+
+
+            var instance = configuration.Activator.Resolve<T>(id);
+
+            IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
+            await instance.ApplyEvents(events, eventTypes);
+            instance.ApplyConfig(configuration);
+
+            return instance;
         }
 
-        public IObservable<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject
+        public async Task<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject
         {
             Type type = typeof(T);
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
-            return ReadEvents(streamName, token)
-                .ToArray()
-                .Select(events =>
-                    {
-                        var instance = configuration.Activator.Resolve<T>(id);
-                        instance.ApplyEvents(events);
-                        instance.ApplyConfig(configuration);
-                        return instance;
-                    }
-                );
+
+            var instance = configuration.Activator.Resolve<T>(id);
+
+            IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
+            await instance.ApplyEvents(events);
+
+            instance.ApplyConfig(configuration);
+            return instance;
         }
 
-        public IObservable<IDomainObject> Get(string id, Type domainObjectType)
+        public Task<IDomainObject> Get(string id, Type domainObjectType)
         {
             return Get(id, domainObjectType, CancellationToken.None);
         }
 
-        public IObservable<IDomainObject> Get(string id, Type domainObjectType, CancellationToken token)
+        public async Task<IDomainObject> Get(string id, Type domainObjectType, CancellationToken token)
         {
             string streamName = ResolveStreamName(id, domainObjectType);
-            return ReadEvents(streamName, token)
-                .ToArray()
-                .Select(events =>
-                    {
-                        IDomainObject instance = configuration.Activator.Resolve(domainObjectType, id);
-                        instance.ApplyEvents(events);
-                        instance.ApplyConfig(configuration);
-                        return instance;
-                    }
-                );
+
+            IDomainObject instance = configuration.Activator.Resolve(domainObjectType, id);
+
+            IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
+
+       
+            await instance.ApplyEvents(events);
+            instance.ApplyConfig(configuration);
+
+            return instance;
         }
 
         protected abstract Task<bool> ExistsStream(string streamName);
@@ -182,12 +179,12 @@ namespace BE.CQRS.Domain
         protected abstract Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
             where T : class, IDomainObject;
 
-        protected abstract IObservable<IEvent> ReadEvents(string streamName, CancellationToken token);
+        protected abstract IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token);
 
-        protected abstract IObservable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
+        protected abstract IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token);
 
-        public abstract Task EnumerateAll(Func<IEvent, Task> callback);
+        public abstract IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {

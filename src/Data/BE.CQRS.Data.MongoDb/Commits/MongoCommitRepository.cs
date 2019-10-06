@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Domain.DomainObjects;
@@ -23,49 +24,56 @@ namespace BE.CQRS.Data.MongoDb.Commits
             PrepareCollection(Collection).Wait();
         }
 
+        private Task PrepareCollection(IMongoCollection<EventCommit> collection)
+        {
+            List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
+
+            List<Task> tasks = new List<Task>(indexModels.Count);
+            foreach (var model in indexModels)
+            {
+                tasks.Add(collection.Indexes.CreateOneAsync(model));
+            }
+
+            return Task.WhenAll(tasks);
+        }
+
         public Task<bool> Exists(string type, string id)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
             return Collection.Find(query).AnyAsync();
         }
 
-        public async Task EnumerateAllCommits(Func<EventCommit, Task> consumer)
+        public IAsyncEnumerable<EventCommit> EnumerateAllCommits(CancellationToken token)
         {
-            FilterDefinition<EventCommit> query = CommitFilters.All;
-
-            await Collection.Find(query).ForEachAsync(async x => await consumer(x));
+            return Enumerate(CommitFilters.All, token);
         }
 
-        public async Task EnumerateCommits(string type, string id, Action<EventCommit> consumer, Action completed)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
-            await Enumerate(consumer, query);
-
-            completed();
+            return Enumerate(query);
         }
 
-        public async Task EnumerateCommits(string type, string id, ISet<Type> eventTypes, Action<EventCommit> consumer, Action completed)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, ISet<Type> eventTypes)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregateAnyType(type, id, eventTypes);
 
-            await Enumerate(consumer, query);
-
-            completed();
+            return Enumerate(query);
         }
 
-        public async Task EnumerateCommits(string type, string id, ISet<Type> eventTypes, int maxVersion, Action<EventCommit> consumer, Action completed)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, ISet<Type> eventTypes,
+            int maxVersion)
         {
-            FilterDefinition<EventCommit> query = CommitFilters.ByAggregateAnyTypeBelowOrdinal(type, id, eventTypes, maxVersion);
+            FilterDefinition<EventCommit> query =
+                CommitFilters.ByAggregateAnyTypeBelowOrdinal(type, id, eventTypes, maxVersion);
 
-            await Enumerate(consumer, query);
-
-            completed();
+            return Enumerate(query);
         }
 
-        public Task EnumerateStartingAfter(long ordinal, Action<EventCommit> consumer)
+        public IAsyncEnumerable<EventCommit> EnumerateStartingAfter(long ordinal)
         {
             FilterDefinition<EventCommit> query = Filters.Gt(x => x.Ordinal, ordinal);
-            return Enumerate(consumer, query);
+            return Enumerate(query);
         }
 
         public async Task<long> GetVersion(string type, string id)
@@ -78,14 +86,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return result.VersionEvents;
         }
 
-        private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
-        {
-            List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
-            await indexModels.ForEachAsync(async model =>
-            {
-                await collection.Indexes.CreateOneAsync(model);
-            });
-        }
 
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
         {
@@ -158,62 +158,29 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return result;
         }
 
-        private Task Enumerate(Action<EventCommit> consumer, FilterDefinition<EventCommit> query)
+        private IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query)
         {
-            return Collection.Find(query).SortBy(x => x.Ordinal).ForEachAsync(consumer);
+            return Enumerate(query, CancellationToken.None);
+        }
+
+        private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
+            CancellationToken token)
+        {
+            var cursor = await Collection.Find(query).SortBy(x => x.Ordinal).ToCursorAsync();
+
+            while (await cursor.MoveNextAsync(token) && !token.IsCancellationRequested)
+            {
+                foreach (var item in cursor.Current)
+                {
+                    token.ThrowIfCancellationRequested();
+                    yield return item;
+                }
+            }
         }
 
         public Task<long> Count()
         {
             return Collection.CountDocumentsAsync(Filters.Empty);
-        }
-    }
-
-    public static class ListExtensions
-    {
-        public static async Task ForEachAsync<T>(this List<T> enumerable, Action<T> action)
-        {
-            foreach (T item in enumerable)
-                await Task.Run(() =>
-                {
-                    action(item);
-                }).ConfigureAwait(false);
-        }
-    }
-
-    public static class IndexDefinitions
-    {
-        public static IEnumerable<CreateIndexModel<EventCommit>> ProvideIndexModels()
-        {
-            return new List<CreateIndexModel<EventCommit>>
-            {
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.Ordinal), new CreateIndexOptions { Unique = true }),
-
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId)),
-
-                new CreateIndexModel<EventCommit>(Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateType)),
-
-                new CreateIndexModel<EventCommit>(Builders<EventCommit>.IndexKeys
-                    .Descending(x => x.AggregateId).Descending(x => x.AggregateType)),
-
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionEvents), new CreateIndexOptions { Unique = true }),
-
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Descending(x => x.VersionCommit), new CreateIndexOptions { Unique = true }),
-
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Ascending(x => x.AllEventTypes)),
-
-                new CreateIndexModel<EventCommit>(
-                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Ascending(x => x.AllEventTypes).Descending(x => x.Ordinal))
-            };
         }
     }
 }

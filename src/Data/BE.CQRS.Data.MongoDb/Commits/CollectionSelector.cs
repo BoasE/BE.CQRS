@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BE.FluentGuard;
@@ -9,7 +10,10 @@ namespace BE.CQRS.Data.MongoDb.Commits
     public sealed class CollectionSelector
     {
         private static readonly IndexKeysDefinitionBuilder<EventCommit> Indexes = Builders<EventCommit>.IndexKeys;
-        private readonly ConcurrentDictionary<string, IMongoCollection<EventCommit>> cache = new ConcurrentDictionary<string, IMongoCollection<EventCommit>>();
+
+        private readonly ConcurrentDictionary<string, IMongoCollection<EventCommit>> cache =
+            new ConcurrentDictionary<string, IMongoCollection<EventCommit>>();
+
         private readonly IMongoDatabase db;
 
         public CollectionSelector(IMongoDatabase db)
@@ -35,14 +39,17 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return collection;
         }
 
-        private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
+        private Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
             var indexModels = IndexDefinitions.ProvideIndexModels().ToList();
 
-            await indexModels.ForEachAsync(async model =>
+            List<Task> tasks = new List<Task>(indexModels.Count);
+            foreach (var model in indexModels)
             {
-                await collection.Indexes.CreateOneAsync(model);
-            });
+                tasks.Add(collection.Indexes.CreateOneAsync(model));
+            }
+
+            return Task.WhenAll(tasks);
         }
 
         public static string GetCollectionNameByCommit(string type)

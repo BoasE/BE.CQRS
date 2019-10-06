@@ -106,7 +106,7 @@ namespace Testrunner
 
         private static async Task test(MongoDomainObjectRepository repo)
         {
-            SampleBo existing = await repo.Get<SampleBo>("3").FirstAsync();
+            SampleBo existing = await repo.Get<SampleBo>("3");
         }
 
         private static void ConfigureServices(IServiceCollection services)
@@ -116,8 +116,8 @@ namespace Testrunner
 
             IMongoDatabase db =
                 new MongoClient(
-                        "mongodb://localhost:27017/?readPreference=primary")
-                    .GetDatabase("eventTests");
+                        "mongodb+srv://soccercise_api:5ZBtChpPcvVEK0FN@cluster0-fyly5.gcp.mongodb.net/test?retryWrites=true")
+                    .GetDatabase("eventTests2");
 
             services.AddSingleton<IMongoDatabase>(db);
         }
