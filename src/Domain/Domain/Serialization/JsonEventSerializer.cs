@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using BE.CQRS.Domain.Events;
 using BE.FluentGuard;
-using Newtonsoft.Json;
 
 namespace BE.CQRS.Domain.Serialization
 {
@@ -10,9 +10,8 @@ namespace BE.CQRS.Domain.Serialization
     {
         private readonly IEventTypeResolver eventTypeResolver;
 
-        internal static JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings
+        private readonly JsonSerializerOptions options = new JsonSerializerOptions()
         {
-            ContractResolver = new EventContractResolver()
         };
 
         public JsonEventSerializer(IEventTypeResolver eventTypeResolver)
@@ -22,8 +21,9 @@ namespace BE.CQRS.Domain.Serialization
 
         private EventHeader DeserializeHeader(string metaData)
         {
-            var vals = JsonConvert.DeserializeObject<Dictionary<string, string>>(metaData, SerializerSettings);
-            return new EventHeader(vals);
+            Dictionary<string, string> result = JsonSerializer.Deserialize<Dictionary<string, string>>(metaData);
+
+            return new EventHeader(result);
         }
 
         public IEvent DeserializeEvent(Dictionary<string, string> headerData, string eventData)
@@ -31,7 +31,7 @@ namespace BE.CQRS.Domain.Serialization
             var header = new EventHeader(headerData);
             Type type = eventTypeResolver.ResolveType(header);
 
-            var result = JsonConvert.DeserializeObject(eventData, type, SerializerSettings) as IEvent;
+            var result = JsonSerializer.Deserialize(eventData, type) as IEvent;
 
             result?.Headers.ApplyEventHeader(header);
 
@@ -43,9 +43,7 @@ namespace BE.CQRS.Domain.Serialization
             EventHeader header = DeserializeHeader(headerData);
 
             Type type = eventTypeResolver.ResolveType(header);
-
-            var result = JsonConvert.DeserializeObject(eventData, type, SerializerSettings) as IEvent;
-
+            var result = JsonSerializer.Deserialize(eventData, type) as IEvent;
             result?.Headers.ApplyEventHeader(header);
 
             return result;
@@ -54,15 +52,16 @@ namespace BE.CQRS.Domain.Serialization
         public string SerializeHeader(EventHeader headers)
         {
             Precondition.For(headers, nameof(headers)).NotNull();
-
-            return JsonConvert.SerializeObject(headers.ToDictionary(), SerializerSettings);
+            string result = JsonSerializer.Serialize(headers.ToDictionary());
+            return result;
         }
 
         public string SerializeEvent(IEvent @event)
         {
             Precondition.For(@event, nameof(@event)).NotNull();
 
-            return JsonConvert.SerializeObject(@event, SerializerSettings);
+            string result = JsonSerializer.Serialize(@event);
+            return result;
         }
     }
 }
