@@ -46,6 +46,12 @@ namespace BE.CQRS.Data.MongoDb
             return repository.Exists(type, id);
         }
 
+        protected override Task RemoveStream(Type domainObjectType, string id)
+        {
+            return repository.Delete(domainObjectType.FullName, id);
+        }
+        
+
         protected override string ResolveStreamName(string id, Type aggregateType)
         {
             return namer.ResolveStreamName(id, aggregateType);

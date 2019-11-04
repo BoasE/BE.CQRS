@@ -7,7 +7,7 @@
     <PackageReleaseNotes>Upgraded Fluentguard dependency </PackageReleaseNotes>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
-    <PackageVersion>0.69.1-alpha</PackageVersion>
+    <PackageVersion>0.69.2-alpha</PackageVersion>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TargetFramework>netstandard2.0</TargetFramework>

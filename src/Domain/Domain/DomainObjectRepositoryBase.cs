@@ -90,6 +90,13 @@ namespace BE.CQRS.Domain
             return result;
         }
 
+        public Task Remove<T>(string id) where T : class, IDomainObject
+        {
+            return RemoveStream(typeof(T), id);
+        }
+
+        protected abstract Task RemoveStream(Type domainObjectType, string id);
+
         public Task<long> GetVersion<T>(string id) where T : class, IDomainObject
         {
             string streamName = ResolveStreamName(id, typeof(T));

@@ -34,14 +34,11 @@ namespace Testrunner
             {
                 Activator = new ActivatorDomainObjectActivator(),
                 LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>(),
-                StateActivator =  new ActivatorDomainObjectActivator()
+                StateActivator = new ActivatorDomainObjectActivator()
             };
 
             var repo = new MongoDomainObjectRepository(cfg, db);
 
-            var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
-            bo2.Next();
-            
             Console.WriteLine("next");
             Console.ReadLine();
 
@@ -49,9 +46,14 @@ namespace Testrunner
             bo.ApplyConfig(cfg);
             bo.Execute();
 
+            var id = bo.Id;
+            
             bo.Next();
 
             repo.SaveAsync(bo).Wait();
+            
+            await repo.Remove<SampleBo>(id);
+            
             repo.SaveAsync(bo).Wait();
 
             bo.Execute();

@@ -15,6 +15,11 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
         {
         }
 
+        protected override Task RemoveStream(Type domainObjectType, string id)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Task<long> GetVersion(string streamNaeme)
         {
             return Task.FromResult(2L);

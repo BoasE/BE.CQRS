@@ -30,5 +30,7 @@ namespace BE.CQRS.Domain
         Task<bool> Exists<T>(string id) where T : class, IDomainObject;
 
         Task EnumerateAll(Func<IEvent, Task> callback);
+
+        Task Remove<T>(string id) where T : class, IDomainObject;
     }
 }

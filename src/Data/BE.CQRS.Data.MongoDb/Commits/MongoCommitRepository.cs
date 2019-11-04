@@ -167,6 +167,13 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             return Collection.CountDocumentsAsync(Filters.Empty);
         }
+
+        public Task Delete(string type, string id)
+        {
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
+
+            return Collection.DeleteManyAsync(query);
+        }
     }
 
     public static class ListExtensions
