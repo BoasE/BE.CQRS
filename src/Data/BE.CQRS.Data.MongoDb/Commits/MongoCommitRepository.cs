@@ -33,7 +33,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             FilterDefinition<EventCommit> query = CommitFilters.All;
 
-            await Collection.Find(query).ForEachAsync(async x => await consumer(x));
+            await Collection.Find(query, new FindOptions() { NoCursorTimeout = true, MaxTime = TimeSpan.MaxValue, MaxAwaitTime = TimeSpan.MaxValue }).ForEachAsync(async x => await consumer(x));
         }
 
         public async Task EnumerateCommits(string type, string id, Action<EventCommit> consumer, Action completed)
