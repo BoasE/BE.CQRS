@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Commits;
@@ -47,6 +46,11 @@ namespace BE.CQRS.Data.MongoDb
             return repository.Exists(type, id);
         }
 
+        protected override Task RemoveStream(Type domainObjectType, string id)
+        {
+            return repository.Delete(domainObjectType.FullName, id);
+        }
+
         protected override string ResolveStreamName(string id, Type aggregateType)
         {
             return namer.ResolveStreamName(id, aggregateType);
@@ -63,8 +67,7 @@ namespace BE.CQRS.Data.MongoDb
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-
-            await foreach (var x in repository.EnumerateCommits(type, id, eventTypes))
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id, eventTypes))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
@@ -74,10 +77,9 @@ namespace BE.CQRS.Data.MongoDb
             }
         }
 
-
         public override async IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token)
         {
-            await foreach (var x in repository.EnumerateAllCommits(token))
+            await foreach (EventCommit x in repository.EnumerateAllCommits(token))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
@@ -91,7 +93,7 @@ namespace BE.CQRS.Data.MongoDb
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            await foreach (var x in repository.EnumerateCommits(type, id))
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 

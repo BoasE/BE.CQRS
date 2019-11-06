@@ -90,6 +90,13 @@ namespace BE.CQRS.Domain
             return result;
         }
 
+        public Task Remove<T>(string id) where T : class, IDomainObject
+        {
+            return RemoveStream(typeof(T), id);
+        }
+
+        protected abstract Task RemoveStream(Type domainObjectType, string id);
+
         public Task<long> GetVersion<T>(string id) where T : class, IDomainObject
         {
             string streamName = ResolveStreamName(id, typeof(T));
@@ -126,7 +133,6 @@ namespace BE.CQRS.Domain
             Type type = typeof(T);
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
-
 
             var instance = configuration.Activator.Resolve<T>(id);
 
@@ -165,7 +171,6 @@ namespace BE.CQRS.Domain
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
 
-       
             await instance.ApplyEvents(events);
             instance.ApplyConfig(configuration);
 

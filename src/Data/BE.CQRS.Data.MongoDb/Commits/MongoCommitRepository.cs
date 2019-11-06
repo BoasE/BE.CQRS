@@ -28,11 +28,9 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
 
-            List<Task> tasks = new List<Task>(indexModels.Count);
-            foreach (var model in indexModels)
-            {
+            var tasks = new List<Task>(indexModels.Count);
+            foreach (CreateIndexModel<EventCommit> model in indexModels)
                 tasks.Add(collection.Indexes.CreateOneAsync(model));
-            }
 
             return Task.WhenAll(tasks);
         }
@@ -85,7 +83,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
             return result.VersionEvents;
         }
-
 
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
         {
@@ -166,16 +163,21 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
             CancellationToken token)
         {
-            var cursor = await Collection.Find(query).SortBy(x => x.Ordinal).ToCursorAsync();
+            IAsyncCursor<EventCommit> cursor = await Collection.Find(query).SortBy(x => x.Ordinal).ToCursorAsync();
 
             while (await cursor.MoveNextAsync(token) && !token.IsCancellationRequested)
-            {
-                foreach (var item in cursor.Current)
+                foreach (EventCommit item in cursor.Current)
                 {
                     token.ThrowIfCancellationRequested();
                     yield return item;
                 }
-            }
+        }
+
+        public Task Delete(string type, string id)
+        {
+            FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
+
+            return Collection.DeleteManyAsync(query);
         }
 
         public Task<long> Count()

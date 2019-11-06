@@ -30,5 +30,7 @@ namespace BE.CQRS.Domain
         Task<bool> Exists<T>(string id) where T : class, IDomainObject;
 
         IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
+        
+        Task Remove<T>(string id) where T : class, IDomainObject;
     }
 }
