@@ -2,12 +2,16 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace BE.CQRS.Domain.Events
 {
     public sealed class EventHeader
     {
         private readonly ConcurrentDictionary<string, string> values = new ConcurrentDictionary<string, string>();
+
+        [JsonIgnore]
+        public int Count => values.Count;
 
         public string AssemblyEventType => GetString(EventHeaderKeys.AssemblyEventType);
 
@@ -132,14 +136,17 @@ namespace BE.CQRS.Domain.Events
             {
                 return value;
             }
+
             if (!string.IsNullOrWhiteSpace(value))
             {
                 if (type == typeof(Guid))
                 {
                     return Guid.Parse(value);
                 }
+
                 return Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
             }
+
             return Activator.CreateInstance(type);
         }
 
