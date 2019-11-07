@@ -14,7 +14,7 @@ namespace BE.CQRS.Domain.Events
             Headers.Set(EventHeaderKeys.EventType, type.Name);
             Headers.Set(EventHeaderKeys.AssemblyEventType, GetType().AssemblyQualifiedName);
             Headers.Set(EventHeaderKeys.EventId, Guid.NewGuid());
-            Headers.Set(EventHeaderKeys.EventFrameworkVersion,CurrentVersion.FrameworkEventVersion);
+            Headers.Set(EventHeaderKeys.EventFrameworkVersion,CurrentVersion.FrameworkEventVersion.Value);
         }
 
         protected EventBase(EventHeader headers) : this()

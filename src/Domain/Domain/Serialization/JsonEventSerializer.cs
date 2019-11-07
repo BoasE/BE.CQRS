@@ -60,8 +60,7 @@ namespace BE.CQRS.Domain.Serialization
         {
             Precondition.For(@event, nameof(@event)).NotNull();
 
-            var options = new JsonSerializerOptions();
-            string result = JsonSerializer.Serialize(@event,@event.GetType());
+            string result = JsonSerializer.Serialize(@event, @event.GetType());
             return result;
         }
     }

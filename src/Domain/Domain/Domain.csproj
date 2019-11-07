@@ -6,6 +6,7 @@
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
     <PackageReleaseNotes>Serialization fix. Setting Event Versions</PackageReleaseNotes>
     <PackageVersion>0.70.3-alpha</PackageVersion>
+    <Version>0.70.3</Version>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
