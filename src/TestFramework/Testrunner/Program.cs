@@ -14,7 +14,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Reactive;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
+using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.Serialization;
 using Serilog;
 
 namespace Testrunner
@@ -34,14 +38,23 @@ namespace Testrunner
             {
                 Activator = new ActivatorDomainObjectActivator(),
                 LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>(),
-                StateActivator =  new ActivatorDomainObjectActivator()
+                StateActivator = new ActivatorDomainObjectActivator()
             };
 
+            var ser = new JsonEventSerializer(new EventTypeResolver());
+            var dto = new MyEvent() { Id = "2" };
+            dto.Headers.Set(EventHeaderKeys.AggregateId, "a");
+            dto.Headers.Set(EventHeaderKeys.Created, DateTime.Now);
+
+            var foo = ser.SerializeEvent(dto);
+            var header = ser.SerializeHeader(dto.Headers);
+
+            var test = JsonSerializer.Serialize(dto, dto.GetType());
             var repo = new MongoDomainObjectRepository(cfg, db);
 
             var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
             bo2.Next();
-            
+
             Console.WriteLine("next");
             Console.ReadLine();
 
@@ -116,7 +129,7 @@ namespace Testrunner
 
             IMongoDatabase db =
                 new MongoClient(
-                        "mongodb+srv://localhost:27015")
+                        "mongodb://localhost:27017/?connectTimeoutMS=10000")
                     .GetDatabase("eventTests2");
 
             services.AddSingleton<IMongoDatabase>(db);

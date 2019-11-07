@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace BE.CQRS.Domain.Events
 {
     public abstract class EventBase : IEvent
     {
+        [JsonIgnore]
         public EventHeader Headers { get; } = new EventHeader();
 
         protected EventBase()
@@ -12,6 +14,7 @@ namespace BE.CQRS.Domain.Events
             Headers.Set(EventHeaderKeys.EventType, type.Name);
             Headers.Set(EventHeaderKeys.AssemblyEventType, GetType().AssemblyQualifiedName);
             Headers.Set(EventHeaderKeys.EventId, Guid.NewGuid());
+            Headers.Set(EventHeaderKeys.EventFrameworkVersion,CurrentVersion.FrameworkEventVersion);
         }
 
         protected EventBase(EventHeader headers) : this()
