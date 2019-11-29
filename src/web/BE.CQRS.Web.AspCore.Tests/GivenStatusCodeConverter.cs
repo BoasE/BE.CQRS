@@ -9,7 +9,7 @@ namespace AspCore.Tests
         [Fact]
         public void AcceptedWhenNoError()
         {
-            var result = new AppendResult(false, 14);
+            var result = new AppendResult("1", false, 14);
 
             HttpStatusCode code = StatusCodeConverter.From(result);
 
@@ -19,7 +19,7 @@ namespace AspCore.Tests
         [Fact]
         public void ConflictWhenVersionError()
         {
-            var result = new AppendResult(true, 14);
+            var result = new AppendResult("", true, 14);
 
             HttpStatusCode code = StatusCodeConverter.From(result);
 

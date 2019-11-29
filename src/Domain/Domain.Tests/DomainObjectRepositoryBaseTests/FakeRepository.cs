@@ -16,6 +16,11 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
         {
         }
 
+        protected override Task<List<IEvent>> ByAppendResult(AppendResult result)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Task RemoveStream(Type domainObjectType, string id)
         {
             throw new NotImplementedException();
@@ -38,7 +43,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
         protected override Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
         {
-            return Task.FromResult(new AppendResult(false, 3));
+            return Task.FromResult(new AppendResult("12",false, 3));
         }
 
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)

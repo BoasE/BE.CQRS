@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Commits;
@@ -9,6 +10,7 @@ using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BE.CQRS.Data.MongoDb
@@ -66,7 +68,7 @@ namespace BE.CQRS.Data.MongoDb
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            await foreach (EventCommit x in repository.EnumerateCommits(type, id,maxVersion,token))
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id, maxVersion, token))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
@@ -74,6 +76,14 @@ namespace BE.CQRS.Data.MongoDb
                     yield return @event;
                 ;
             }
+        }
+
+        protected override async Task<List<IEvent>> ByAppendResult(AppendResult result)
+        {
+            var commit = await repository.ByInternalId(result.CommitId);
+
+            List<IEvent> events = mapper.ExtractEvents(commit).ToList();
+            return events;
         }
 
         protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
@@ -108,7 +118,7 @@ namespace BE.CQRS.Data.MongoDb
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            await foreach (EventCommit x in repository.EnumerateCommits(type, id,token))
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id, token))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 

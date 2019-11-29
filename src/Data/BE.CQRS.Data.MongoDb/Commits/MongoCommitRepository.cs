@@ -8,6 +8,7 @@ using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BE.CQRS.Data.MongoDb.Commits
@@ -100,7 +101,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
             if (commit.Events.Count == 0)
             {
                 Debug.WriteLine("Nothing to Update", "BE.CQRS");
-                return new AppendResult(false, commit.VersionEvents);
+                return new AppendResult("", false, commit.VersionEvents);
             }
 
             Debug.WriteLine($"Saving domainObject \"{domainObject.Id}\" - VersionCheck {versionCheck}", "BE.CQRS");
@@ -127,7 +128,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 throw;
             }
 
-            return new AppendResult(false, commit.VersionCommit);
+            return new AppendResult(commit.Id.ToString(), false, commit.VersionCommit);
         }
 
         [Obsolete]
@@ -190,6 +191,16 @@ namespace BE.CQRS.Data.MongoDb.Commits
         public Task<long> Count()
         {
             return Collection.CountDocumentsAsync(Filters.Empty);
+        }
+
+        public async Task<EventCommit> ByInternalId(string commitId)
+        {
+            BsonObjectId id = BsonObjectId.Create(commitId);
+            var query = Filters.Eq(x => x.Id, id);
+
+            var commit = await Collection.Find(query).SortBy(x => x.Ordinal).FirstAsync();
+
+            return commit;
         }
     }
 }

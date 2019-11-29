@@ -72,14 +72,20 @@ namespace BE.CQRS.Domain
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
+            //especially for direct denormalizer its important to continue on the state that wasreally  persisted.
+            //e.g. in case of persistance errors. otherweise we don't have a real projection of persisted events /auditlog
+            List<IEvent> persistedEvents = await ByAppendResult(result);
 
             if (!result.HadWrongVersion)
-                foreach (IEvent @event in domainObject.GetUncommittedEvents())
+                foreach (IEvent @event in persistedEvents)
                 {
                     configuration.PostSavePipeline?.Invoke(@event);
 
+                    //Todo reload event to make sure the projection is on same stage
                     if (configuration.DirectDenormalizers != null)
+                    {
                         await configuration.DirectDenormalizers.HandleAsync(@event);
+                    }
                 }
 
             domainObject.CommitChanges(result.CurrentVersion);
@@ -89,6 +95,8 @@ namespace BE.CQRS.Domain
                 watch.ElapsedMilliseconds);
             return result;
         }
+
+        protected abstract Task<List<IEvent>> ByAppendResult(AppendResult result);
 
         public Task Remove<T>(string id) where T : class, IDomainObject
         {
