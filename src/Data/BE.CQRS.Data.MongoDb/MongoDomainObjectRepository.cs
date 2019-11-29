@@ -61,6 +61,21 @@ namespace BE.CQRS.Data.MongoDb
             return repository.SaveAsync(domainObject, versionCheck);
         }
 
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion, CancellationToken token)
+        {
+            string id = namer.IdByStreamName(streamName);
+            string type = namer.TypeNameByStreamName(streamName);
+
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id,maxVersion,token))
+            {
+                IEnumerable<IEvent> events = mapper.ExtractEvents(x);
+
+                foreach (IEvent @event in events)
+                    yield return @event;
+                ;
+            }
+        }
+
         protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token)
         {
@@ -93,7 +108,7 @@ namespace BE.CQRS.Data.MongoDb
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
 
-            await foreach (EventCommit x in repository.EnumerateCommits(type, id))
+            await foreach (EventCommit x in repository.EnumerateCommits(type, id,token))
             {
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 

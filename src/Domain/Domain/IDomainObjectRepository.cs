@@ -13,6 +13,9 @@ namespace BE.CQRS.Domain
 
         Task<T> Get<T>(string id) where T : class, IDomainObject;
 
+        Task<T> Get<T>(string id,long version) where T : class, IDomainObject;
+        Task<T> Get<T>(string id,long version,CancellationToken token) where T : class, IDomainObject;
+        
         Task<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject;
 
         Task<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject;

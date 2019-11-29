@@ -47,6 +47,11 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
             
         }
 
+        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
         {
             throw new NotImplementedException();

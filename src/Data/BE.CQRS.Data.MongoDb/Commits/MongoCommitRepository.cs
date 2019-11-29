@@ -46,10 +46,17 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return Enumerate(CommitFilters.All, token);
         }
 
-        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, CancellationToken token)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
-            return Enumerate(query);
+            return Enumerate(query, token);
+        }
+
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, long maxversion, CancellationToken token)
+        {
+            FilterDefinition<EventCommit> query = Filters.And(CommitFilters.ByAggregate(type, id), Filters.Lte(x => x.VersionEvents, maxversion));
+
+            return Enumerate(query, token);
         }
 
         public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, ISet<Type> eventTypes)

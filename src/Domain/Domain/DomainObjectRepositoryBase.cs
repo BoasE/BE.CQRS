@@ -127,6 +127,11 @@ namespace BE.CQRS.Domain
             return Get<T>(id, CancellationToken.None);
         }
 
+        public Task<T> Get<T>(string id, long version) where T : class, IDomainObject
+        {
+            return Get<T>(id, version, CancellationToken.None);
+        }
+
         public async Task<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token)
             where T : class, IDomainObject
         {
@@ -152,6 +157,21 @@ namespace BE.CQRS.Domain
             var instance = configuration.Activator.Resolve<T>(id);
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
+            await instance.ApplyEvents(events);
+
+            instance.ApplyConfig(configuration);
+            return instance;
+        }
+
+        public async Task<T> Get<T>(string id, long version, CancellationToken token) where T : class, IDomainObject
+        {
+            Type type = typeof(T);
+            string streamName = ResolveStreamName(id, type);
+            logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
+
+            var instance = configuration.Activator.Resolve<T>(id);
+
+            IAsyncEnumerable<IEvent> events = ReadEvents(streamName, version, token);
             await instance.ApplyEvents(events);
 
             instance.ApplyConfig(configuration);
@@ -185,6 +205,8 @@ namespace BE.CQRS.Domain
             where T : class, IDomainObject;
 
         protected abstract IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token);
+
+        protected abstract IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion, CancellationToken token);
 
         protected abstract IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
             CancellationToken token);
