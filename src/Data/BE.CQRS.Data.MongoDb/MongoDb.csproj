@@ -5,7 +5,7 @@
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
     <PackageReleaseNotes>Reading do with a specific version</PackageReleaseNotes>
-    <PackageVersion>0.70.2-alpha</PackageVersion>
+    <PackageVersion>0.70.3-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>

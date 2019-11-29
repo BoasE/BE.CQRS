@@ -11,7 +11,7 @@ namespace BE.CQRS.Domain
 
         internal static string ResolveVersion()
         {
-            return typeof(CurrentVersion).Assembly.GetName().Version.ToString();
+            return "0.70.5";
         }
     }
 }
