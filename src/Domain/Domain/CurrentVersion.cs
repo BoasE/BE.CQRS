@@ -11,7 +11,7 @@ namespace BE.CQRS.Domain
 
         internal static string ResolveVersion()
         {
-            return "0.70.5";
+            return "0.70.7";
         }
     }
 }

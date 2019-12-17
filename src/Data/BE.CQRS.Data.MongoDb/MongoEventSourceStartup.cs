@@ -1,5 +1,6 @@
 ﻿using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using BE.FluentGuard;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ namespace BE.CQRS.Data.MongoDb
         }
 
         public static DenormalizerConfiguration SetMongoDbEventSubscriber(this DenormalizerConfiguration config,
-            IMongoDatabase db, ILoggerFactory loggerFactory = null)
+            IMongoDatabase db, IEventHash hash, ILoggerFactory loggerFactory = null)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => db).NotNull();
@@ -44,7 +45,7 @@ namespace BE.CQRS.Data.MongoDb
                 loggerFactory = new NoopLoggerFactory();
             }
 
-            config.Subscriber = new MongoEventSubscriber(db, loggerFactory);
+            config.Subscriber = new MongoEventSubscriber(db, loggerFactory, hash);
             return config;
         }
     }

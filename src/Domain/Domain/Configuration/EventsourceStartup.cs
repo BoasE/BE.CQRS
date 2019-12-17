@@ -2,6 +2,7 @@
 using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.Events;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ namespace BE.CQRS.Domain.Configuration
             collection.AddSingleton(config.Activator);
             collection.AddSingleton(config.CommandBus);
             collection.AddSingleton(config.DomainObjectRepository);
+            collection.AddSingleton<IEventHash>(config.EventHash);
 
             if (config.EventMapper != null)
             {

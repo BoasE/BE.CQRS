@@ -16,21 +16,23 @@ namespace BE.CQRS.Data.MongoDb
     public sealed class
         MongoEventSubscriber : IEventSubscriber //TODO should be transformed to MongoDb Observable Collections
     {
-        private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
+        private readonly EventMapper mapper;
         private readonly MongoCommitRepository repo;
         private bool running;
         private readonly TimeSpan waitTime = TimeSpan.FromMilliseconds(250);
         private readonly TimeSpan idleTime = TimeSpan.FromMilliseconds(500);
         private readonly ILogger<MongoEventSubscriber> logger;
+
         public string StreamName { get; } = "All";
 
-        public MongoEventSubscriber(IMongoDatabase db, ILoggerFactory loggerFactory)
+        public MongoEventSubscriber(IMongoDatabase db, ILoggerFactory loggerFactory, IEventHash hash)
         {
             Precondition.For(db, nameof(db)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
+            mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()), hash);
             logger = loggerFactory.CreateLogger<MongoEventSubscriber>();
-            repo = new MongoCommitRepository(db);
+            repo = new MongoCommitRepository(db,hash);
         }
 
         public async IAsyncEnumerable<OccuredEvent> Start(long? position) //TODO Check Callers!

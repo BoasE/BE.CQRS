@@ -33,5 +33,7 @@ namespace BE.CQRS.Domain.Configuration
         public Action<IEvent> PostSavePipeline { get; set; }
 
         public IEventHandler DirectDenormalizers { get; set; }
+
+        public IEventHash EventHash { get; set; } = new ShaEventHash("gsgdfs4356hjk%$§§!");
     }
 }

@@ -12,7 +12,8 @@
         public const string AssemblyEventType = "AssemblyEventType";
         public const string EventNumber = "EventNumber";
         public const string Timestamp = "Timestamp";
-
         public const string EventFrameworkVersion = "efv";
+        public const string BodyHash = "hab";
+        public const string HeaderHash = "hah";
     }
 }

@@ -43,7 +43,7 @@ namespace Testrunner
 
             var ser = new JsonEventSerializer(new EventTypeResolver());
             var dto = new MyEvent() { Id = "2" };
-             dto = new MyEvent() { Id = "3" };
+            dto = new MyEvent() { Id = "3" };
             dto.Headers.Set(EventHeaderKeys.AggregateId, "a");
             dto.Headers.Set(EventHeaderKeys.Created, DateTime.Now);
 
@@ -108,7 +108,7 @@ namespace Testrunner
         {
             var db = provider.GetRequiredService<IMongoDatabase>();
             var logger = provider.GetRequiredService<ILoggerFactory>();
-            var subs = new MongoEventSubscriber(db, logger);
+            var subs = new MongoEventSubscriber(db, logger, provider.GetRequiredService<IEventHash>());
             var pos = new MongoStreamPositionGateway(db, null);
             var normalizerFactory = new Func<Type, object>(Activator.CreateInstance);
 

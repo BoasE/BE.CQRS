@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace BE.CQRS.Data.MongoDb.Commits
 {
+    [BsonIgnoreExtraElements]
     public sealed class EventDto
     {
         [BsonElement("id")]
@@ -16,5 +17,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
         [BsonRequired]
         [BsonElement("b")]
         public string Body { get; set; }
+
     }
 }

@@ -11,10 +11,12 @@ namespace BE.CQRS.Data.MongoDb.Repositories
     public sealed class EventMapper
     {
         private readonly IEventSerializer serializer;
+        private readonly IEventHash eventHash;
 
-        public EventMapper(IEventSerializer serializer)
+        public EventMapper(IEventSerializer serializer, IEventHash hash)
         {
             this.serializer = serializer;
+            this.eventHash = hash;
         }
 
         public EventCommit ToCommit(string domainobjectId, Type domainObjectType, long originVersion, long commitVersion,
@@ -78,7 +80,15 @@ namespace BE.CQRS.Data.MongoDb.Repositories
                     Id = @event.Headers.GetString(EventHeaderKeys.EventId)
                 };
 
+                var bodyHash = eventHash.HashString(dto.Body);
+
+                string header = string.Join('-', dto.Headers.Values);
+                var headerHash = eventHash.HashString(header);
+
+                dto.Headers.Add(EventHeaderKeys.BodyHash, bodyHash);
+                dto.Headers.Add(EventHeaderKeys.HeaderHash, headerHash);
                 dto.Headers.Remove(EventHeaderKeys.AggregateId);
+
                 items.Add(i.ToString(), dto);
             }
 

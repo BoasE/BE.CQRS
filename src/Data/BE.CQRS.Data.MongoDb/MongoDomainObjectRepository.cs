@@ -19,12 +19,13 @@ namespace BE.CQRS.Data.MongoDb
     {
         private readonly MongoCommitRepository repository;
         private readonly StreamNamer namer = new StreamNamer();
-        private readonly EventMapper mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()));
+        private readonly EventMapper mapper;
 
         public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(
             configuration)
         {
-            repository = new MongoCommitRepository(db);
+            mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()),configuration.EventHash);
+            repository = new MongoCommitRepository(db,configuration.EventHash);
         }
 
         public Task<long> GetCommitCount()
