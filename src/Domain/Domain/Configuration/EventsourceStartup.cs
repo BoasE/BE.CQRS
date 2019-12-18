@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
@@ -17,10 +18,17 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => config.Activator).NotNull();
             Precondition.For(() => config.CommandBus).NotNull();
             Precondition.For(() => config.DomainObjectRepository).NotNull();
-
+            
+            if (config.EventHash == null)
+            {
+                throw  new InvalidOperationException($"EventHash must be set. Call \"{nameof(HashEvents)}\" before!");
+            }
+            
             collection.AddSingleton(config.Activator);
             collection.AddSingleton(config.CommandBus);
             collection.AddSingleton(config.DomainObjectRepository);
+
+          
             collection.AddSingleton<IEventHash>(config.EventHash);
 
             if (config.EventMapper != null)
@@ -53,6 +61,12 @@ namespace BE.CQRS.Domain.Configuration
                 config.LoggerFactory,
                 config.DomainObjectAssemblies);
 
+            return config;
+        }
+        public static EventSourceConfiguration HashEvents(this EventSourceConfiguration config, string secret)
+        {
+            Precondition.For(secret, nameof(secret)).NotNullOrWhiteSpace();
+            config.EventHash = new ShaEventHash(secret);
             return config;
         }
 

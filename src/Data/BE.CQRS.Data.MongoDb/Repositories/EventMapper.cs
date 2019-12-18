@@ -5,6 +5,7 @@ using System.Reflection;
 using BE.CQRS.Data.MongoDb.Commits;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using BE.FluentGuard;
 
 namespace BE.CQRS.Data.MongoDb.Repositories
 {
@@ -15,11 +16,14 @@ namespace BE.CQRS.Data.MongoDb.Repositories
 
         public EventMapper(IEventSerializer serializer, IEventHash hash)
         {
+            Precondition.For(hash, nameof(hash)).NotNull();
+            Precondition.For(serializer, nameof(serializer)).NotNull();
             this.serializer = serializer;
             this.eventHash = hash;
         }
 
-        public EventCommit ToCommit(string domainobjectId, Type domainObjectType, long originVersion, long commitVersion,
+        public EventCommit ToCommit(string domainobjectId, Type domainObjectType, long originVersion,
+            long commitVersion,
             IList<IEvent> events)
         {
             Dictionary<string, EventDto> items = MapEvents(domainobjectId, events);

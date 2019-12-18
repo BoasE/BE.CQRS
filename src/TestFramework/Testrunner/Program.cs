@@ -41,9 +41,11 @@ namespace Testrunner
                 StateActivator = new ActivatorDomainObjectActivator()
             };
 
+            cfg.HashEvents("232");
+
             var ser = new JsonEventSerializer(new EventTypeResolver());
-            var dto = new MyEvent() { Id = "2" };
-            dto = new MyEvent() { Id = "3" };
+            var dto = new MyEvent() {Id = "2"};
+            dto = new MyEvent() {Id = "3"};
             dto.Headers.Set(EventHeaderKeys.AggregateId, "a");
             dto.Headers.Set(EventHeaderKeys.Created, DateTime.Now);
 
