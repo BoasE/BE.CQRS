@@ -34,7 +34,11 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
                 new CreateIndexModel<EventCommit>(
                     Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
-                        .Ascending(x => x.AllEventTypes).Descending(x => x.Ordinal))
+                        .Ascending(x => x.AllEventTypes).Descending(x => x.Ordinal)),
+                
+                new CreateIndexModel<EventCommit>(
+                    Builders<EventCommit>.IndexKeys.Descending(x => x.AggregateId).Descending(x => x.AggregateType)
+                    .Descending(x => x.Ordinal))
             };
         }
     }
