@@ -28,12 +28,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
             List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
-
-            var tasks = new List<Task>(indexModels.Count);
-            foreach (CreateIndexModel<EventCommit> model in indexModels)
-                tasks.Add(collection.Indexes.CreateOneAsync(model));
-
-            return Task.WhenAll(tasks);
+            return collection.Indexes.CreateManyAsync(indexModels);
         }
 
         public Task<bool> Exists(string type, string id)
