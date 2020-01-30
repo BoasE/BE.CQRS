@@ -25,10 +25,22 @@ namespace BE.CQRS.Data.MongoDb.Commits
             PrepareCollection(Collection).Wait();
         }
 
-        private Task PrepareCollection(IMongoCollection<EventCommit> collection)
+        private async Task PrepareCollection(IMongoCollection<EventCommit> collection)
         {
             List<CreateIndexModel<EventCommit>> indexModels = IndexDefinitions.ProvideIndexModels().ToList();
-            return collection.Indexes.CreateManyAsync(indexModels);
+
+            try
+            {
+                await collection.Indexes.CreateManyAsync(indexModels);
+            }
+            catch (MongoCommandException e) when (e.CodeName.Equals("IndexOptionsConflict", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Dropping existing index due to conflicts...");
+                await collection.Indexes.DropAllAsync();
+
+                Console.WriteLine("Recreating indexes");
+                await collection.Indexes.CreateManyAsync(indexModels);
+            }
         }
 
         public Task<bool> Exists(string type, string id)
