@@ -2,6 +2,7 @@
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
+using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -35,7 +36,7 @@ namespace BE.CQRS.Data.MongoDb
         }
 
         public static DenormalizerConfiguration SetMongoDbEventSubscriber(this DenormalizerConfiguration config,
-            IMongoDatabase db, IEventHash hash, ILoggerFactory loggerFactory = null)
+            IMongoDatabase db, IEventHash hash,IEventSerializer eventSerializer, ILoggerFactory loggerFactory = null)
         {
             Precondition.For(() => config).NotNull();
             Precondition.For(() => db).NotNull();
@@ -45,7 +46,7 @@ namespace BE.CQRS.Data.MongoDb
                 loggerFactory = new NoopLoggerFactory();
             }
 
-            config.Subscriber = new MongoEventSubscriber(db, loggerFactory, hash);
+            config.Subscriber = new MongoEventSubscriber(db, loggerFactory, hash,eventSerializer);
             return config;
         }
     }

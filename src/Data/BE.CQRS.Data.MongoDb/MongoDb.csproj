@@ -4,8 +4,8 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>All indeces containing the ordinal now set to be unique as the ordinal itself is unique. Attention pls check that you don't get conflicts in the database after upgrade. </PackageReleaseNotes>
-    <PackageVersion>0.70.10-alpha</PackageVersion>
+    <PackageReleaseNotes>Support for customer EventSerializer</PackageReleaseNotes>
+    <PackageVersion>0.70.11-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>

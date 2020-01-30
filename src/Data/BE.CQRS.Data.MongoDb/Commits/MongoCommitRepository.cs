@@ -18,9 +18,9 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private readonly MongoGlobalIdentifier identifier;
         private readonly EventMapper Mapper;
 
-        public MongoCommitRepository(IMongoDatabase db,IEventHash hash) : base(db, "es_Commits")
+        public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer) : base(db, "es_Commits")
         {
-            Mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()),hash);
+            Mapper = new EventMapper(eventSerializer, hash);
             identifier = new MongoGlobalIdentifier(db);
             PrepareCollection(Collection).Wait();
         }

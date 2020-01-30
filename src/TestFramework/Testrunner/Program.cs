@@ -110,7 +110,7 @@ namespace Testrunner
         {
             var db = provider.GetRequiredService<IMongoDatabase>();
             var logger = provider.GetRequiredService<ILoggerFactory>();
-            var subs = new MongoEventSubscriber(db, logger, provider.GetRequiredService<IEventHash>());
+            var subs = new MongoEventSubscriber(db, logger, provider.GetRequiredService<IEventHash>(),provider.GetRequiredService<IEventSerializer>());
             var pos = new MongoStreamPositionGateway(db, null);
             var normalizerFactory = new Func<Type, object>(Activator.CreateInstance);
 

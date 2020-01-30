@@ -25,14 +25,14 @@ namespace BE.CQRS.Data.MongoDb
 
         public string StreamName { get; } = "All";
 
-        public MongoEventSubscriber(IMongoDatabase db, ILoggerFactory loggerFactory, IEventHash hash)
+        public MongoEventSubscriber(IMongoDatabase db, ILoggerFactory loggerFactory, IEventHash hash,IEventSerializer eventSerializer)
         {
             Precondition.For(db, nameof(db)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
-            mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()), hash);
+            mapper = new EventMapper(eventSerializer, hash);
             logger = loggerFactory.CreateLogger<MongoEventSubscriber>();
-            repo = new MongoCommitRepository(db,hash);
+            repo = new MongoCommitRepository(db,hash,eventSerializer);
         }
 
         public async IAsyncEnumerable<OccuredEvent> Start(long? position) //TODO Check Callers!

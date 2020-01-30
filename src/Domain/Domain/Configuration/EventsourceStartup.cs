@@ -4,6 +4,7 @@ using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,23 +19,26 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => config.Activator).NotNull();
             Precondition.For(() => config.CommandBus).NotNull();
             Precondition.For(() => config.DomainObjectRepository).NotNull();
-            
+
             if (config.EventHash == null)
-            {
-                throw  new InvalidOperationException($"EventHash must be set. Call \"{nameof(HashEvents)}\" before!");
-            }
-            
+                throw new InvalidOperationException($"EventHash must be set. Call \"{nameof(HashEvents)}\" before!");
+
             collection.AddSingleton(config.Activator);
             collection.AddSingleton(config.CommandBus);
             collection.AddSingleton(config.DomainObjectRepository);
+            collection.AddSingleton(config.EventSerializer);
 
-          
-            collection.AddSingleton<IEventHash>(config.EventHash);
+            collection.AddSingleton(config.EventHash);
 
             if (config.EventMapper != null)
-            {
                 collection.AddSingleton(config.EventMapper);
-            }
+
+            return config;
+        }
+
+        public static EventSourceConfiguration SetEventSerializer(this EventSourceConfiguration config, IEventSerializer serializer)
+        {
+            config.EventSerializer = serializer;
 
             return config;
         }
@@ -63,6 +67,7 @@ namespace BE.CQRS.Domain.Configuration
 
             return config;
         }
+
         public static EventSourceConfiguration HashEvents(this EventSourceConfiguration config, string secret)
         {
             Precondition.For(secret, nameof(secret)).NotNullOrWhiteSpace();

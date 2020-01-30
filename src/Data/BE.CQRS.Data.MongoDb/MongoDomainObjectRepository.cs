@@ -24,8 +24,8 @@ namespace BE.CQRS.Data.MongoDb
         public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(
             configuration)
         {
-            mapper = new EventMapper(new JsonEventSerializer(new EventTypeResolver()),configuration.EventHash);
-            repository = new MongoCommitRepository(db,configuration.EventHash);
+            mapper = new EventMapper(configuration.EventSerializer,configuration.EventHash);
+            repository = new MongoCommitRepository(db,configuration.EventHash,configuration.EventSerializer);
         }
 
         public Task<long> GetCommitCount()
