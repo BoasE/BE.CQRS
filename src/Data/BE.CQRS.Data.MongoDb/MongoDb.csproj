@@ -4,8 +4,8 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Dropping and recreating internal index when there is a conflict</PackageReleaseNotes>
-    <PackageVersion>0.70.14-alpha</PackageVersion>
+    <PackageReleaseNotes>Removed obsolete indexes</PackageReleaseNotes>
+    <PackageVersion>0.70.15-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
