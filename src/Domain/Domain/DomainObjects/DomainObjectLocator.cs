@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Conventions;
@@ -15,6 +16,9 @@ namespace BE.CQRS.Domain.DomainObjects
         private static readonly TypeInfo VoidType = typeof(void).GetTypeInfo();
         private static readonly TypeInfo BehaviorAttributeType = typeof(BehaviorAttribute).GetTypeInfo();
         private static readonly TypeInfo CreateAttributeType = typeof(CreateAttribute).GetTypeInfo();
+        private static readonly TypeInfo CreateOrUpdateAttributeType = typeof(CreateOrUpdateAttribute).GetTypeInfo();
+        private static readonly TypeInfo UpdateAttributeType = typeof(UpdateAttribute).GetTypeInfo();
+        private static readonly TypeInfo UpdateWithoutHistoryAttributeType = typeof(UpdateWithoutHistoryAttribute).GetTypeInfo();
         private static readonly TypeInfo CommandType = typeof(ICommand).GetTypeInfo();
 
         public IEnumerable<CommandMethodMapping> ResolveConventionalMethods(Type domainObjectType)
@@ -35,28 +39,15 @@ namespace BE.CQRS.Domain.DomainObjects
 
             Type attribType = GetBehaviorAttribute(nfo);
 
-            CommandMethodMappingKind kind = CreateAttributeType.IsAssignableFrom(attribType.GetTypeInfo())
-                ? CommandMethodMappingKind.Create
-                : CommandMethodMappingKind.Update;
+            var annotation = attribType.GetTypeInfo();
+
+            CommandMethodMappingKind kind = ResolveCommandMethodKind(annotation);
 
             bool awaitable = Task.IsAssignableFrom(nfo.ReturnType.GetTypeInfo());
 
             var result = new CommandMethodMapping(domainObjectType, type, nfo, awaitable, kind);
 
             return result;
-        }
-
-        private static bool HasCommandParameter(MethodInfo method)
-        {
-            ParameterInfo[] para = method.GetParameters();
-
-            if (para.Length != 1)
-            {
-                return false;
-            }
-            ParameterInfo first = para.First();
-
-            return CommandType.IsAssignableFrom(first.ParameterType.GetTypeInfo());
         }
 
         public IEnumerable<Type> ResolveDomainObjects(params Assembly[] source)
@@ -101,6 +92,48 @@ namespace BE.CQRS.Domain.DomainObjects
         {
             TypeInfo info = type.GetTypeInfo();
             return type != null && info.IsPublic && !info.IsAbstract && DomainType.IsAssignableFrom(info);
+        }
+
+        private static CommandMethodMappingKind ResolveCommandMethodKind(TypeInfo annotation)
+        {
+            CommandMethodMappingKind kind;
+
+            if (CreateAttributeType.IsAssignableFrom(annotation))
+            {
+                kind = CommandMethodMappingKind.Create;
+            }
+            else if (UpdateWithoutHistoryAttributeType.IsAssignableFrom(annotation))
+            {
+                kind = CommandMethodMappingKind.UpdateWithoutHistory;
+            }
+            else if (UpdateAttributeType.IsAssignableFrom(annotation))
+            {
+                kind = CommandMethodMappingKind.Update;
+            }
+            else if (CreateOrUpdateAttributeType.IsAssignableFrom(annotation))
+            {
+                kind = CommandMethodMappingKind.CreateOrUpdate;
+            }
+            else
+            {
+                throw new NotSupportedException($"Annotation \"{annotation.Name}\" not supported!");
+            }
+
+            return kind;
+        }
+
+        private static bool HasCommandParameter(MethodInfo method)
+        {
+            ParameterInfo[] para = method.GetParameters();
+
+            if (para.Length != 1)
+            {
+                return false;
+            }
+
+            ParameterInfo first = para.First();
+
+            return CommandType.IsAssignableFrom(first.ParameterType.GetTypeInfo());
         }
     }
 }

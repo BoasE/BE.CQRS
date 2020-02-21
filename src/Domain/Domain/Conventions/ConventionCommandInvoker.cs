@@ -36,8 +36,8 @@ namespace BE.CQRS.Domain.Conventions
             Precondition.For(commandMapping, nameof(commandMapping)).NotNull();
 
             var type = cmd.GetType();
-            
-            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"",domainObjectType);
+
+            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"", domainObjectType);
             var currentTry = 0;
 
             while (currentTry < retryCount)
@@ -46,11 +46,11 @@ namespace BE.CQRS.Domain.Conventions
                 {
                     logger.LogTrace("Retrying Command \"{type}\" for \"{domainObjectType}\"...");
                 }
+
                 AppendResult result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, commandMapping);
 
                 if (result.HadWrongVersion)
                 {
-                    
                     currentTry++;
                 }
                 else
@@ -71,7 +71,7 @@ namespace BE.CQRS.Domain.Conventions
             }
 
             bool preventVersionCheck = kinds[0] == CommandMethodMappingKind.UpdateWithoutHistory ||
-                                       kinds[0] == CommandMethodMappingKind.Create;
+                kinds[0] == CommandMethodMappingKind.Create;
 
             IDomainObject obj = await InvokeAsync(domainObjectType, cmd, kinds.First(), commands.ToArray());
             return await repository.SaveAsync(obj, preventVersionCheck);
@@ -80,34 +80,69 @@ namespace BE.CQRS.Domain.Conventions
         public async Task<IDomainObject> InvokeAsync(Type domainObjectType, ICommand cmd, CommandMethodMappingKind kind,
             ICollection<CommandMethodMapping> methodMappings)
         {
-            IDomainObject domainObject;
-
-            if (kind == CommandMethodMappingKind.Create)
-            {
-                domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
-            }
-            else
-            {
-                if (kind == CommandMethodMappingKind.UpdateWithoutHistory)
-                {
-                    logger.LogTrace("Creating new \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
-                    domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
-                }
-                else
-                {
-                    logger.LogTrace("Getting existing \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
-                    domainObject = await repository.Get(cmd.DomainObjectId, domainObjectType);
-                }
-            }
+            IDomainObject domainObject = await ResolveDomainObjectInstance(domainObjectType, cmd, kind);
 
             if (policyValidator.CheckPolicies(domainObject, cmd, methodMappings.Select(x => x.Method).ToArray()))
             {
-                logger.LogTrace("Applying command on \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                logger.LogTrace("Applying command on \"{domainObjectType}\" with id {domainObjectId}", domainObjectType, cmd.DomainObjectId);
                 await ApplyCommands(domainObject, cmd, methodMappings);
             }
             else
             {
-                logger.LogTrace("Policy prevented command on \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                logger.LogTrace("Policy prevented command on \"{domainObjectType}\" with id {domainObjectId}", domainObjectType, cmd.DomainObjectId);
+            }
+
+            return domainObject;
+        }
+
+        private async Task<IDomainObject> ResolveDomainObjectInstance(Type domainObjectType, ICommand cmd, CommandMethodMappingKind kind)
+        {
+            IDomainObject domainObject;
+            var exists = await repository.Exists<IDomainObject>(cmd.DomainObjectId);
+
+            switch (kind)
+            {
+                case CommandMethodMappingKind.CreateOrUpdate when !exists:
+                    domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
+                    break;
+                case CommandMethodMappingKind.CreateOrUpdate:
+                    domainObject = await repository.Get(cmd.DomainObjectId, domainObjectType);
+                    break;
+
+                case CommandMethodMappingKind.Create:
+
+                    if (exists)
+                    {
+                        throw new InvalidOperationException($"Domainobject {cmd.DomainObjectId} already exists and cant be created!");
+                    }
+
+                    domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
+                    break;
+
+                case CommandMethodMappingKind.UpdateWithoutHistory:
+                    if (!exists)
+                    {
+                        throw new InvalidOperationException($"Domainobject {cmd.DomainObjectId} needs to exist for udpate");
+                    }
+
+                    logger.LogTrace("Creating new \"{domainObjectType}\" with id {domainObjectId}", domainObjectType, cmd.DomainObjectId);
+                    domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
+                    break;
+
+                case CommandMethodMappingKind.Update:
+                {
+                    if (!exists)
+                    {
+                        throw new InvalidOperationException($"Domainobject {cmd.DomainObjectId} needs to exist for udpate");
+                    }
+
+                    logger.LogTrace("Getting existing \"{domainObjectType}\" with id {domainObjectId}", domainObjectType, cmd.DomainObjectId);
+                    domainObject = await repository.Get(cmd.DomainObjectId, domainObjectType);
+
+                    break;
+                }
+                default:
+                    throw new NotSupportedException($"Operation \"{kind}\" is not supported");
             }
 
             return domainObject;
@@ -120,12 +155,12 @@ namespace BE.CQRS.Domain.Conventions
             {
                 if (method.Awaitable)
                 {
-                    var task = method.Method.Invoke(domainObject, new object[] {cmd}) as Task;
+                    var task = method.Method.Invoke(domainObject, new object[] { cmd }) as Task;
                     await task;
                 }
                 else
                 {
-                    method.Method.Invoke(domainObject, new object[] {cmd});
+                    method.Method.Invoke(domainObject, new object[] { cmd });
                 }
             }
         }
