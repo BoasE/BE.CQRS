@@ -18,7 +18,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using Serilog;
 
 namespace Testrunner
@@ -34,11 +36,14 @@ namespace Testrunner
 
             var db = serviceProvider.GetRequiredService<IMongoDatabase>();
 
+            var activator = new ActivatorDomainObjectActivator(); //TODO STartup helper
+            serviceCollection
+                .AddSingleton<IDomainObjectActivator>(activator)
+                .AddSingleton<IStateActivator>(activator)
+                .AddSingleton<ILoggerFactory>(new NoopLoggerFactory());
+            
             var cfg = new EventSourceConfiguration()
             {
-                Activator = new ActivatorDomainObjectActivator(),
-                LoggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>(),
-                StateActivator = new ActivatorDomainObjectActivator()
             };
 
             cfg.HashEvents("232");
@@ -53,7 +58,7 @@ namespace Testrunner
             var header = ser.SerializeHeader(dto.Headers);
 
             var test = JsonSerializer.Serialize(dto, dto.GetType());
-            var repo = new MongoDomainObjectRepository(cfg, db);
+            var repo = new MongoDomainObjectRepository(cfg, db,serviceProvider);
 
             var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
             bo2.Next();
@@ -62,7 +67,7 @@ namespace Testrunner
             Console.ReadLine();
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
-            bo.ApplyConfig(cfg);
+            bo.ApplyConfig(cfg,serviceProvider);
             bo.Execute();
 
             bo.Next();

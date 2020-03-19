@@ -17,17 +17,9 @@ namespace BE.CQRS.Domain.Configuration
 
         public IEventMapper EventMapper { get; set; }
 
-        public IDomainObjectActivator Activator { get; set; }
-
-        public IStateActivator StateActivator { get; set; }
-
-        public ICommandBus CommandBus { get; set; }
-
-        public IDomainObjectRepository DomainObjectRepository { get; set; }
-
         public Assembly[] DomainObjectAssemblies { get; set; }
 
-        public ILoggerFactory LoggerFactory { get; set; } = new NoopLoggerFactory();
+        
 
         public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
 

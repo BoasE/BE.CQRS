@@ -7,6 +7,7 @@ using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Configuration
 {
@@ -16,18 +17,12 @@ namespace BE.CQRS.Domain.Configuration
             EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.Activator).NotNull();
-            Precondition.For(() => config.CommandBus).NotNull();
-            Precondition.For(() => config.DomainObjectRepository).NotNull();
+            collection.AddSingleton(config);
 
             if (config.EventHash == null)
                 throw new InvalidOperationException($"EventHash must be set. Call \"{nameof(HashEvents)}\" before!");
 
-            collection.AddSingleton(config.Activator);
-            collection.AddSingleton(config.CommandBus);
-            collection.AddSingleton(config.DomainObjectRepository);
             collection.AddSingleton(config.EventSerializer);
-
             collection.AddSingleton(config.EventHash);
 
             if (config.EventMapper != null)
@@ -36,7 +31,8 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
-        public static EventSourceConfiguration SetEventSerializer(this EventSourceConfiguration config, IEventSerializer serializer)
+        public static EventSourceConfiguration SetEventSerializer(this EventSourceConfiguration config,
+            IEventSerializer serializer)
         {
             config.EventSerializer = serializer;
 
@@ -54,34 +50,26 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
-        public static EventSourceConfiguration SetConventionBasedInMemoryCommandBus(
-            this EventSourceConfiguration config)
+        public static IServiceCollection AddEventSourceDefaults(this IServiceCollection services)
         {
-            Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.DomainObjectRepository).NotNull();
-            Precondition.For(() => config.DomainObjectAssemblies).NotNull();
+            return services;
+        }
 
-            config.CommandBus = InMemoryCommandBus.CreateConventionCommandBus(config.DomainObjectRepository,
-                config.LoggerFactory,
-                config.DomainObjectAssemblies);
+        public static IServiceCollection AddConventionBasedInMemoryCommandBus(
+            this IServiceCollection services, EventSourceConfiguration config)
+        {
+            services.AddSingleton<ICommandBus>(x => InMemoryCommandBus.CreateConventionCommandBus(
+                x.GetRequiredService<IDomainObjectRepository>(),
+                x.GetRequiredService<ILoggerFactory>(),
+                config.DomainObjectAssemblies));
 
-            return config;
+            return services;
         }
 
         public static EventSourceConfiguration HashEvents(this EventSourceConfiguration config, string secret)
         {
             Precondition.For(secret, nameof(secret)).NotNullOrWhiteSpace();
             config.EventHash = new ShaEventHash(secret);
-            return config;
-        }
-
-        public static EventSourceConfiguration SetDefaultActivator(this EventSourceConfiguration config)
-        {
-            Precondition.For(() => config).NotNull();
-            var activator = new ActivatorDomainObjectActivator();
-
-            config.Activator = activator;
-            config.StateActivator = activator;
             return config;
         }
     }

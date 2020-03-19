@@ -1,9 +1,12 @@
-﻿using BE.CQRS.Data.MongoDb.Streams;
+﻿using System;
+using BE.CQRS.Data.MongoDb.Streams;
+using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
@@ -11,20 +14,25 @@ namespace BE.CQRS.Data.MongoDb
 {
     public static class MongoEventSourceStartup
     {
-        public static EventSourceConfiguration SetMongoDomainObjectRepository(this EventSourceConfiguration config,
+        public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
             IMongoDatabase db)
         {
             Precondition.For(() => db).NotNull();
-            Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.Activator).NotNull();
-
-            var repo = new MongoDomainObjectRepository(config, db);
-
-            config.DomainObjectRepository = repo;
-
-            return config;
+            
+            services.AddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), db,
+                x.GetRequiredService<IServiceProvider>()));
+            
+            return services;
         }
 
+        public static IServiceCollection AddDefaultMongoDomainObjectRepository(this IServiceCollection services)
+        {
+            services.AddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), x.GetRequiredService<IMongoDatabase>(),
+                x.GetRequiredService<IServiceProvider>()));
+            
+            return services;
+        }
+        
         public static DenormalizerConfiguration SetMongoEventPositionGateway(this DenormalizerConfiguration config,
             IMongoDatabase db)
         {

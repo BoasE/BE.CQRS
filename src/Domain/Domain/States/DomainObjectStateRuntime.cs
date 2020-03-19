@@ -15,10 +15,10 @@ namespace BE.CQRS.Domain.States
         private readonly IStateActivator activator;
         private readonly IDomainObject domainObject;
 
-        public DomainObjectStateRuntime(IDomainObject domainObject, EventSourceConfiguration config)
+        public DomainObjectStateRuntime(IDomainObject domainObject,IStateActivator stateActivator, EventSourceConfiguration config)
         {
             this.domainObject = domainObject;
-            activator = config.StateActivator;
+            activator = stateActivator;
             stateToEventMapper = config.StateToEventMapper;
         }
 

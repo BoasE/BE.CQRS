@@ -9,6 +9,7 @@ using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
@@ -46,10 +47,10 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration)
+        public void ApplyConfig(EventSourceConfiguration configuration,IServiceProvider provider)
         {
-            stateRuntime = new DomainObjectStateRuntime(this, configuration);
-            domainObjectRepository = configuration.DomainObjectRepository;
+            stateRuntime = new DomainObjectStateRuntime(this,provider.GetRequiredService<IStateActivator>(), configuration);
+            domainObjectRepository = provider.GetRequiredService<IDomainObjectRepository>();
         }
 
         public bool Policy<T>() where T : PolicyBase, new()

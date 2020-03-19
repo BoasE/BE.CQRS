@@ -21,8 +21,8 @@ namespace BE.CQRS.Data.MongoDb
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper;
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db) : base(
-            configuration)
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db,IServiceProvider provider) : base(
+            configuration,provider)
         {
             mapper = new EventMapper(configuration.EventSerializer,configuration.EventHash);
             repository = new MongoCommitRepository(db,configuration.EventHash,configuration.EventSerializer);

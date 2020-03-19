@@ -35,7 +35,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
         Task ApplyEvents(IAsyncEnumerable<IEvent> eventsToCommit, ISet<Type> allowedEventTypes = null);
 
-        void ApplyConfig(EventSourceConfiguration configuration);
+        void ApplyConfig(EventSourceConfiguration configuration,IServiceProvider provider);
 
         bool Policy<T>() where T : PolicyBase, new();
 

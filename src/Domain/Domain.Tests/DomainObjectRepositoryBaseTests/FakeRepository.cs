@@ -12,7 +12,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public sealed class FakeRepository : DomainObjectRepositoryBase
     {
-        public FakeRepository(EventSourceConfiguration configuration) : base(configuration)
+        public FakeRepository(EventSourceConfiguration configuration) : base(configuration,null)
         {
         }
 
