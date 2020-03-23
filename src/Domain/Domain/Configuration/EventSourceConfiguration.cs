@@ -21,8 +21,8 @@ namespace BE.CQRS.Domain.Configuration
         public Action<IEvent> PostSavePipeline { get; set; }
 
         /// <summary>
-        /// Denormalizers that should  immediatly be called without any message-bus after the event was saved
+        /// Eventhandler that  immediately calls denormalizations without any message-bus in between
         /// </summary>
-        public IEventHandler ImmediateDenormalizers { get; set; }
+        public IEventHandler ImmediateDenormalizationHandler { get; set; }
     }
 }
