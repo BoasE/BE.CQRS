@@ -18,11 +18,7 @@ namespace BE.CQRS.Domain.Configuration
         public string Prefix { get; set; }
         public Assembly[] DomainObjectAssemblies { get; set; }
         
-        public Action<IEvent> PostSavePipeline { get; set; }
+        public Action<IEvent> PostSavePipeline { get; set; } //TODO Extract to a IEventHandler component
 
-        /// <summary>
-        /// Eventhandler that  immediately calls denormalizations without any message-bus in between
-        /// </summary>
-        public IEventHandler ImmediateDenormalizationHandler { get; set; }
     }
 }

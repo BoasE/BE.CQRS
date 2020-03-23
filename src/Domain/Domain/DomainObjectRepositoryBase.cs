@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.Events.Handlers;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ namespace BE.CQRS.Domain
         private readonly IServiceProvider provider;
         private readonly IStateActivator stateActivator;
         private readonly IDomainObjectActivator activator;
+        private IEventHandler denormalizer; //=> Extract to "IImmediateDenormalizer!
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration, IServiceProvider provider)
         {
@@ -32,6 +34,7 @@ namespace BE.CQRS.Domain
                 .NotNull("provider for domainobject repository must not be null!");
 
             this.provider = provider;
+            denormalizer = provider.GetService<IEventHandler>();
             activator = provider.GetRequiredService<IDomainObjectActivator>();
             stateActivator = provider.GetRequiredService<IStateActivator>();
             this.configuration = configuration;
@@ -93,9 +96,9 @@ namespace BE.CQRS.Domain
                     configuration.PostSavePipeline?.Invoke(@event);
 
                     //Todo reload event to make sure the projection is on same stage
-                    if (configuration.ImmediateDenormalizationHandler != null)
+                    if (denormalizer != null)
                     {
-                        await configuration.ImmediateDenormalizationHandler.HandleAsync(@event);
+                        await denormalizer.HandleAsync(@event);
                     }
                 }
 

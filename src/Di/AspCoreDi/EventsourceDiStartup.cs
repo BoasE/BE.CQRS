@@ -1,11 +1,13 @@
 ﻿using System;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Serialization;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BE.CQRS.Di.AspCore
 {
@@ -20,14 +22,13 @@ namespace BE.CQRS.Di.AspCore
             return services;
         }
 
-        public static DenormalizerConfiguration SetServiceProviderDenormalizerActivator(
-            this DenormalizerConfiguration config)
+        public static IServiceCollection AddServiceProviderDenormalizerActivator(
+            this IServiceCollection serivces)
         {
-            Precondition.For(() => config).NotNull();
+            Precondition.For(() => serivces).NotNull();
 
-            config.Activator = new ServiceCollectionActivator();
-
-            return config;
+            serivces.TryAddSingleton<IDenormalizerActivator, ServiceCollectionActivator>();
+            return serivces;
         }
 
         public static void UseServiceProviderActivator(this IApplicationBuilder app)

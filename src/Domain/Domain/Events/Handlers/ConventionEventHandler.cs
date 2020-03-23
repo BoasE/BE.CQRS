@@ -24,13 +24,9 @@ namespace BE.CQRS.Domain.Events.Handlers
         
         public int HandlerCount => denormalizers.Length;
 
-        public ConventionEventHandler(IDenormalizerActivator activator,ILoggerFactory factory, params Assembly[] projectors) // TODO Unify to one constructor
+        public ConventionEventHandler(IDenormalizerActivator activator, params Assembly[] projectors) // TODO Unify to one constructor
         {
             Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any(),"No projector assemblies were passed!");
-            Precondition.For(factory, nameof(factory)).NotNull("LoggerFactory was missing!");
-            
-            logger = factory.CreateLogger<ConventionEventHandler>();
-            
             normalizerFactory = activator.ResolveDenormalizer;
             IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
 
