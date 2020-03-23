@@ -93,9 +93,9 @@ namespace BE.CQRS.Domain
                     configuration.PostSavePipeline?.Invoke(@event);
 
                     //Todo reload event to make sure the projection is on same stage
-                    if (configuration.DirectDenormalizers != null)
+                    if (configuration.ImmediateDenormalizers != null)
                     {
-                        await configuration.DirectDenormalizers.HandleAsync(@event);
+                        await configuration.ImmediateDenormalizers.HandleAsync(@event);
                     }
                 }
 

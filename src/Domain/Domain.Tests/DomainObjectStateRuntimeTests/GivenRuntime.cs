@@ -12,7 +12,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectStateRuntimeTests
             domainObject.ApplyEvent( new TestEvent() );
 
             return new DomainObjectStateRuntime(
-                domainObject, null,
+                domainObject, null,new StateEventMapping(),
                 new EventSourceConfiguration());
 
         }

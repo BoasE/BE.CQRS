@@ -15,11 +15,12 @@ namespace BE.CQRS.Domain.States
         private readonly IStateActivator activator;
         private readonly IDomainObject domainObject;
 
-        public DomainObjectStateRuntime(IDomainObject domainObject,IStateActivator stateActivator, EventSourceConfiguration config)
+        public DomainObjectStateRuntime(IDomainObject domainObject, IStateActivator stateActivator,
+            IStateEventMapping mapper, EventSourceConfiguration config)
         {
             this.domainObject = domainObject;
             activator = stateActivator;
-            stateToEventMapper = config.StateToEventMapper;
+            stateToEventMapper = mapper;
         }
 
         public bool Policy<T>(bool includeUncommitted) where T : PolicyBase, new()

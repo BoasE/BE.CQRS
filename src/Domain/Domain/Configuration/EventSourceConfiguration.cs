@@ -17,15 +17,12 @@ namespace BE.CQRS.Domain.Configuration
         
         public string Prefix { get; set; }
         public Assembly[] DomainObjectAssemblies { get; set; }
-
-        public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
-
+        
         public Action<IEvent> PostSavePipeline { get; set; }
 
-        public IEventHandler DirectDenormalizers { get; set; }
-
-        
-
-        
+        /// <summary>
+        /// Denormalizers that should  immediatly be called without any message-bus after the event was saved
+        /// </summary>
+        public IEventHandler ImmediateDenormalizers { get; set; }
     }
 }

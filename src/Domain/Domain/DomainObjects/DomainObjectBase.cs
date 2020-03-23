@@ -47,9 +47,12 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration,IServiceProvider provider)
+        public void ApplyConfig(EventSourceConfiguration configuration, IServiceProvider provider)
         {
-            stateRuntime = new DomainObjectStateRuntime(this,provider.GetRequiredService<IStateActivator>(), configuration);
+            stateRuntime = new DomainObjectStateRuntime(this,
+                provider.GetRequiredService<IStateActivator>(), provider.GetRequiredService<IStateEventMapping>(),
+                configuration);
+
             domainObjectRepository = provider.GetRequiredService<IDomainObjectRepository>();
         }
 
@@ -182,8 +185,8 @@ namespace BE.CQRS.Domain.DomainObjects
             string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
             if (allowedEvents == null ||
                 (allowedEvents.Count > 0 && allowedEvents.Any(type =>
-                     type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
-                     type.AssemblyQualifiedName.Equals(eventType))))
+                    type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
+                    type.AssemblyQualifiedName.Equals(eventType))))
             {
                 @committedEvents.Add(@event);
             }

@@ -5,6 +5,7 @@ using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,6 +21,7 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => config).NotNull();
             collection.AddSingleton(config);
             collection.TryAddSingleton<IEventTypeResolver, EventTypeResolver>();
+            collection.TryAddSingleton<IStateEventMapping, StateEventMapping>();
             collection.TryAddSingleton<IEventSerializer, JsonEventSerializer>();
             collection.TryAddSingleton<IEventHash>(x =>
             {
@@ -42,11 +44,6 @@ namespace BE.CQRS.Domain.Configuration
             config.DomainObjectAssemblies = assembliesWithDomainObjects;
 
             return config;
-        }
-
-        public static IServiceCollection AddEventSourceDefaults(this IServiceCollection services)
-        {
-            return services;
         }
 
         public static IServiceCollection AddConventionBasedInMemoryCommandBus(
