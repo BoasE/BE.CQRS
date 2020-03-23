@@ -7,6 +7,7 @@ using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
@@ -19,7 +20,7 @@ namespace BE.CQRS.Data.MongoDb
         {
             Precondition.For(() => db).NotNull();
             
-            services.AddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), db,
+            services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), db,
                 x.GetRequiredService<IServiceProvider>()));
             
             return services;
@@ -27,7 +28,7 @@ namespace BE.CQRS.Data.MongoDb
 
         public static IServiceCollection AddDefaultMongoDomainObjectRepository(this IServiceCollection services)
         {
-            services.AddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), x.GetRequiredService<IMongoDatabase>(),
+            services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(x.GetRequiredService<EventSourceConfiguration>(), x.GetRequiredService<IMongoDatabase>(),
                 x.GetRequiredService<IServiceProvider>()));
             
             return services;

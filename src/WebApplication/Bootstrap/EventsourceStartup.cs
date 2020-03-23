@@ -12,8 +12,7 @@ namespace WebApplication.Bootstrap
 {
     public static class EventSourceSetup
     {
-        public static IServiceCollection AddCqrs(this IServiceCollection services, IConfiguration config,
-            ILoggerFactory logger)
+        public static IServiceCollection AddCqrs(this IServiceCollection services, IConfiguration config)
         {
             string eventSecret = "0mDJVERJ34e4qLC6JYvT!$_d#+54d";
             string url = config["events:host"];
@@ -23,7 +22,7 @@ namespace WebApplication.Bootstrap
             IMongoDatabase mongodb = new MongoClient(url).GetDatabase(db);
 
             var esconfig = new EventSourceConfiguration()
-                .HashEvents(eventSecret)
+                .SetEventSecret(eventSecret)
                 .SetDomainObjectAssemblies(typeof(DomainObjectSample).Assembly);
 
             services

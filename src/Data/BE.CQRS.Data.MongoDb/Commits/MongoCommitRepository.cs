@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Repositories;
@@ -176,7 +177,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
         }
 
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
-            CancellationToken token)
+            [EnumeratorCancellation] CancellationToken token)
         {
             IAsyncCursor<EventCommit> cursor = await Collection.Find(query).SortBy(x => x.Ordinal).ToCursorAsync();
 

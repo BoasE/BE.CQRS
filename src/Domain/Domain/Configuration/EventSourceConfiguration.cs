@@ -13,13 +13,10 @@ namespace BE.CQRS.Domain.Configuration
 {
     public sealed class EventSourceConfiguration
     {
-        public string Prefix { get; set; }
-
-        public IEventMapper EventMapper { get; set; }
-
-        public Assembly[] DomainObjectAssemblies { get; set; }
-
+        public string EventSecret { get; set; } = null;
         
+        public string Prefix { get; set; }
+        public Assembly[] DomainObjectAssemblies { get; set; }
 
         public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
 
@@ -27,8 +24,8 @@ namespace BE.CQRS.Domain.Configuration
 
         public IEventHandler DirectDenormalizers { get; set; }
 
-        public IEventHash EventHash { get; set; } = null;
+        
 
-        public IEventSerializer EventSerializer { get; set; } = new JsonEventSerializer(new EventTypeResolver());
+        
     }
 }

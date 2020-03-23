@@ -41,12 +41,9 @@ namespace Testrunner
                 .AddSingleton<IDomainObjectActivator>(activator)
                 .AddSingleton<IStateActivator>(activator)
                 .AddSingleton<ILoggerFactory>(new NoopLoggerFactory());
-            
-            var cfg = new EventSourceConfiguration()
-            {
-            };
 
-            cfg.HashEvents("232");
+            var cfg = new EventSourceConfiguration()
+                .SetEventSecret("232");
 
             var ser = new JsonEventSerializer(new EventTypeResolver());
             var dto = new MyEvent() {Id = "2"};
@@ -58,7 +55,7 @@ namespace Testrunner
             var header = ser.SerializeHeader(dto.Headers);
 
             var test = JsonSerializer.Serialize(dto, dto.GetType());
-            var repo = new MongoDomainObjectRepository(cfg, db,serviceProvider);
+            var repo = new MongoDomainObjectRepository(cfg, db, serviceProvider);
 
             var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
             bo2.Next();
@@ -67,7 +64,7 @@ namespace Testrunner
             Console.ReadLine();
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
-            bo.ApplyConfig(cfg,serviceProvider);
+            bo.ApplyConfig(cfg, serviceProvider);
             bo.Execute();
 
             bo.Next();
@@ -115,7 +112,8 @@ namespace Testrunner
         {
             var db = provider.GetRequiredService<IMongoDatabase>();
             var logger = provider.GetRequiredService<ILoggerFactory>();
-            var subs = new MongoEventSubscriber(db, logger, provider.GetRequiredService<IEventHash>(),provider.GetRequiredService<IEventSerializer>());
+            var subs = new MongoEventSubscriber(db, logger, provider.GetRequiredService<IEventHash>(),
+                provider.GetRequiredService<IEventSerializer>());
             var pos = new MongoStreamPositionGateway(db, null);
             var normalizerFactory = new Func<Type, object>(Activator.CreateInstance);
 
