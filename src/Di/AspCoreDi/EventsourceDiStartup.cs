@@ -31,16 +31,6 @@ namespace BE.CQRS.Di.AspCore
             return serivces;
         }
 
-        public static void UseServiceProviderActivator(this IApplicationBuilder app)
-        {
-            if (!(app.ApplicationServices.GetRequiredService<IDomainObjectActivator>() is ServiceCollectionActivator
-                activator))
-            {
-                throw new InvalidOperationException(
-                    "UseServiceCollectionActivator requires a registered IDomainObjectActivator Service with a type of \"ServiceCollectionActivator\"");
-            }
-
-            activator.UseProvider(app.ApplicationServices.GetRequiredService<IServiceProvider>());
-        }
+       
     }
 }

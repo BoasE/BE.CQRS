@@ -23,20 +23,23 @@ namespace WebApplication.Bootstrap
             IMongoDatabase readDb = client.GetDatabase(readdb);
 
             var ctx = new DenormalizerContext(client, readDb);
-            services.AddSingleton<IDenormalizerContext>(ctx)
-                .AddServiceProviderDenormalizerActivator();
+            services.AddSingleton<IDenormalizerContext>(ctx);
 
-            DenormalizerConfiguration deconfig = new DenormalizerConfiguration()
-                .SetDenormalizerAssemblies(typeof(SampleDenormalizer).Assembly);
-
-            services
-                .AddImmediateDenormalization(deconfig)
-                .AddProjectionBuilder();
+            AddCqrsDenormalizer(services);
 
             Console.WriteLine("Denormalizers attached!");
             return services;
         }
 
-  
+        private static void AddCqrsDenormalizer(IServiceCollection services)
+        {
+            DenormalizerConfiguration deconfig = new DenormalizerConfiguration()
+                .SetDenormalizerAssemblies(typeof(SampleDenormalizer).Assembly);
+
+            services
+                .AddServiceProviderDenormalizerActivator()
+                .AddImmediateDenormalization(deconfig)
+                .AddProjectionBuilder();
+        }
     }
 }

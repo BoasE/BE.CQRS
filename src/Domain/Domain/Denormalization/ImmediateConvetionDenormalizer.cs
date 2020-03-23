@@ -5,16 +5,16 @@ using BE.CQRS.Domain.Events.Handlers;
 
 namespace BE.CQRS.Domain.Denormalization
 {
-    public interface IImmediateConvetionDenormalizer : IEventHandler
+    public interface IImmediateConventionDenormalizer : IEventHandler
     {
     }
 
-    public sealed class ImmediateConvetionDenormalizer : IImmediateConvetionDenormalizer
+    public sealed class ImmediateConventionDenormalizer : IImmediateConventionDenormalizer
     {
         private readonly ConventionEventHandler conventionHandler;
         public int HandlerCount { get; }
 
-        public ImmediateConvetionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator)
+        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator)
         {
             conventionHandler = new ConventionEventHandler(activator, config.DenormalizerAssemblies);
         }

@@ -9,7 +9,7 @@ namespace BE.CQRS.Domain.Denormalization
             DenormalizerConfiguration config)
         {
             services.AddSingleton(config);
-            services.AddSingleton<IImmediateConvetionDenormalizer, ImmediateConvetionDenormalizer>();
+            services.AddSingleton<IImmediateConventionDenormalizer, ImmediateConventionDenormalizer>();
             return services;
         }
 

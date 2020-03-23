@@ -24,7 +24,7 @@ namespace BE.CQRS.Domain
         private readonly IServiceProvider provider;
         private readonly IStateActivator stateActivator;
         private readonly IDomainObjectActivator activator;
-        private IImmediateConvetionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
+        private IImmediateConventionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration, IServiceProvider provider)
         {
@@ -35,7 +35,7 @@ namespace BE.CQRS.Domain
                 .NotNull("provider for domainobject repository must not be null!");
 
             this.provider = provider;
-            denormalizer = provider.GetService<IImmediateConvetionDenormalizer>();
+            denormalizer = provider.GetService<IImmediateConventionDenormalizer>();
             activator = provider.GetRequiredService<IDomainObjectActivator>();
             stateActivator = provider.GetRequiredService<IStateActivator>();
             this.configuration = configuration;
