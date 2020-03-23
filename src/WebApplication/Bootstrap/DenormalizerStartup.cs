@@ -30,14 +30,13 @@ namespace WebApplication.Bootstrap
                 .SetDenormalizerAssemblies(typeof(SampleDenormalizer).Assembly);
 
             services
-                .AddSingleton(deconfig)
-                .AddSingleton<IEventHandler>(provider =>
-                    new ConventionEventHandler(provider.GetRequiredService<IDenormalizerActivator>(),
-                        deconfig.DenormalizerAssemblies)) //TODO Extract to "AddImmediateDenormalizer with its own interface"
-                .AddSingleton<IProjectionRebuilder, ProjectionRebuilder>();
+                .AddImmediateDenormalization(deconfig)
+                .AddProjectionBuilder();
 
             Console.WriteLine("Denormalizers attached!");
             return services;
         }
+
+  
     }
 }

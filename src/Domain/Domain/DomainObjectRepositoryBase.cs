@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
@@ -23,7 +24,7 @@ namespace BE.CQRS.Domain
         private readonly IServiceProvider provider;
         private readonly IStateActivator stateActivator;
         private readonly IDomainObjectActivator activator;
-        private IEventHandler denormalizer; //=> Extract to "IImmediateDenormalizer!
+        private IImmediateConvetionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration, IServiceProvider provider)
         {
@@ -34,7 +35,7 @@ namespace BE.CQRS.Domain
                 .NotNull("provider for domainobject repository must not be null!");
 
             this.provider = provider;
-            denormalizer = provider.GetService<IEventHandler>();
+            denormalizer = provider.GetService<IImmediateConvetionDenormalizer>();
             activator = provider.GetRequiredService<IDomainObjectActivator>();
             stateActivator = provider.GetRequiredService<IStateActivator>();
             this.configuration = configuration;
