@@ -12,7 +12,8 @@ namespace BE.CQRS.Domain.Denormalization
     public sealed class ImmediateConventionDenormalizer : IImmediateConventionDenormalizer
     {
         private readonly ConventionEventHandler conventionHandler;
-        public int HandlerCount { get; }
+
+        public int HandlerCount => conventionHandler.HandlerCount;
 
         public ImmediateConventionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator)
         {

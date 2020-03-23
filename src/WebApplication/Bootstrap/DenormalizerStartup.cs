@@ -2,11 +2,8 @@ using System;
 using BE.CQRS.Di.AspCore;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
-using BE.CQRS.Domain.Events.Handlers;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace WebApplication.Bootstrap
@@ -38,7 +35,8 @@ namespace WebApplication.Bootstrap
 
             services
                 .AddServiceProviderDenormalizerActivator()
-                .AddImmediateDenormalization(deconfig)
+                .AddImmediateDenormalization()
+                .AddDenormalization(deconfig) //<-- hier
                 .AddProjectionBuilder();
         }
     }

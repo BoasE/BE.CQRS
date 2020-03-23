@@ -95,8 +95,7 @@ namespace BE.CQRS.Domain
                 foreach (IEvent @event in persistedEvents)
                 {
                     configuration.PostSavePipeline?.Invoke(@event);
-
-                    //Todo reload event to make sure the projection is on same stage
+                    
                     if (denormalizer != null)
                     {
                         await denormalizer.HandleAsync(@event);
