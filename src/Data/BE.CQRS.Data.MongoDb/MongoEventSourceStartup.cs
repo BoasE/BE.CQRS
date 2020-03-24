@@ -3,9 +3,11 @@ using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
+using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,8 +24,11 @@ namespace BE.CQRS.Data.MongoDb
             Precondition.For(() => db).NotNull();
 
             services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(
-                x.GetRequiredService<EventSourceConfiguration>(), db,
-                x.GetRequiredService<IServiceProvider>()));
+                x.GetRequiredService<EventSourceConfiguration>(), db, x.GetRequiredService<IDomainObjectActivator>(),
+                x.GetRequiredService<IStateActivator>(), x.GetRequiredService<IEventSerializer>(),
+                x.GetRequiredService<IEventHash>(),
+                x.GetRequiredService<IImmediateConventionDenormalizer>(), x.GetRequiredService<IStateEventMapping>(),
+                x.GetRequiredService<ILoggerFactory>()));
 
             return services;
         }
@@ -32,7 +37,11 @@ namespace BE.CQRS.Data.MongoDb
         {
             services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(
                 x.GetRequiredService<EventSourceConfiguration>(), x.GetRequiredService<IMongoDatabase>(),
-                x.GetRequiredService<IServiceProvider>()));
+                x.GetRequiredService<IDomainObjectActivator>(), x.GetRequiredService<IStateActivator>(),
+                x.GetRequiredService<IEventSerializer>(),
+                x.GetRequiredService<IEventHash>(), x.GetRequiredService<IImmediateConventionDenormalizer>(),
+                x.GetRequiredService<IStateEventMapping>(),
+                x.GetRequiredService<ILoggerFactory>()));
 
             return services;
         }

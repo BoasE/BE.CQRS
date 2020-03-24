@@ -47,13 +47,12 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration, IServiceProvider provider)
+        public void ApplyConfig(EventSourceConfiguration configuration, IStateActivator stateActivator,
+            IStateEventMapping eventMapping,IDomainObjectRepository repo)
         {
-            stateRuntime = new DomainObjectStateRuntime(this,
-                provider.GetRequiredService<IStateActivator>(), provider.GetRequiredService<IStateEventMapping>(),
-                configuration);
+            stateRuntime = new DomainObjectStateRuntime(this, stateActivator, eventMapping, configuration);
 
-            domainObjectRepository = provider.GetRequiredService<IDomainObjectRepository>();
+            domainObjectRepository = repo;
         }
 
         public bool Policy<T>() where T : PolicyBase, new()

@@ -21,25 +21,23 @@ namespace BE.CQRS.Domain
         private readonly EventSourceConfiguration configuration;
         private static readonly string TraceCategory = typeof(DomainObjectRepositoryBase).FullName;
         private readonly ILogger logger;
-        private readonly IServiceProvider provider;
         private readonly IStateActivator stateActivator;
-        private readonly IDomainObjectActivator activator;
-        private IImmediateConventionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
+        private readonly IDomainObjectActivator domainObjectActivator;
+        private readonly IImmediateConventionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
+        private readonly IStateEventMapping eventMapping;
 
-        protected DomainObjectRepositoryBase(EventSourceConfiguration configuration, IServiceProvider provider)
+        protected DomainObjectRepositoryBase(EventSourceConfiguration configuration
+            , IImmediateConventionDenormalizer denormalizer, IDomainObjectActivator domainObjectActivator,
+            IStateActivator stateActivator,IStateEventMapping eventMapping,ILoggerFactory loggerFactory)
         {
             Precondition.For(configuration, nameof(configuration))
                 .NotNull("Configuration for domainobject repository must not be null!");
-
-            Precondition.For(provider, nameof(provider))
-                .NotNull("provider for domainobject repository must not be null!");
-
-            this.provider = provider;
-            denormalizer = provider.GetService<IImmediateConventionDenormalizer>();
-            activator = provider.GetRequiredService<IDomainObjectActivator>();
-            stateActivator = provider.GetRequiredService<IStateActivator>();
+            this.denormalizer = denormalizer;
+            this.domainObjectActivator = domainObjectActivator;
+            this.stateActivator = stateActivator;
             this.configuration = configuration;
-            logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger(GetType());
+            this.eventMapping = eventMapping;
+            logger = loggerFactory.CreateLogger(GetType());
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject
@@ -95,7 +93,7 @@ namespace BE.CQRS.Domain
                 foreach (IEvent @event in persistedEvents)
                 {
                     configuration.PostSavePipeline?.Invoke(@event);
-                    
+
                     if (denormalizer != null)
                     {
                         await denormalizer.HandleAsync(@event);
@@ -161,11 +159,11 @@ namespace BE.CQRS.Domain
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
 
-            var instance = activator.Resolve<T>(id);
+            var instance = domainObjectActivator.Resolve<T>(id);
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
             await instance.ApplyEvents(events, eventTypes);
-            instance.ApplyConfig(configuration,provider);
+            ApplyConfigToDomainObject(instance);
 
             return instance;
         }
@@ -176,14 +174,16 @@ namespace BE.CQRS.Domain
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
 
-            var instance = activator.Resolve<T>(id);
+            var instance = domainObjectActivator.Resolve<T>(id);
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
             await instance.ApplyEvents(events);
 
-            instance.ApplyConfig(configuration,provider);
+            ApplyConfigToDomainObject(instance);
             return instance;
         }
+
+      
 
         public async Task<T> Get<T>(string id, long version, CancellationToken token) where T : class, IDomainObject
         {
@@ -191,12 +191,12 @@ namespace BE.CQRS.Domain
             string streamName = ResolveStreamName(id, type);
             logger.LogTrace("Reading events for type \"{type}\"-{id} ...", type, id);
 
-            var instance = activator.Resolve<T>(id);
+            var instance = domainObjectActivator.Resolve<T>(id);
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, version, token);
             await instance.ApplyEvents(events);
 
-            instance.ApplyConfig(configuration,provider);
+            ApplyConfigToDomainObject(instance);
             return instance;
         }
 
@@ -209,12 +209,12 @@ namespace BE.CQRS.Domain
         {
             string streamName = ResolveStreamName(id, domainObjectType);
 
-            IDomainObject instance = activator.Resolve(domainObjectType, id);
+            IDomainObject instance = domainObjectActivator.Resolve(domainObjectType, id);
 
             IAsyncEnumerable<IEvent> events = ReadEvents(streamName, token);
 
             await instance.ApplyEvents(events);
-            instance.ApplyConfig(configuration,provider);
+            ApplyConfigToDomainObject(instance);
 
             return instance;
         }
@@ -238,7 +238,12 @@ namespace BE.CQRS.Domain
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {
-            return activator.Resolve(domainObjectType, id);
+            return domainObjectActivator.Resolve(domainObjectType, id);
+        }
+        
+        private void ApplyConfigToDomainObject<T>(T instance) where T : class, IDomainObject
+        {
+            instance.ApplyConfig(configuration, stateActivator, eventMapping, this);
         }
     }
 }

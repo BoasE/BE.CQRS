@@ -9,9 +9,13 @@ using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Data.MongoDb.Streams;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
+using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -25,11 +29,14 @@ namespace BE.CQRS.Data.MongoDb
         private readonly IEventSerializer eventSerializer;
         private readonly IEventHash eventHash;
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db,IServiceProvider provider) : base(
-            configuration,provider)
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db,
+            IDomainObjectActivator domainObjectActivator,IStateActivator stateActivator,
+            IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizer denormalizer,
+            IStateEventMapping stateEventMapping,ILoggerFactory logger) 
+            : base(configuration,denormalizer,domainObjectActivator,stateActivator,stateEventMapping,logger)
         {
-            eventSerializer = provider.GetRequiredService<IEventSerializer>();
-            eventHash = provider.GetRequiredService<IEventHash>();
+            this.eventSerializer = eventSerializer;
+            this.eventHash = eventHash;
             mapper = new EventMapper(eventSerializer,eventHash);
             repository = new MongoCommitRepository(db,eventHash,eventSerializer);
         }

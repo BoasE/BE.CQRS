@@ -17,6 +17,7 @@ using System.Reactive;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
+using BE.CQRS.Domain;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
@@ -32,18 +33,19 @@ namespace Testrunner
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            var db = serviceProvider.GetRequiredService<IMongoDatabase>();
 
             var activator = new ActivatorDomainObjectActivator(); //TODO STartup helper
             serviceCollection
                 .AddSingleton<IDomainObjectActivator>(activator)
                 .AddSingleton<IStateActivator>(activator)
-                .AddSingleton<ILoggerFactory>(new NoopLoggerFactory());
+                .AddSingleton<ILoggerFactory>(new NoopLoggerFactory())
+                .AddSingleton<IDomainObjectRepository, MongoDomainObjectRepository>();
 
             var cfg = new EventSourceConfiguration()
                 .SetEventSecret("232");
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var db = serviceProvider.GetRequiredService<IMongoDatabase>();
 
             var ser = new JsonEventSerializer(new EventTypeResolver());
             var dto = new MyEvent() {Id = "2"};
@@ -55,7 +57,9 @@ namespace Testrunner
             var header = ser.SerializeHeader(dto.Headers);
 
             var test = JsonSerializer.Serialize(dto, dto.GetType());
-            var repo = new MongoDomainObjectRepository(cfg, db, serviceProvider);
+
+
+            var repo = serviceProvider.GetRequiredService<IDomainObjectRepository>();
 
             var bo2 = await repo.Get<SampleBo>("53fda695-5186-4253-a495-8f989d03dbf3");
             bo2.Next();
@@ -64,7 +68,9 @@ namespace Testrunner
             Console.ReadLine();
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
-            bo.ApplyConfig(cfg, serviceProvider);
+            bo.ApplyConfig(cfg, serviceProvider.GetRequiredService<IStateActivator>(),
+                serviceProvider.GetRequiredService<IStateEventMapping>(),
+                repo);
             bo.Execute();
 
             bo.Next();
