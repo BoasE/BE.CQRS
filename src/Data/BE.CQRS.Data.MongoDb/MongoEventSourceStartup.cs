@@ -19,28 +19,28 @@ namespace BE.CQRS.Data.MongoDb
     public static class MongoEventSourceStartup
     {
         public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
-            IMongoDatabase db)
+            IMongoDatabase database)
         {
-            Precondition.For(() => db).NotNull();
+            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(database));
+        }
+        
+        public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
+            Func<IMongoDatabase> dbFactory)
+        {
+            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(dbFactory));
+        }
+
+        public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
+            MongoEventsourceDataContext dataContext)
+        {
+            Precondition.For(() => dataContext).NotNull();
 
             services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(
-                x.GetRequiredService<EventSourceConfiguration>(), db, x.GetRequiredService<IDomainObjectActivator>(),
+                x.GetRequiredService<EventSourceConfiguration>(), dataContext,
+                x.GetRequiredService<IDomainObjectActivator>(),
                 x.GetRequiredService<IStateActivator>(), x.GetRequiredService<IEventSerializer>(),
                 x.GetRequiredService<IEventHash>(),
                 x.GetRequiredService<IImmediateConventionDenormalizer>(), x.GetRequiredService<IStateEventMapping>(),
-                x.GetRequiredService<ILoggerFactory>()));
-
-            return services;
-        }
-
-        public static IServiceCollection AddDefaultMongoDomainObjectRepository(this IServiceCollection services)
-        {
-            services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(
-                x.GetRequiredService<EventSourceConfiguration>(), x.GetRequiredService<IMongoDatabase>(),
-                x.GetRequiredService<IDomainObjectActivator>(), x.GetRequiredService<IStateActivator>(),
-                x.GetRequiredService<IEventSerializer>(),
-                x.GetRequiredService<IEventHash>(), x.GetRequiredService<IImmediateConventionDenormalizer>(),
-                x.GetRequiredService<IStateEventMapping>(),
                 x.GetRequiredService<ILoggerFactory>()));
 
             return services;

@@ -29,7 +29,7 @@ namespace BE.CQRS.Data.MongoDb
         private readonly IEventSerializer eventSerializer;
         private readonly IEventHash eventHash;
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration, IMongoDatabase db,
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration, MongoEventsourceDataContext dataContext,
             IDomainObjectActivator domainObjectActivator,IStateActivator stateActivator,
             IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizer denormalizer,
             IStateEventMapping stateEventMapping,ILoggerFactory logger) 
@@ -38,7 +38,7 @@ namespace BE.CQRS.Data.MongoDb
             this.eventSerializer = eventSerializer;
             this.eventHash = eventHash;
             mapper = new EventMapper(eventSerializer,eventHash);
-            repository = new MongoCommitRepository(db,eventHash,eventSerializer);
+            repository = new MongoCommitRepository(dataContext.Database,eventHash,eventSerializer);
         }
 
         public Task<long> GetCommitCount()

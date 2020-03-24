@@ -14,20 +14,18 @@ namespace WebApplication.Bootstrap
     {
         public static IServiceCollection AddCqrs(this IServiceCollection services, IConfiguration config)
         {
+       
             string eventSecret = "0mDJVERJ34e4qLC6JYvT!$_d#+54d";
-            string url = config["events:host"];
-            string db = config["events:db"];
-
-            Console.WriteLine($"ES DB: {url} - {db}");
-            IMongoDatabase mongodb = new MongoClient(url).GetDatabase(db);
-
             var esconfig = new EventSourceConfiguration()
                 .SetEventSecret(eventSecret)
                 .SetDomainObjectAssemblies(typeof(DomainObjectSample).Assembly);
 
+            string url = config["events:host"];
+            string db = config["events:db"];
+            
             services
                 .AddServiceProviderDomainObjectAcitvator()
-                .AddMongoDomainObjectRepository(mongodb)
+                .AddMongoDomainObjectRepository(()=>new MongoClient(url).GetDatabase(db))
                 .AddConventionBasedInMemoryCommandBus(esconfig)
                 .AddEventSource(esconfig);
            

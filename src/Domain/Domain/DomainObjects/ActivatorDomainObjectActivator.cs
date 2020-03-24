@@ -5,7 +5,7 @@ using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
-    public sealed class : IDomainObjectActivator,IStateActivator
+    public sealed class ActivatorDomainObjectActivator : IDomainObjectActivator,IStateActivator
     {
         private static readonly TypeInfo DomainObjectInfo = typeof(IDomainObject).GetTypeInfo();
 
