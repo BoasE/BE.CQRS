@@ -23,21 +23,6 @@ namespace BE.CQRS.Domain.Configuration
             return services;
         }
 
-        /*public static EventDenormalizer UseConvetionBasedDenormalizer(this IApplicationBuilder app,
-            ILoggerFactory logger) // TODO Extract Object Factory like the DomainObjectFacotry
-        {
-            Precondition.For(() => app).NotNull();
-
-            var config = app.ApplicationServices.GetRequiredService<DenormalizerConfiguration>();
-
-            var result = new EventDenormalizer(app.ApplicationServices.GetRequiredService<IEventSubscriber>(),
-                new ConventionEventHandler(app.ApplicationServices.GetRequiredService<IDenormalizerActivator>(), logger,
-                    config.DenormalizerAssemblies),
-                config.StreamPositionGateway);
-
-            return result;
-        }*/
-
         public static DenormalizerConfiguration SetDenormalizerAssemblies(this DenormalizerConfiguration config,
             params Assembly[] assemblies)
         {
