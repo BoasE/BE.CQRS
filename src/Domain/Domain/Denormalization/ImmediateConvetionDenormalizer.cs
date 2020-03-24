@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Denormalization
 {
@@ -15,9 +16,10 @@ namespace BE.CQRS.Domain.Denormalization
 
         public int HandlerCount => conventionHandler.HandlerCount;
 
-        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator)
+        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator,
+            ILoggerFactory loggerFactory)
         {
-            conventionHandler = new ConventionEventHandler(activator, config.DenormalizerAssemblies);
+            conventionHandler = new ConventionEventHandler(activator, loggerFactory, config.DenormalizerAssemblies);
         }
 
         public Task HandleAsync(IEvent @event)

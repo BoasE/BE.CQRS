@@ -21,17 +21,20 @@ namespace BE.CQRS.Domain.Events.Handlers
         private readonly Func<Type, object> normalizerFactory;
         private readonly EventHandlerRegistry mapping = new EventHandlerRegistry();
         private readonly ILogger logger;
-        
+
         public int HandlerCount => denormalizers.Length;
 
-        public ConventionEventHandler(IDenormalizerActivator activator, params Assembly[] projectors) // TODO Unify to one constructor
+        public ConventionEventHandler(IDenormalizerActivator activator, ILoggerFactory loggerFactory,
+            params Assembly[] projectors) // TODO Unify to one constructor
         {
-            Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any(),"No projector assemblies were passed!");
+            Precondition.For(projectors, nameof(projectors)).NotNull()
+                .True(x => x.Any(), "No projector assemblies were passed!");
             normalizerFactory = activator.ResolveDenormalizer;
             IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
 
             List<Type> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
 
+            this.logger = loggerFactory.CreateLogger(GetType());
             denormalizers = denormalizersWithMethods.ToArray();
         }
 
@@ -63,6 +66,7 @@ namespace BE.CQRS.Domain.Events.Handlers
 
                 mapping.Add(methods);
             }
+
             return denormalizersWithMethods;
         }
 
@@ -77,15 +81,18 @@ namespace BE.CQRS.Domain.Events.Handlers
             var watch = Stopwatch.StartNew();
             foreach (IGrouping<TypeInfo, EventHandlerMethod> denormailzer in denormalizerGroups)
             {
-                KeyValuePair<TypeInfo, object> instance = normalizerInstances.Single(x => x.Key.Equals(denormailzer.Key));
+                KeyValuePair<TypeInfo, object> instance =
+                    normalizerInstances.Single(x => x.Key.Equals(denormailzer.Key));
 
                 foreach (EventHandlerMethod method in denormailzer)
                 {
                     await SafeInvoke(@event, method, instance.Value);
                 }
             }
+
             watch.Stop();
-            logger?.LogTrace("\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms",type.FullName,watch.ElapsedMilliseconds);
+            logger?.LogTrace("\"{type.FullName}\" handled in {watch.ElapsedMilliseconds}ms", type.FullName,
+                watch.ElapsedMilliseconds);
         }
 
         private async Task SafeInvoke(IEvent @event, EventHandlerMethod method,
@@ -99,7 +106,7 @@ namespace BE.CQRS.Domain.Events.Handlers
             {
                 string msg = $"Error in event handler {err.Message} when handling {@event.GetType().FullName}";
 
-                logger.LogError(err,msg);
+                logger.LogError(err, msg);
             }
         }
     }

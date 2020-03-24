@@ -26,9 +26,9 @@ namespace BE.CQRS.Domain
         private readonly IImmediateConventionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
         private readonly IStateEventMapping eventMapping;
 
-        protected DomainObjectRepositoryBase(EventSourceConfiguration configuration
-            , IImmediateConventionDenormalizer denormalizer, IDomainObjectActivator domainObjectActivator,
-            IStateActivator stateActivator,IStateEventMapping eventMapping,ILoggerFactory loggerFactory)
+        protected DomainObjectRepositoryBase(EventSourceConfiguration configuration,
+            IImmediateConventionDenormalizer denormalizer, IDomainObjectActivator domainObjectActivator,
+            IStateActivator stateActivator, IStateEventMapping eventMapping, ILoggerFactory loggerFactory)
         {
             Precondition.For(configuration, nameof(configuration))
                 .NotNull("Configuration for domainobject repository must not be null!");
@@ -183,7 +183,6 @@ namespace BE.CQRS.Domain
             return instance;
         }
 
-      
 
         public async Task<T> Get<T>(string id, long version, CancellationToken token) where T : class, IDomainObject
         {
@@ -240,7 +239,7 @@ namespace BE.CQRS.Domain
         {
             return domainObjectActivator.Resolve(domainObjectType, id);
         }
-        
+
         private void ApplyConfigToDomainObject<T>(T instance) where T : class, IDomainObject
         {
             instance.ApplyConfig(configuration, stateActivator, eventMapping, this);
