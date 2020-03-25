@@ -36,15 +36,15 @@ namespace BE.CQRS.Domain.Conventions
 
         public ConventionCommandPipeline(IConventionCommandInvoker invoker, IDomainObjectLocator locator,
             ILoggerFactory loggerFactory,
-            params Assembly[] domainObjectAssemblies)
+            IEnumerable<Assembly> domainObjectAssemblies)
         {
             this.locator = locator;
             this.invoker = invoker;
             logger = loggerFactory.CreateLogger<ConventionCommandPipeline>();
-            BindDomainObjects(domainObjectAssemblies);
+            BindDomainObjects(domainObjectAssemblies.ToList());
         }
 
-        private void BindDomainObjects(Assembly[] domainObjectAssemblies)
+        private void BindDomainObjects(IList<Assembly> domainObjectAssemblies)
         {
             IEnumerable<Type> types = locator.ResolveDomainObjects(domainObjectAssemblies);
 
@@ -71,7 +71,7 @@ namespace BE.CQRS.Domain.Conventions
 
             commandMapping = commandMappings;
 
-            var assemblyCount = domainObjectAssemblies.Length;
+            var assemblyCount = domainObjectAssemblies.Count;
             logger.LogDebug("Found {count} DomainObjects in {assemblyCount} assemblies", count, assemblyCount);
         }
 

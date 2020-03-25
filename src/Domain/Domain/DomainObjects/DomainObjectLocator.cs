@@ -59,7 +59,7 @@ namespace BE.CQRS.Domain.DomainObjects
             return CommandType.IsAssignableFrom(first.ParameterType.GetTypeInfo());
         }
 
-        public IEnumerable<Type> ResolveDomainObjects(params Assembly[] source)
+        public IEnumerable<Type> ResolveDomainObjects(IList<Assembly> source)
         {
             IEnumerable<Type> types = source
                 .SelectMany(i => i.ExportedTypes)

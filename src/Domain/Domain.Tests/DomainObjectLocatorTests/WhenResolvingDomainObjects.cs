@@ -47,7 +47,8 @@ namespace BE.CQRS.Domain.Tests.DomainObjectLocatorTests
         {
             DomainObjectLocator sut = GetSut();
 
-            return sut.ResolveDomainObjects(typeof(FakeObject).GetTypeInfo().Assembly);
+            var asm = new List<Assembly>() {typeof(FakeObject).GetTypeInfo().Assembly};
+            return sut.ResolveDomainObjects(asm);
         }
     }
 }

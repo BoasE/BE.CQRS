@@ -7,7 +7,7 @@ namespace BE.CQRS.Domain.DomainObjects
 {
     public interface IDomainObjectLocator
     {
-        IEnumerable<Type> ResolveDomainObjects(params Assembly[] source);
+        IEnumerable<Type> ResolveDomainObjects(IList<Assembly> source);
 
         IEnumerable<CommandMethodMapping> ResolveConventionalMethods(Type domainObjectType);
     }

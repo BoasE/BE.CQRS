@@ -41,7 +41,7 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => config).NotNull();
             Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x => x.Any());
 
-            config.DomainObjectAssemblies = assembliesWithDomainObjects;
+            config.AddDomainObjectAssembly(assembliesWithDomainObjects);
 
             return config;
         }

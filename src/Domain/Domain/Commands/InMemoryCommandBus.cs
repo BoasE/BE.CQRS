@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Reflection;
@@ -54,7 +55,7 @@ namespace BE.CQRS.Domain.Commands
 
         public static InMemoryCommandBus CreateConventionCommandBus(IDomainObjectRepository repository,
             ILoggerFactory loggerFactory,
-            params Assembly[] domainObjectAssemblies)
+            IEnumerable<Assembly> domainObjectAssemblies)
         {
             Precondition.For(repository, nameof(repository)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
