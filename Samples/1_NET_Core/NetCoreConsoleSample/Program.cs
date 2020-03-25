@@ -23,7 +23,12 @@ namespace NetCoreConsoleSample
             Console.WriteLine("Starting application...");
             Console.WriteLine("Adding CQRS...");
 
-            var services = ConfgServices();
+            var services = CQRSBooter.CreateServiceCollectionWithLogger();
+            
+            services
+                .AddEventSource()
+                .AddDenormalizer();
+
             var serviceProvider = services.BuildServiceProvider();
 
             var repo = serviceProvider.GetRequiredService<IDomainObjectRepository>();
@@ -35,17 +40,6 @@ namespace NetCoreConsoleSample
             Console.WriteLine($"Persisted customer name: {persistedCustomer.State<NameState>().Name}");
         }
 
-        private static IServiceCollection ConfgServices()
-        {
-            var factory = LoggerFactory.Create(x => x.AddConsole());
-
-            var services = new ServiceCollection()
-                .AddSingleton<ILoggerFactory>(factory)
-                .AddEventSource()
-                .AddDenormalizer();
-
-            return services;
-        }
 
         private static Customer CreateCustomerObject()
         {

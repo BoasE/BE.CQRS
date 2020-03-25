@@ -5,6 +5,7 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using NetCoreConsoleSample.Domain;
 
@@ -12,6 +13,16 @@ namespace NetCoreConsoleSample
 {
     public static class CQRSBooter
     {
+        public static IServiceCollection CreateServiceCollectionWithLogger()
+        {
+            var factory = LoggerFactory.Create(x => x.AddConsole());
+
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(factory);
+
+            return services;
+            
+        }
         public static IServiceCollection AddEventSource(this IServiceCollection services)
         {
             var cfg = new EventSourceConfiguration()
