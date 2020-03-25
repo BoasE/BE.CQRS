@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Data\BE.CQRS.Data.MongoDb\MongoDb.csproj" />
+    <ProjectReference Include="..\..\di\AspCoreDi\AspCoreDi.csproj" />
     <ProjectReference Include="..\..\Domain\Domain\Domain.csproj" />
   </ItemGroup>
 
