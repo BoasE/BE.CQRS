@@ -4,9 +4,8 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Dependency management reworked</PackageReleaseNotes>
-    <PackageVersion>0.80.01-alpha</PackageVersion>
-    <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
+    <PackageReleaseNotes>Lazy mongodb, EventSourceDataContext, EventSourceDiContext</PackageReleaseNotes>
+    <PackageVersion>0.80.2-alpha</PackageVersion>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
