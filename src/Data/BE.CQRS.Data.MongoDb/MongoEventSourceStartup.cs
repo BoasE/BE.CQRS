@@ -5,7 +5,6 @@ using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
-using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.Serialization;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
@@ -37,8 +36,7 @@ namespace BE.CQRS.Data.MongoDb
 
             services.TryAddSingleton<IDomainObjectRepository>(x => new MongoDomainObjectRepository(
                 x.GetRequiredService<EventSourceConfiguration>(), dataContext,
-                x.GetRequiredService<IDomainObjectActivator>(),
-                x.GetRequiredService<IStateActivator>(), x.GetRequiredService<IEventSerializer>(),
+                x.GetRequiredService<EventsourceDIContext>(), x.GetRequiredService<IEventSerializer>(),
                 x.GetRequiredService<IEventHash>(),
                 x.GetRequiredService<IImmediateConventionDenormalizer>(), x.GetRequiredService<IStateEventMapping>(),
                 x.GetRequiredService<ILoggerFactory>()));

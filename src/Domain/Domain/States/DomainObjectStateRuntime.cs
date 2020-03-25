@@ -12,14 +12,14 @@ namespace BE.CQRS.Domain.States
     public sealed class DomainObjectStateRuntime
     {
         private readonly IStateEventMapping stateToEventMapper;
-        private readonly IStateActivator activator;
+        private readonly EventsourceDIContext diContext;
         private readonly IDomainObject domainObject;
 
-        public DomainObjectStateRuntime(IDomainObject domainObject, IStateActivator stateActivator,
+        public DomainObjectStateRuntime(IDomainObject domainObject, EventsourceDIContext diContext,
             IStateEventMapping mapper, EventSourceConfiguration config)
         {
             this.domainObject = domainObject;
-            activator = stateActivator;
+            this.diContext = diContext;
             stateToEventMapper = mapper;
         }
 
@@ -62,7 +62,7 @@ namespace BE.CQRS.Domain.States
 
         private T StateInternal<T>(bool excludeUncommitted) where T : class, IState
         {
-            var state = activator.ResolveState<T>();
+            var state = diContext.StateActivator.ResolveState<T>();
 
             ExecuteState(excludeUncommitted, state);
 

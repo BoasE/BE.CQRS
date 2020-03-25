@@ -47,10 +47,10 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration, IStateActivator stateActivator,
+        public void ApplyConfig(EventSourceConfiguration configuration,EventsourceDIContext diContext,
             IStateEventMapping eventMapping,IDomainObjectRepository repo)
         {
-            stateRuntime = new DomainObjectStateRuntime(this, stateActivator, eventMapping, configuration);
+            stateRuntime = new DomainObjectStateRuntime(this, diContext, eventMapping, configuration);
 
             domainObjectRepository = repo;
         }

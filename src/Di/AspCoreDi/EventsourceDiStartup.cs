@@ -1,4 +1,5 @@
 ﻿using System;
+using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
@@ -15,9 +16,13 @@ namespace BE.CQRS.Di.AspCore
     {
         public static IServiceCollection AddServiceProviderDomainObjectAcitvator(this IServiceCollection services)
         {
-            services.AddSingleton<IDomainObjectActivator>(x =>
-                    new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>()))
-                .AddSingleton<IStateActivator>(x => (IStateActivator) x.GetRequiredService<IDomainObjectActivator>());
+            services
+                .AddSingleton<EventsourceDIContext>(x =>
+                {
+                    var activator = new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>());
+                    return new EventsourceDIContext(activator, activator);
+                });
+
 
             return services;
         }
@@ -30,7 +35,5 @@ namespace BE.CQRS.Di.AspCore
             serivces.TryAddSingleton<IDenormalizerActivator, ServiceCollectionActivator>();
             return serivces;
         }
-
-       
     }
 }

@@ -38,6 +38,7 @@ namespace Testrunner
             serviceCollection
                 .AddSingleton<IDomainObjectActivator>(activator)
                 .AddSingleton<IStateActivator>(activator)
+                .AddSingleton<EventsourceDIContext>()
                 .AddSingleton<ILoggerFactory>(new NoopLoggerFactory())
                 .AddSingleton<IDomainObjectRepository, MongoDomainObjectRepository>();
 
@@ -68,7 +69,7 @@ namespace Testrunner
             Console.ReadLine();
 
             var bo = new SampleBo(Guid.NewGuid().ToString());
-            bo.ApplyConfig(cfg, serviceProvider.GetRequiredService<IStateActivator>(),
+            bo.ApplyConfig(cfg, serviceProvider.GetRequiredService<EventsourceDIContext>(),
                 serviceProvider.GetRequiredService<IStateEventMapping>(),
                 repo);
             bo.Execute();

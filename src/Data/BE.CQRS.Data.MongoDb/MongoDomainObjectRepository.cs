@@ -26,14 +26,15 @@ namespace BE.CQRS.Data.MongoDb
         private readonly MongoCommitRepository repository;
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper;
+        private readonly EventsourceDIContext diContext;
         private readonly IEventSerializer eventSerializer;
         private readonly IEventHash eventHash;
 
         public MongoDomainObjectRepository(EventSourceConfiguration configuration, MongoEventsourceDataContext dataContext,
-            IDomainObjectActivator domainObjectActivator,IStateActivator stateActivator,
+            EventsourceDIContext diContext,
             IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizer denormalizer,
             IStateEventMapping stateEventMapping,ILoggerFactory logger) 
-            : base(configuration,denormalizer,domainObjectActivator,stateActivator,stateEventMapping,logger)
+            : base(configuration,denormalizer,diContext,stateEventMapping,logger)
         {
             this.eventSerializer = eventSerializer;
             this.eventHash = eventHash;
