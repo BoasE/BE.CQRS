@@ -26,7 +26,6 @@ namespace BE.CQRS.Data.MongoDb
         private readonly MongoCommitRepository repository;
         private readonly StreamNamer namer = new StreamNamer();
         private readonly EventMapper mapper;
-        private readonly EventsourceDIContext diContext;
         private readonly IEventSerializer eventSerializer;
         private readonly IEventHash eventHash;
 

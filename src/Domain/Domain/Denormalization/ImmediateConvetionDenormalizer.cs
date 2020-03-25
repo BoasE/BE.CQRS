@@ -16,10 +16,10 @@ namespace BE.CQRS.Domain.Denormalization
 
         public int HandlerCount => conventionHandler.HandlerCount;
 
-        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, IDenormalizerActivator activator,
+        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, DenormalizerDiContext diContext,
             ILoggerFactory loggerFactory)
         {
-            conventionHandler = new ConventionEventHandler(activator, loggerFactory, config.DenormalizerAssemblies);
+            conventionHandler = new ConventionEventHandler(diContext, loggerFactory, config.DenormalizerAssemblies);
         }
 
         public Task HandleAsync(IEvent @event)

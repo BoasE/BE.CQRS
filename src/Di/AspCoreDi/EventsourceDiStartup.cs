@@ -17,7 +17,7 @@ namespace BE.CQRS.Di.AspCore
         public static IServiceCollection AddServiceProviderDomainObjectAcitvator(this IServiceCollection services)
         {
             services
-                .AddSingleton<EventsourceDIContext>(x =>
+                .TryAddSingleton<EventsourceDIContext>(x =>
                 {
                     var activator = new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>());
                     return new EventsourceDIContext(activator, activator);
@@ -32,7 +32,9 @@ namespace BE.CQRS.Di.AspCore
         {
             Precondition.For(() => serivces).NotNull();
 
-            serivces.TryAddSingleton<IDenormalizerActivator, ServiceCollectionActivator>();
+            serivces.TryAddSingleton<DenormalizerDiContext>(x =>
+                new DenormalizerDiContext(new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>())));
+
             return serivces;
         }
     }
