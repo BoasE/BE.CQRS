@@ -78,8 +78,9 @@ namespace BE.CQRS.Data.MongoDb.Streams
 
         private Task WriteAsync(string streamName, StreamPosition position)
         {
-            FilterDefinition<StreamPosition> filter = GetStreamFilter(streamName);
-            return collection.ReplaceOneAsync(filter, position, new UpdateOptions
+            var filter = GetStreamFilter(streamName);
+            
+            return collection.ReplaceOneAsync(filter, position, new ReplaceOptions()
             {
                 IsUpsert = true
             });
