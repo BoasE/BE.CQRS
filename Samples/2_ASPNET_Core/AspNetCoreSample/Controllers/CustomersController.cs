@@ -28,15 +28,20 @@ namespace AspNetCoreSample.Controllers
         public async Task<IActionResult> Post([FromBody] CreateCustomerModel model)
         {
             var customerId = Guid.NewGuid().ToString();
+            
+            //The bus will call the customer domain object 
             await bus.EnqueueAsync(new CreateCustomerFromApiCommand()
             {
                 DomainObjectId = customerId, //Mandatory Id
                 Name = model.Name
             });
 
-            var acceptedResult = new AcceptedResult();
-            acceptedResult.Location = new Uri($"/api/customers/{customerId}", UriKind.Relative).ToString();
-
+            var acceptedResult = new AcceptedResult
+            {
+                //Give The Client a hint where to get the details( see below).
+                Location = new Uri($"/api/customers/{customerId}", UriKind.Relative).ToString()
+            };
+            
             return acceptedResult;
         }
 
