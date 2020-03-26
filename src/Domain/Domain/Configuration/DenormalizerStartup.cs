@@ -1,12 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
-using BE.CQRS.Domain.Denormalization;
-using BE.CQRS.Domain.Events.Handlers;
-using BE.CQRS.Domain.Logging;
 using BE.FluentGuard;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Configuration
 {
