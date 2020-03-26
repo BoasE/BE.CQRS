@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AspNetCoreSample
 {
@@ -19,24 +20,23 @@ namespace AspNetCoreSample
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var factory = LoggerFactory.Create(x => x.AddConsole());
+
+
             Console.WriteLine("Configuring Services...");
             services
-                .AddCqrs(Configuration)
-                .AddMvc();
+                .AddEventSource()
+                .AddDenormalizer()
+                .AddControllers();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Console.WriteLine("Configuring Application...");
 
-            app.UseCqrs();
-            app.UseMvc();
+            app.UseAuthorization();
+            app.UseEndpoints(x => x.MapControllers());
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
         }
     }
 }

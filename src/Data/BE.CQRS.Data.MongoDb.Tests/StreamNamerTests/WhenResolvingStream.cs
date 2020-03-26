@@ -14,13 +14,13 @@ namespace BE.CQRS.Data.MongoDb.Tests.StreamNamerTests
         [Fact]
         public void ItContainsTheId()
         {
-            Assert.True(streamName.Contains("123"));
+            Assert.Contains("123", streamName);
         }
 
         [Fact]
         public void ItContainsTheType()
         {
-            Assert.True(streamName.Contains(typeof(SampleBo).FullName));
+            Assert.Contains(typeof(SampleBo).FullName, streamName);
         }
 
         [Fact]

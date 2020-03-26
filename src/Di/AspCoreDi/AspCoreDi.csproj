@@ -6,8 +6,8 @@
     <AssemblyName>BE.CQRS.Di.AspCore</AssemblyName>
     <PackageId>BE.CQRS.Di.AspCore</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Support for customer EventSerializer</PackageReleaseNotes>
-    <PackageVersion>0.70.1-alpha</PackageVersion>
+    <PackageReleaseNotes>Lazy mongodb, EventSourceDataContext, EventSourceDiContext</PackageReleaseNotes>
+    <PackageVersion>0.80.2-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>

@@ -20,11 +20,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests.Visiting
        
 
             sut.ApplyEvent(@event);
-            sut.ApplyConfig(new EventSourceConfiguration
-            {
-                StateActivator = new ActivatorDomainObjectActivator()
-            });
-
+   
             sut.RaiseEvent();
             VisitorState = sut.State<SampleVisitor>();
             VisitorStateWithSuppres = sut.State<SampleVisitor>(true);

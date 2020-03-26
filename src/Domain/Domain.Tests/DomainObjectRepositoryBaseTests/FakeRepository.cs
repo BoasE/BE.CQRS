@@ -12,7 +12,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public sealed class FakeRepository : DomainObjectRepositoryBase
     {
-        public FakeRepository(EventSourceConfiguration configuration) : base(configuration)
+        public FakeRepository(EventSourceConfiguration configuration) : base(configuration, null, null, null, null)
         {
         }
 
@@ -43,21 +43,22 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
         protected override Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
         {
-            return Task.FromResult(new AppendResult("12",false, 3));
+            return Task.FromResult(new AppendResult("12", false, 3));
         }
 
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
         {
             throw new NotEmptyException(); //TODO How to return empty?
-            
         }
 
-        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion, CancellationToken token)
+        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion,
+            CancellationToken token)
         {
             throw new NotImplementedException();
         }
 
-        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes, CancellationToken token)
+        protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, ISet<Type> eventTypes,
+            CancellationToken token)
         {
             throw new NotImplementedException();
         }

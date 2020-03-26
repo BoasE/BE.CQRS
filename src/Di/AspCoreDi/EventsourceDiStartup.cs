@@ -1,40 +1,41 @@
 ﻿using System;
+using BE.CQRS.Domain;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BE.CQRS.Di.AspCore
 {
     public static class EventsourceDiStartup
     {
-        public static EventSourceConfiguration SetServiceProviderActivator(this EventSourceConfiguration config)
+        public static IServiceCollection AddServiceProviderDomainObjectAcitvator(this IServiceCollection services)
         {
-            var activator = new ServiceCollectionActivator();
-            config.Activator = activator;
-            config.StateActivator = activator;
-            return config;
+            services
+                .TryAddSingleton<EventsourceDIContext>(x =>
+                {
+                    var activator = new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>());
+                    return new EventsourceDIContext(activator, activator);
+                });
+
+
+            return services;
         }
 
-            public static DenormalizerConfiguration SetServiceProviderDenormalizerActivator(this DenormalizerConfiguration config)
+        public static IServiceCollection AddServiceProviderDenormalizerActivator(
+            this IServiceCollection serivces)
         {
-            Precondition.For(() => config).NotNull();
+            Precondition.For(() => serivces).NotNull();
 
-            config.Activator = new ServiceCollectionActivator();
+            serivces.TryAddSingleton<DenormalizerDiContext>(x =>
+                new DenormalizerDiContext(new ServiceCollectionActivator(x.GetRequiredService<IServiceProvider>())));
 
-            return config;
-        }
-
-        public static void UseServiceProviderActivator(this IApplicationBuilder app)
-        {
-            if (!(app.ApplicationServices.GetRequiredService<IDomainObjectActivator>() is ServiceCollectionActivator activator))
-            {
-                throw new InvalidOperationException("UseServiceCollectionActivator requires a registered IDomainObjectActivator Service with a type of \"ServiceCollectionActivator\"");
-            }
-
-            activator.UseProvider(app.ApplicationServices.GetRequiredService<IServiceProvider>());
+            return serivces;
         }
     }
 }

@@ -9,6 +9,7 @@ using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
@@ -46,10 +47,12 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration)
+        public void ApplyConfig(EventSourceConfiguration configuration,EventsourceDIContext diContext,
+            IStateEventMapping eventMapping,IDomainObjectRepository repo)
         {
-            stateRuntime = new DomainObjectStateRuntime(this, configuration);
-            domainObjectRepository = configuration.DomainObjectRepository;
+            stateRuntime = new DomainObjectStateRuntime(this, diContext, eventMapping, configuration);
+
+            domainObjectRepository = repo;
         }
 
         public bool Policy<T>() where T : PolicyBase, new()
@@ -181,8 +184,8 @@ namespace BE.CQRS.Domain.DomainObjects
             string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
             if (allowedEvents == null ||
                 (allowedEvents.Count > 0 && allowedEvents.Any(type =>
-                     type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
-                     type.AssemblyQualifiedName.Equals(eventType))))
+                    type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
+                    type.AssemblyQualifiedName.Equals(eventType))))
             {
                 @committedEvents.Add(@event);
             }

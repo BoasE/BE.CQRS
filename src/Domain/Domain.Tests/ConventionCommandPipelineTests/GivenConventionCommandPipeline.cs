@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Logging;
@@ -12,7 +13,7 @@ namespace BE.CQRS.Domain.Tests.ConventionCommandPipelineTests
     {
         protected ConventionCommandPipeline GetSut()
         {
-            Assembly asm = typeof(FakeObject).GetTypeInfo().Assembly;
+            var asm = new List<Assembly>() {typeof(FakeObject).GetTypeInfo().Assembly};
             var invoker = A.Fake<IConventionCommandInvoker>();
 
             return new ConventionCommandPipeline(invoker, new DomainObjectLocator(),new NoopLoggerFactory(), asm);

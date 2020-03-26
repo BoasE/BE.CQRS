@@ -5,8 +5,11 @@ using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Configuration
 {
@@ -16,32 +19,21 @@ namespace BE.CQRS.Domain.Configuration
             EventSourceConfiguration config)
         {
             Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.Activator).NotNull();
-            Precondition.For(() => config.CommandBus).NotNull();
-            Precondition.For(() => config.DomainObjectRepository).NotNull();
-
-            if (config.EventHash == null)
-                throw new InvalidOperationException($"EventHash must be set. Call \"{nameof(HashEvents)}\" before!");
-
-            collection.AddSingleton(config.Activator);
-            collection.AddSingleton(config.CommandBus);
-            collection.AddSingleton(config.DomainObjectRepository);
-            collection.AddSingleton(config.EventSerializer);
-
-            collection.AddSingleton(config.EventHash);
-
-            if (config.EventMapper != null)
-                collection.AddSingleton(config.EventMapper);
+            collection.AddSingleton(config);
+            collection.TryAddSingleton<IEventTypeResolver, EventTypeResolver>();
+            collection.TryAddSingleton<IStateEventMapping, StateEventMapping>();
+            collection.TryAddSingleton<IEventSerializer, JsonEventSerializer>();
+            collection.TryAddSingleton<IEventHash>(x =>
+            {
+                if (string.IsNullOrWhiteSpace(config.EventSecret))
+                    throw new InvalidOperationException(
+                        $"EventSecret must be set. Call \"{nameof(SetEventSecret)}\" before!");
+                return new ShaEventHash(config.EventSecret);
+            });
 
             return config;
         }
 
-        public static EventSourceConfiguration SetEventSerializer(this EventSourceConfiguration config, IEventSerializer serializer)
-        {
-            config.EventSerializer = serializer;
-
-            return config;
-        }
 
         public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config,
             params Assembly[] assembliesWithDomainObjects)
@@ -49,39 +41,26 @@ namespace BE.CQRS.Domain.Configuration
             Precondition.For(() => config).NotNull();
             Precondition.For(() => assembliesWithDomainObjects).NotNull().True(x => x.Any());
 
-            config.DomainObjectAssemblies = assembliesWithDomainObjects;
+            config.AddDomainObjectAssembly(assembliesWithDomainObjects);
 
             return config;
         }
 
-        public static EventSourceConfiguration SetConventionBasedInMemoryCommandBus(
-            this EventSourceConfiguration config)
+        public static IServiceCollection AddConventionBasedInMemoryCommandBus(
+            this IServiceCollection services, EventSourceConfiguration config)
         {
-            Precondition.For(() => config).NotNull();
-            Precondition.For(() => config.DomainObjectRepository).NotNull();
-            Precondition.For(() => config.DomainObjectAssemblies).NotNull();
+            services.AddSingleton<ICommandBus>(x => InMemoryCommandBus.CreateConventionCommandBus(
+                x.GetRequiredService<IDomainObjectRepository>(),
+                x.GetRequiredService<ILoggerFactory>(),
+                config.DomainObjectAssemblies));
 
-            config.CommandBus = InMemoryCommandBus.CreateConventionCommandBus(config.DomainObjectRepository,
-                config.LoggerFactory,
-                config.DomainObjectAssemblies);
-
-            return config;
+            return services;
         }
 
-        public static EventSourceConfiguration HashEvents(this EventSourceConfiguration config, string secret)
+        public static EventSourceConfiguration SetEventSecret(this EventSourceConfiguration config, string secret)
         {
             Precondition.For(secret, nameof(secret)).NotNullOrWhiteSpace();
-            config.EventHash = new ShaEventHash(secret);
-            return config;
-        }
-
-        public static EventSourceConfiguration SetDefaultActivator(this EventSourceConfiguration config)
-        {
-            Precondition.For(() => config).NotNull();
-            var activator = new ActivatorDomainObjectActivator();
-
-            config.Activator = activator;
-            config.StateActivator = activator;
+            config.EventSecret = secret;
             return config;
         }
     }

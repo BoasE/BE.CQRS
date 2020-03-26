@@ -7,7 +7,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
     {
         protected DomainObjectRepositoryBase GetSut(IDomainObjectActivator activator)
         {
-            return new FakeRepository(new EventSourceConfiguration(){Activator = activator});
+            return new FakeRepository(new EventSourceConfiguration());
         }
     }
 }

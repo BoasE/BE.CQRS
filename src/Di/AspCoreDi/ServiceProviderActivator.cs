@@ -10,6 +10,16 @@ namespace BE.CQRS.Di.AspCore
     {
         private IServiceProvider provider;
 
+        public ServiceCollectionActivator()
+        {
+        }
+
+        public ServiceCollectionActivator(IServiceProvider provider)
+        {
+            this.provider = provider;
+        }
+
+
         public void UseProvider(IServiceProvider providerInstance)
         {
             provider = providerInstance;
@@ -35,14 +45,14 @@ namespace BE.CQRS.Di.AspCore
             return ActivatorUtilities.CreateInstance(provider, denormalizerType);
         }
 
-        public T ResolveState<T>() where T : class,IState 
+        public T ResolveState<T>() where T : class, IState
         {
             return ResolveState(typeof(T)) as T;
         }
 
         public IState ResolveState(Type denormalizerType)
         {
-          return (IState)ActivatorUtilities.CreateInstance(provider, denormalizerType);
+            return (IState) ActivatorUtilities.CreateInstance(provider, denormalizerType);
         }
     }
 }

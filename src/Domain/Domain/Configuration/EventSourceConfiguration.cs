@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
@@ -13,30 +14,16 @@ namespace BE.CQRS.Domain.Configuration
 {
     public sealed class EventSourceConfiguration
     {
+        public string EventSecret { get; set; } = null;
+        
         public string Prefix { get; set; }
+        public List<Assembly> DomainObjectAssemblies { get; } = new List<Assembly>();
+        
+        public Action<IEvent> PostSavePipeline { get; set; } //TODO Extract to a IEventHandler component
 
-        public IEventMapper EventMapper { get; set; }
-
-        public IDomainObjectActivator Activator { get; set; }
-
-        public IStateActivator StateActivator { get; set; }
-
-        public ICommandBus CommandBus { get; set; }
-
-        public IDomainObjectRepository DomainObjectRepository { get; set; }
-
-        public Assembly[] DomainObjectAssemblies { get; set; }
-
-        public ILoggerFactory LoggerFactory { get; set; } = new NoopLoggerFactory();
-
-        public IStateEventMapping StateToEventMapper { get; set; } = new StateEventMapping();
-
-        public Action<IEvent> PostSavePipeline { get; set; }
-
-        public IEventHandler DirectDenormalizers { get; set; }
-
-        public IEventHash EventHash { get; set; } = null;
-
-        public IEventSerializer EventSerializer { get; set; } = new JsonEventSerializer(new EventTypeResolver());
+        public void AddDomainObjectAssembly(params  Assembly[] assemblies)
+        {
+            DomainObjectAssemblies.AddRange(assemblies);
+        }
     }
 }

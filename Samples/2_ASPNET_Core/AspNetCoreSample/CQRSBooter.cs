@@ -3,38 +3,47 @@ using AspNetCoreSample.Domain;
 using BE.CQRS.Data.MongoDb;
 using BE.CQRS.Di.AspCore;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace AspNetCoreSample
 {
     public static class CQRSBooter
     {
-        public static IServiceCollection AddCqrs(this IServiceCollection serivces, IConfiguration config)
+ 
+        public static IServiceCollection AddEventSource(this IServiceCollection services)
         {
-            Console.WriteLine("Adding CQRS...");
-            string url = config["CustomerDatabase:MongoDb:Host"];
-            string db = config["CustomerDatabase:MongoDb:Name"];
+            var cfg = new EventSourceConfiguration()
+                .SetEventSecret("232") //Your secret key which is used to sign the vents
+                .SetDomainObjectAssemblies(typeof(Customer).Assembly); //Tell the place where your domainobjects are
 
-            Console.WriteLine($"ES DB: {url} - {db}");
-            IMongoDatabase mongodb = new MongoClient(url).GetDatabase(db);
-            serivces.AddEventSource(
-                new EventSourceConfiguration()
-                    .SetDomainObjectAssemblies(typeof(Customer).Assembly)
-                    .SetServiceProviderActivator()
-                    .SetMongoDomainObjectRepository(mongodb)
-                    .SetConventionBasedInMemoryCommandBus());
+            services
+                .AddServiceProviderDomainObjectAcitvator()
+                .AddMongoDomainObjectRepository(() =>
+                    new MongoClient("mongodb://localhost:27017/?connectTimeoutMS=10000")
+                        .GetDatabase("eventTests2"))
+                .AddConventionBasedInMemoryCommandBus(cfg)
+                .AddEventSource(cfg);
 
-            Console.WriteLine($"CQRS added");
-            return serivces;
+            return services;
         }
 
-        public static IApplicationBuilder UseCqrs(this IApplicationBuilder app)
+        public static IServiceCollection AddDenormalizer(this IServiceCollection services)
         {
-            app.UseServiceProviderActivator();
-            return app;
+            DenormalizerConfiguration config = new DenormalizerConfiguration()
+                .SetDenormalizerAssemblies(typeof(Customer).Assembly);
+
+            services
+                .AddServiceProviderDenormalizerActivator()
+                .AddImmediateDenormalization()
+                .AddDenormalization(config)
+                .AddProjectionBuilder();
+
+            return services;
         }
     }
 }
