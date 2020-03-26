@@ -4,7 +4,6 @@
     {
         Create,
         Update,
-        CreateOrUpdate,
         UpdateWithoutHistory
     }
 }
