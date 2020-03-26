@@ -7,18 +7,21 @@ namespace BE.CQRS.Mapping.AutoMapper
 {
     public sealed class AutoObjectMapper : IEventMapper
     {
-        public AutoObjectMapper()
+        private readonly map.IMapper mapper;
+        public AutoObjectMapper(map.IMapper mapper)
         {
+            this.mapper = mapper;
         }
 
         public TU MapToEvent<T, TU>(T source) where TU : IEvent
         {
-            return map.Mapper.Map<T, TU>(source);
+            
+            return mapper.Map<T, TU>(source);
         }
 
         public TU MapToCommand<T, TU>(T source) where TU : ICommand
         {
-            return map.Mapper.Map<T, TU>(source);
+            return mapper.Map<T, TU>(source);
         }
     }
 }
