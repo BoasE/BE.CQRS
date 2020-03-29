@@ -29,9 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mapping", "Mapping", "{6980
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BE.CQRS.Mapping.AutoMapper", "Mapping\Automapper\BE.CQRS.Mapping.AutoMapper\BE.CQRS.Mapping.AutoMapper.csproj", "{C6367A94-9CC1-46AD-9F39-F80D068D3CA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspCore", "Web\BE.CQRS.Web.AspCore\AspCore.csproj", "{1841E957-1290-4E93-A3B3-5912E2A5AB74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspCore", "web\BE.CQRS.Web.AspCore\AspCore.csproj", "{1841E957-1290-4E93-A3B3-5912E2A5AB74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspCore.Tests", "Web\BE.CQRS.Web.AspCore.Tests\AspCore.Tests.csproj", "{3CC75FA1-6BB0-4DAA-AF58-755F62D7D327}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspCore.Tests", "web\BE.CQRS.Web.AspCore.Tests\AspCore.Tests.csproj", "{3CC75FA1-6BB0-4DAA-AF58-755F62D7D327}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiTests", "Di\DiTests\DiTests.csproj", "{7A183D4F-326D-46FA-B2B1-8F48BBF7B6E8}"
 EndProject
