@@ -1,5 +1,6 @@
 ﻿using System;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.States;
 using FakeItEasy;
 using Tests.Fakes;
 using Xunit;
@@ -8,7 +9,8 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public class WhenCreatingNewDomainObjects : GivenDomainObjectRepository
     {
-        private IDomainObjectActivator activator;
+        private IDomainObjectActivator activator = A.Fake<IDomainObjectActivator>();
+        private IStateActivator stateActivator = new ActivatorDomainObjectActivator();
         private readonly Type domainObjectType;
         private const string id = "123";
 
@@ -21,7 +23,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
             CreateFakeActivator();
 
-            DomainObjectRepositoryBase sut = GetSut(activator);
+            DomainObjectRepositoryBase sut = GetSut(activator,stateActivator);
 
             result = sut.New(domainObjectType, id);
         }
@@ -47,7 +49,6 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
         private void CreateFakeActivator()
         {
-            activator = A.Fake<IDomainObjectActivator>();
             A.CallTo(() => activator.Resolve(A<Type>.That.IsEqualTo(domainObjectType), A<string>.That.IsEqualTo(id))).Returns(expectedResult);
         }
     }

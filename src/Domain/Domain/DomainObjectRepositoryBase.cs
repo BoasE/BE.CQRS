@@ -9,6 +9,7 @@ using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
+using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,15 @@ namespace BE.CQRS.Domain
             this.configuration = configuration;
             this.eventMapping = eventMapping;
             this.diContext = diContext;
-            logger = loggerFactory.CreateLogger(GetType());
+
+            if (loggerFactory != null)
+            {
+                logger = loggerFactory.CreateLogger(GetType());
+            }
+            else
+            {
+                logger = new NoopLogger();
+            }
         }
 
         public async Task<AppendResult> SaveAsync<T>(T domainObject) where T : class, IDomainObject

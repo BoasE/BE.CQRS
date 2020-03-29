@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
+using BE.CQRS.Domain.States;
 using Xunit.Sdk;
 
 namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public sealed class FakeRepository : DomainObjectRepositoryBase
     {
-        public FakeRepository(EventSourceConfiguration configuration) : base(configuration, null, null, null, null)
+        public FakeRepository(EventSourceConfiguration configuration,EventsourceDIContext diContext) : base(configuration, null, diContext, new StateEventMapping(), null)
         {
         }
 
