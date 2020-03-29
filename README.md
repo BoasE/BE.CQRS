@@ -102,15 +102,21 @@ public static IServiceCollection AddCqrs(this IServiceCollection services, IConf
 ```csharp
 public static IServiceCollection AddDenormalizers(this IServiceCollection services, IConfiguration config)
 {
-    var client = new MongoClient(readDburl);
-    IMongoDatabase readDb = client.GetDatabase(readdb);
+    IMongoDatabase readDb = new MongoClient(readDburl).GetDatabase(readdb);
 
     var ctx = new DenormalizerContext(client, readDb);
     services.AddSingleton<IDenormalizerContext>(ctx);
 
-    AddCqrsDenormalizer(services);
-            return services;
-        }
+   DenormalizerConfiguration deconfig = new DenormalizerConfiguration()
+   .SetDenormalizerAssemblies(typeof(SampleDenormalizer).Assembly);
+
+   services
+       .AddServiceProviderDenormalizerActivator()
+       .AddImmediateDenormalization()
+       .AddDenormalization(deconfig);
+   
+   return services;
+}
      
 ```
 
