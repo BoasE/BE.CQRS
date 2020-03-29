@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Install dependencies
-      run: /src/dotnet restore
+      run: dotnet restore src/BE.CQRS.sln
     - name: Build
-      run: /src/dotnet build --configuration Release --no-restore
+      run: dotnet build src/BE.CQRS.sln --configuration Release --no-restore
     - name: Test
-      run: /src/dotnet test --no-restore --verbosity normal
+      run: dotnet test src/BE.CQRS.sln --no-restore --verbosity normal
