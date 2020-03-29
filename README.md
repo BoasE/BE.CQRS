@@ -77,22 +77,22 @@ To get started have a look at the sample directory.
 
 #### MongoDb as EventStore, and asp.core serviceprovider for di
 ```csharp
-public static void AddWrite(this IServiceCollection collection, IConfiguration config)
-{
-    var mongoDb = GetEsMongoDbFromConfig(config);
+public static IServiceCollection AddCqrs(this IServiceCollection services, IConfiguration config)
+    {
+        string eventSecret = "0mDJVERJ34e4qLC6JYvT!$_d#+54d";
+        var esconfig = new EventSourceConfiguration()
+            .SetEventSecret(eventSecret)
+            .SetDomainObjectAssemblies(typeof(DomainObjectSample).Assembly);
 
-    collection.AddEventSource(
-        new EventSourceConfiguration()
-            .SetDomainObjectAssemblies(typeof(ChildDomainObject).Assembly)
-            .SetServiceProviderActivator()
-            .SetMongoDomainObjectRepository(mongoDb)
-            .SetInMemoryCommandBus());
-}
-
-public static void UseWrite(this IApplicationBuilder app)
-{
-    app.UseServiceProviderActivator();
-}
+        string url = config["events:host"];
+        string db = config["events:db"];
+            
+        services
+            .AddServiceProviderDomainObjectAcitvator()
+            .AddMongoDomainObjectRepository(()=>new MongoClient(url).GetDatabase(db))
+            .AddConventionBasedInMemoryCommandBus(esconfig)
+            .AddEventSource(esconfig);
+        }
 ```
 
 
@@ -100,27 +100,17 @@ public static void UseWrite(this IApplicationBuilder app)
 ### Adding the denormalizers
 
 ```csharp
-public static void AddCqrsDenormalizer(this IServiceCollection collection, IConfiguration config)
+public static IServiceCollection AddDenormalizers(this IServiceCollection services, IConfiguration config)
 {
-    var eventDb = GetEsMongoDbFromConfig(config);
-    var streamPosDb = GetStreamPositionMongoDbFromConfig(config);
+    var client = new MongoClient(readDburl);
+    IMongoDatabase readDb = client.GetDatabase(readdb);
 
-    collection.AddDenormalizers(
-        new DenormalizerConfiguration()
-            .SetDenormalizerAssemblies(typeof(ChildDenormalizer).Assembly)
-            .SetMongoEventPositionGateway(streamPosDb)
-            .SetMongoDbEventSubscriber(eventDb)
-            .SetServiceProviderDenormalizerActivator()
-            ); 
-}
+    var ctx = new DenormalizerContext(client, readDb);
+    services.AddSingleton<IDenormalizerContext>(ctx);
 
-public static async Task<IApplicationBuilder> UseCqrsDenormalizerAsync(this IApplicationBuilder app, IServiceProvider provider)
-{
-    EventDenormalizer denormalizer = app.UseConvetionBasedDenormalizer();
-    await denormalizer.StartAsync(TimeSpan.FromMilliseconds(250));
-
-    return app;
-}
+    AddCqrsDenormalizer(services);
+            return services;
+        }
      
 ```
 
