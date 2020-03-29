@@ -6,7 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Data\BE.CQRS.Data.MongoDb\MongoDb.csproj" />
-      <ProjectReference Include="..\di\AspCoreDi\AspCoreDi.csproj" />
+      <ProjectReference Include="..\Di\AspCoreDi\AspCoreDi.csproj" />
       <ProjectReference Include="..\Domain\Domain\Domain.csproj" />
       <ProjectReference Include="..\Web\BE.CQRS.Web.AspCore\AspCore.csproj" />
     </ItemGroup>
