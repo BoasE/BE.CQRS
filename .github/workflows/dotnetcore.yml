@@ -22,9 +22,4 @@ jobs:
     - name: Build
       run: dotnet build src/BE.CQRS.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test src/BE.CQRS.sln --no-restore --verbosity normal
-    - name: Nuget
-      run: dotnet pack src/BE.CQRS.sln --no-restore --verbosity normal
-    - name: Push
-      run: nuget push "bin/Release/BE.CQRS.1.0.0.nupkg" --source "github"
-     
+      run: dotnet test src/BE.CQRS.sln --no-restore --verbosity normal 
