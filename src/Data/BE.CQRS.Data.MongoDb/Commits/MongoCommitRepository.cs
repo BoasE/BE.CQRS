@@ -19,7 +19,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private readonly MongoGlobalIdentifier identifier;
         private readonly EventMapper Mapper;
 
-        public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer) : base(db, "es_Commits")
+        public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer) : base(db,
+            "es_Commits")
         {
             Mapper = new EventMapper(eventSerializer, hash);
             identifier = new MongoGlobalIdentifier(db);
@@ -34,7 +35,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
             {
                 await collection.Indexes.CreateManyAsync(indexModels);
             }
-            catch (MongoCommandException e) when (e.CodeName.Equals("IndexOptionsConflict", StringComparison.OrdinalIgnoreCase))
+            catch (MongoCommandException e) when (e.CodeName.Equals("IndexOptionsConflict",
+                StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Dropping existing index due to conflicts...");
                 await collection.Indexes.DropAllAsync();
@@ -61,9 +63,11 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return Enumerate(query, token);
         }
 
-        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, long maxversion, CancellationToken token)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, long maxversion,
+            CancellationToken token)
         {
-            FilterDefinition<EventCommit> query = Filters.And(CommitFilters.ByAggregate(type, id), Filters.Lte(x => x.VersionEvents, maxversion));
+            FilterDefinition<EventCommit> query = Filters.And(CommitFilters.ByAggregate(type, id),
+                Filters.Lte(x => x.VersionEvents, maxversion));
 
             return Enumerate(query, token);
         }
@@ -176,10 +180,22 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return Enumerate(query, CancellationToken.None);
         }
 
+
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
             [EnumeratorCancellation] CancellationToken token)
         {
-            IAsyncCursor<EventCommit> cursor = await Collection.Find(query).SortBy(x => x.Ordinal).ToCursorAsync();
+            var options = new FindOptions()
+            {
+                NoCursorTimeout = true,
+                MaxTime = TimeSpan.MaxValue,
+                MaxAwaitTime = TimeSpan.MaxValue,
+            };
+
+
+            IAsyncCursor<EventCommit> cursor = await Collection.Find(query, options)
+                .SortBy(x => x.Ordinal)
+                .ToCursorAsync(token);
+
 
             while (await cursor.MoveNextAsync(token) && !token.IsCancellationRequested)
                 foreach (EventCommit item in cursor.Current)
