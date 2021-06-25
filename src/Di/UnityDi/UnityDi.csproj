@@ -4,11 +4,11 @@
     <RootNamespace>BE.CQRS.Di.Unity</RootNamespace>
     <AssemblyName>BE.CQRS.Di.Unity</AssemblyName>
     
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <LangVersion>default</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9</LangVersion>
     <PackageId>BE.CQRS.Di.Unity</PackageId>
-    <PackageReleaseNotes>Core 3.0 Migration </PackageReleaseNotes>
-    <PackageVersion>0.70.0-alpha</PackageVersion>
+    <PackageReleaseNotes>net5</PackageReleaseNotes>
+    <PackageVersion>0.90.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

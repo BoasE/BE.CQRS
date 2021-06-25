@@ -4,14 +4,14 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Configs for Transactions and read timeouts</PackageReleaseNotes>
-    <PackageVersion>0.80.5-alpha</PackageVersion>
+    <PackageReleaseNotes>net 5, Configs for Transactions and read timeouts</PackageReleaseNotes>
+    <PackageVersion>0.90-alpha</PackageVersion>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />

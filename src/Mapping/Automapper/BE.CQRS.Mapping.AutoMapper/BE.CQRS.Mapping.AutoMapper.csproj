@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <LangVersion>default</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9</LangVersion>
     <PackageId>BE.CQRS.Mapping</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Bumping Depedencies</PackageReleaseNotes>
-    <PackageVersion>0.80.3-alpha</PackageVersion>
+    <PackageReleaseNotes>net5</PackageReleaseNotes>
+    <PackageVersion>0.90.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

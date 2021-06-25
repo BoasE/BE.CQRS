@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <PackageId>BE.CQRS.Web.AspCore</PackageId>
         <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-        <PackageReleaseNotes>Bumping Depedencies</PackageReleaseNotes>
-        <PackageVersion>0.80.3-alpha</PackageVersion>
+        <PackageReleaseNotes>net5</PackageReleaseNotes>
+        <PackageVersion>0.90.0-alpha</PackageVersion>
         <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
         <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
         <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
-        <LangVersion>default</LangVersion>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
