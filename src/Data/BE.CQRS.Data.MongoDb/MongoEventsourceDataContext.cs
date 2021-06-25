@@ -9,13 +9,23 @@ namespace BE.CQRS.Data.MongoDb
 
         public IMongoDatabase Database => factory.Value;
 
-        public MongoEventsourceDataContext(IMongoDatabase db)
+        public bool DeactivateTimoutOnCommitScan { get; }
+        public bool UseTransactions { get; }
+
+        public MongoEventsourceDataContext(IMongoDatabase db, bool deactivateTimoutOnCommitScan = false,
+            bool useTransactions = false)
         {
+            DeactivateTimoutOnCommitScan = deactivateTimoutOnCommitScan;
+            UseTransactions = useTransactions;
+
             factory = new Lazy<IMongoDatabase>(() => db);
         }
 
-        public MongoEventsourceDataContext(Func<IMongoDatabase> factory)
+        public MongoEventsourceDataContext(Func<IMongoDatabase> factory, bool deactivateTimoutOnCommitScan = false,
+            bool useTransactions = false)
         {
+            DeactivateTimoutOnCommitScan = deactivateTimoutOnCommitScan;
+            UseTransactions = useTransactions;
             this.factory = new Lazy<IMongoDatabase>(factory);
         }
     }

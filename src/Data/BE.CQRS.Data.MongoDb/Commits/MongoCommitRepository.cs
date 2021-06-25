@@ -19,9 +19,15 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private readonly MongoGlobalIdentifier identifier;
         private readonly EventMapper Mapper;
 
-        public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer) : base(db,
+        private readonly bool UseTransactions;
+        private readonly bool DeactivateTimeoutOnRead;
+
+        public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer,
+            bool useTransactions, bool deactivateTimeoutOnRead) : base(db,
             "es_Commits")
         {
+            UseTransactions = useTransactions;
+            DeactivateTimeoutOnRead = deactivateTimeoutOnRead;
             Mapper = new EventMapper(eventSerializer, hash);
             identifier = new MongoGlobalIdentifier(db);
             PrepareCollection(Collection).Wait();
@@ -116,63 +122,52 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 return new AppendResult("", false, commit.VersionEvents);
             }
 
-            Debug.WriteLine($"Saving domainObject \"{domainObject.Id}\" - VersionCheck {versionCheck}", "BE.CQRS");
+            Debug.WriteLine($"Saving domainObject \"{domainObject.Id}\"", "BE.CQRS");
             AppendResult result;
 
-            result = await InsertEvent(commit, versionCheck);
+
+            result = await InsertEvent(commit);
+
 
             return result;
         }
 
-        private async Task<AppendResult> InsertEvent(EventCommit commit, bool versionCheck)
+        private async Task<AppendResult> InsertEvent(EventCommit commit)
         {
+            IClientSessionHandle session = null;
+            if (UseTransactions)
+            {
+                session = await Database.Client.StartSessionAsync(new ClientSessionOptions());
+                session.StartTransaction(new TransactionOptions());
+            }
+
             commit.Ordinal = await identifier.Next("commit");
 
             try
             {
                 await Collection.InsertOneAsync(commit);
+                if (session != null)
+                {
+                    await session.CommitTransactionAsync();
+                    session.Dispose();
+                }
             }
             catch (MongoWriteException e)
             {
+                if (session != null)
+                {
+                    await session.AbortTransactionAsync();
+                }
+
                 if (e.Message.Contains("E11000 duplicate key "))
                     return AppendResult.WrongVersion(commit.VersionCommit);
 
                 throw;
             }
 
+         
+
             return new AppendResult(commit.Id.ToString(), false, commit.VersionCommit);
-        }
-
-        [Obsolete]
-        private async Task<UpdateResult> InsertIfNoNewer(EventCommit commit)
-        {
-            long ordinal = await identifier.Next("commit");
-            UpdateDefinition<EventCommit> update = Updates
-                .SetOnInsert(x => x.Events, commit.Events)
-                .SetOnInsert(x => x.Ordinal, ordinal)
-                .SetOnInsert(x => x.VersionEvents, commit.VersionEvents)
-                .SetOnInsert(x => x.VersionCommit, commit.VersionCommit)
-                .SetOnInsert(x => x.AggregateId, commit.AggregateId)
-                .SetOnInsert(x => x.AggregateType, commit.AggregateType)
-                .SetOnInsert(x => x.AggregateTypeShort, commit.AggregateTypeShort)
-                .SetOnInsert(x => x.AggregatePackage, commit.AggregatePackage)
-                .SetOnInsert(x => x.Timestamp, commit.Timestamp)
-                .CurrentDate(x => x.ServerTimestamp);
-
-            FilterDefinition<EventCommit> versionQuery =
-                Filters.And(
-                    Filters.Eq(x => x.AggregateId, commit.AggregateId),
-                    Filters.Gt(x => x.VersionEvents, commit.VersionEvents));
-
-            Debug.WriteLine($"EventsVersion Gte {commit.VersionEvents}", "BE.CQRS");
-            UpdateResult result;
-
-            result = await Collection.UpdateOneAsync(versionQuery, update, new UpdateOptions
-            {
-                IsUpsert = true
-            });
-
-            return result;
         }
 
         private IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query)
@@ -184,18 +179,26 @@ namespace BE.CQRS.Data.MongoDb.Commits
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
             [EnumeratorCancellation] CancellationToken token)
         {
-            var options = new FindOptions()
+            FindOptions options;
+
+            if (DeactivateTimeoutOnRead)
             {
-                NoCursorTimeout = true,
-                MaxTime = TimeSpan.MaxValue,
-                MaxAwaitTime = TimeSpan.MaxValue,
-            };
+                options = new FindOptions()
+                {
+                    NoCursorTimeout = true,
+                    MaxTime = TimeSpan.MaxValue,
+                    MaxAwaitTime = TimeSpan.MaxValue,
+                };
+            }
+            else
+            {
+                options = new FindOptions();
+            }
 
 
             IAsyncCursor<EventCommit> cursor = await Collection.Find(query, options)
                 .SortBy(x => x.Ordinal)
                 .ToCursorAsync(token);
-
 
             while (await cursor.MoveNextAsync(token) && !token.IsCancellationRequested)
                 foreach (EventCommit item in cursor.Current)

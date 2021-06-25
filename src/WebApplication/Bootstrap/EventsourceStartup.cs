@@ -25,7 +25,8 @@ namespace WebApplication.Bootstrap
             
             services
                 .AddServiceProviderDomainObjectAcitvator()
-                .AddMongoDomainObjectRepository(()=>new MongoClient(url).GetDatabase(db))
+                .AddMongoDomainObjectRepository(()=>new MongoClient(url).GetDatabase(db),
+                    false,false)
                 .AddConventionBasedInMemoryCommandBus(esconfig)
                 .AddEventSource(esconfig);
            

@@ -38,7 +38,7 @@ namespace BE.CQRS.Data.MongoDb
             this.eventSerializer = eventSerializer;
             this.eventHash = eventHash;
             mapper = new EventMapper(eventSerializer,eventHash);
-            repository = new MongoCommitRepository(dataContext.Database,eventHash,eventSerializer);
+            repository = new MongoCommitRepository(dataContext.Database,eventHash,eventSerializer,dataContext.UseTransactions,dataContext.DeactivateTimoutOnCommitScan);
         }
 
         public Task<long> GetCommitCount()

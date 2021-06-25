@@ -18,15 +18,15 @@ namespace BE.CQRS.Data.MongoDb
     public static class MongoEventSourceStartup
     {
         public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
-            IMongoDatabase database)
+            IMongoDatabase database,bool useTransactions=false,bool deactivateReadTimeout=false)
         {
-            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(database));
+            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(database,deactivateReadTimeout,useTransactions));
         }
-        
+
         public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
-            Func<IMongoDatabase> dbFactory)
+            Func<IMongoDatabase> dbFactory,bool useTransactions=false,bool deactivateReadTimeout=false)
         {
-            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(dbFactory));
+            return AddMongoDomainObjectRepository(services, new MongoEventsourceDataContext(dbFactory,deactivateReadTimeout,useTransactions));
         }
 
         public static IServiceCollection AddMongoDomainObjectRepository(this IServiceCollection services,
@@ -55,13 +55,14 @@ namespace BE.CQRS.Data.MongoDb
         }
 
         public static IServiceCollection AddMongoDbEventSubscriber(this IServiceCollection serivces,
-            IMongoDatabase db)
+            IMongoDatabase db, bool useTransactions = false, bool deactivateTimeoutOnRead = false)
         {
             Precondition.For(() => db).NotNull();
 
             serivces.AddSingleton<IEventSubscriber>(x => new MongoEventSubscriber(db,
                 x.GetRequiredService<ILoggerFactory>(),
-                x.GetRequiredService<IEventHash>(), x.GetRequiredService<IEventSerializer>()));
+                x.GetRequiredService<IEventHash>(), x.GetRequiredService<IEventSerializer>(), useTransactions,
+                deactivateTimeoutOnRead));
             return serivces;
         }
     }
