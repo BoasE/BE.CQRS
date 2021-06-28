@@ -112,7 +112,6 @@ namespace BE.CQRS.Data.MongoDb
 
                 foreach (IEvent @event in events)
                     yield return @event;
-                ;
             }
         }
 

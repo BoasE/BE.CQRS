@@ -8,12 +8,12 @@ namespace Testrunner
     {
         public void On(MyEvent @event)
         {
-            throw new InvalidOperationException();
+            
         }
 
         public void On(SecondEvent @event)
         {
-            throw new InvalidOperationException();
+            
         }
     }
 }

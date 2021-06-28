@@ -107,6 +107,11 @@ namespace BE.CQRS.Data.MongoDb.Commits
             EventCommit result = await Collection.Find(query).Sort(Sorts.Descending(x => x.VersionEvents))
                 .FirstOrDefaultAsync();
 
+            if (result == null)
+            {
+                return 0;
+            }
+
             return result.VersionEvents;
         }
 
@@ -143,32 +148,57 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
             commit.Ordinal = await identifier.Next("commit");
 
+            var currentVersion = await GetVersion(commit.AggregateType, commit.AggregateId);
+
+            AppendResult result = AppendResult.NoUpdate;
             try
             {
-                await Collection.InsertOneAsync(commit);
-                if (session != null)
+                if (currentVersion != commit.ExpectedPreviousVersion)
                 {
-                    await session.CommitTransactionAsync();
-                    session.Dispose();
+                    result = AppendResult.WrongVersion(commit.VersionCommit);
+                }
+                else
+                {
+                    await Collection.InsertOneAsync(commit);
+                    result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit);
                 }
             }
             catch (MongoWriteException e)
             {
-                if (session != null)
+                if (e.Message.Contains("E11000 duplicate key"))
+                {
+                    result = AppendResult.WrongVersion(commit.VersionCommit);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                await CommitOrAbortTx(session, result);
+            }
+
+            return result;
+        }
+
+        private static async Task CommitOrAbortTx(IClientSessionHandle session, AppendResult result)
+        {
+            if (session != null)
+            {
+                if (result.HadWrongVersion || string.IsNullOrWhiteSpace(result.CommitId) || result.CurrentVersion <= 0)
                 {
                     await session.AbortTransactionAsync();
                 }
+                else
+                {
+                    await session.CommitTransactionAsync();
+                }
 
-                if (e.Message.Contains("E11000 duplicate key "))
-                    return AppendResult.WrongVersion(commit.VersionCommit);
-
-                throw;
+                session.Dispose();
             }
-
-         
-
-            return new AppendResult(commit.Id.ToString(), false, commit.VersionCommit);
         }
+
 
         private IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query)
         {

@@ -48,8 +48,9 @@ namespace Testrunner
 
             Console.WriteLine("next");
             Console.ReadLine();
-
+            
             var bo = new SampleBo(Guid.NewGuid().ToString());
+            
             bo.ApplyConfig(serviceProvider.GetRequiredService<EventSourceConfiguration>(),
                 serviceProvider.GetRequiredService<EventsourceDIContext>(),
                 serviceProvider.GetRequiredService<IStateEventMapping>(),

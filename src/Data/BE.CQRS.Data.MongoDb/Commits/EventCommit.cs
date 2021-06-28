@@ -55,5 +55,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
         [BsonRequired]
         [BsonElement("aet")]
         public List<string> AllEventTypes { get; set; }
+
+        [BsonIgnore]
+        public long ExpectedPreviousVersion => VersionEvents - Events.Count;
     }
 }
