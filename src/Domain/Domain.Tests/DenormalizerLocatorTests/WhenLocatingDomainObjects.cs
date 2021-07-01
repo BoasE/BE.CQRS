@@ -39,7 +39,7 @@ namespace BE.CQRS.Domain.Tests.DenormalizerLocatorTests
             DenormalizerLocator sut = GetSut();
             Assembly asm = type.GetTypeInfo().Assembly;
 
-            return sut.DenormalizerFromAsm(asm).ToArray();
+            return sut.DenormalizerFromAsm(asm).Select(x=>x.Type).ToArray();
         }
     }
 }

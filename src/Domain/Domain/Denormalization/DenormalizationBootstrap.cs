@@ -10,13 +10,13 @@ namespace BE.CQRS.Domain.Denormalization
             DenormalizerConfiguration config)
         {
             services.AddSingleton(config);
-            services.TryAddSingleton<IImmediateConventionDenormalizer, NoopImmediateConventionDenormalizer>();
+            services.TryAddSingleton<IImmediateConventionDenormalizerPipeline, NoopImmediateConventionDenormalizerPipeline>();
             return services;
         }
 
         public static IServiceCollection AddImmediateDenormalization(this IServiceCollection services)
         {
-            services.AddSingleton<IImmediateConventionDenormalizer, ImmediateConventionDenormalizer>();
+            services.AddSingleton<IImmediateConventionDenormalizerPipeline, ImmediateConventionDenormalizerPipeline>();
             return services;
         }
 

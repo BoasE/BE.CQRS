@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.DomainObjects;
 using BE.FluentGuard;
@@ -55,14 +56,14 @@ namespace BE.CQRS.Domain.Commands
 
         public static InMemoryCommandBus CreateConventionCommandBus(IDomainObjectRepository repository,
             ILoggerFactory loggerFactory,
-            IEnumerable<Assembly> domainObjectAssemblies)
+            EventSourceConfiguration configuration)
         {
             Precondition.For(repository, nameof(repository)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
             var invoker = new ConventionCommandInvoker(repository,loggerFactory);
             var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
-                domainObjectAssemblies);
+                configuration.DomainObjectAssemblies);
             
             var bus = new InMemoryCommandBus(handler, loggerFactory);
 

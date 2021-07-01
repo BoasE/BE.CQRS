@@ -31,9 +31,9 @@ namespace BE.CQRS.Data.MongoDb
 
         public MongoDomainObjectRepository(EventSourceConfiguration configuration, MongoEventsourceDataContext dataContext,
             EventsourceDIContext diContext,
-            IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizer denormalizer,
+            IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizerPipeline denormalizerPipeline,
             IStateEventMapping stateEventMapping,ILoggerFactory logger) 
-            : base(configuration,denormalizer,diContext,stateEventMapping,logger)
+            : base(configuration,denormalizerPipeline,diContext,stateEventMapping,logger)
         {
             this.eventSerializer = eventSerializer;
             this.eventHash = eventHash;

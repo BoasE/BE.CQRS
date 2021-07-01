@@ -48,9 +48,9 @@ namespace Testrunner
 
             Console.WriteLine("next");
             Console.ReadLine();
-            
+
             var bo = new SampleBo(Guid.NewGuid().ToString());
-            
+
             bo.ApplyConfig(serviceProvider.GetRequiredService<EventSourceConfiguration>(),
                 serviceProvider.GetRequiredService<EventsourceDIContext>(),
                 serviceProvider.GetRequiredService<IStateEventMapping>(),
@@ -73,8 +73,8 @@ namespace Testrunner
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(configure => configure.AddConsole())
-                .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
+            services
+                .AddLogging(configure => configure.AddConsole());
 
 
             ConfigureEventSource(services);

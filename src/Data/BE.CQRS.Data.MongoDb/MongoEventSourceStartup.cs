@@ -38,7 +38,7 @@ namespace BE.CQRS.Data.MongoDb
                 x.GetRequiredService<EventSourceConfiguration>(), dataContext,
                 x.GetRequiredService<EventsourceDIContext>(), x.GetRequiredService<IEventSerializer>(),
                 x.GetRequiredService<IEventHash>(),
-                x.GetRequiredService<IImmediateConventionDenormalizer>(), x.GetRequiredService<IStateEventMapping>(),
+                x.GetRequiredService<IImmediateConventionDenormalizerPipeline>(), x.GetRequiredService<IStateEventMapping>(),
                 x.GetRequiredService<ILoggerFactory>()));
 
             return services;

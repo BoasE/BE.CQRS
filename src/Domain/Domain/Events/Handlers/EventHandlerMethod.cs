@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.Conventions;
+using BE.CQRS.Domain.Denormalization;
 
 namespace BE.CQRS.Domain.Events.Handlers
 {
@@ -18,12 +20,15 @@ namespace BE.CQRS.Domain.Events.Handlers
 
         public MethodInfo Method { get; }
 
-        private EventHandlerMethod(TypeInfo parentType, MethodInfo method, TypeInfo eventTypeInfo, bool awaitable)
+        public bool Background { get;  }
+
+        private EventHandlerMethod(TypeInfo parentType, MethodInfo method, TypeInfo eventTypeInfo, bool awaitable,bool background)
         {
             Awaitable = awaitable;
             EventTypeInfo = eventTypeInfo;
             Method = method;
             ParentType = parentType;
+            Background = background;
         }
 
         public static EventHandlerMethod FromMethod(TypeInfo denormalizerType, MethodInfo nfo)
@@ -31,7 +36,10 @@ namespace BE.CQRS.Domain.Events.Handlers
             bool awaitable = TaskType.IsAssignableFrom(nfo.ReturnType.GetTypeInfo());
             TypeInfo eventType = nfo.GetParameters().Single().ParameterType.GetTypeInfo();
 
-            return new EventHandlerMethod(denormalizerType, nfo, eventType, awaitable);
+            var attribute = denormalizerType.GetCustomAttribute<DenormalizerAttribute>();
+            var isBackground = attribute !=null && attribute.IsBackground;
+
+            return new EventHandlerMethod(denormalizerType, nfo, eventType, awaitable,isBackground);
         }
 
         public override bool Equals(object obj)

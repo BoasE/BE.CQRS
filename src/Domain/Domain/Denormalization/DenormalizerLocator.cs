@@ -8,9 +8,15 @@ namespace BE.CQRS.Domain.Denormalization
 {
     public sealed class DenormalizerLocator : IDenormalizerLocator
     {
-        public IEnumerable<Type> DenormalizerFromAsm(Assembly asm)
+        public IEnumerable<Denormalizer> DenormalizerFromAsm(Assembly asm)
         {
-            return asm.ExportedTypes.Where(IsAccessableDenormalizer);
+            var types = asm.ExportedTypes.Where(IsAccessableDenormalizer);
+
+            return types.Select(x =>
+            {
+                var background = x.GetCustomAttribute<DenormalizerAttribute>()!.IsBackground;
+                return new Denormalizer(x, background);
+            });
         }
 
         private static bool IsAccessableDenormalizer(Type type)

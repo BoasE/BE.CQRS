@@ -1,4 +1,5 @@
 using System;
+using AspCore;
 using BE.CQRS.Data.MongoDb;
 using BE.CQRS.Di.AspCore;
 using BE.CQRS.Domain.Configuration;

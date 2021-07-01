@@ -14,6 +14,19 @@ namespace BE.CQRS.Domain.Events.Handlers
         private readonly ConcurrentDictionary<TypeInfo, ICollection<EventHandlerMethod>> resolvedMappings =
             new ConcurrentDictionary<TypeInfo, ICollection<EventHandlerMethod>>();
 
+        public int Count
+        {
+            get { return knownEventMethods.Count; }
+        }
+
+        public int BackgroundMethodCount
+        {
+            get
+            {
+                return knownEventMethods.SelectMany(x => x.Value).Count(x => x.Background);
+            }
+        }
+
         public void Add(IEnumerable<EventHandlerMethod> methods)
         {
             foreach (EventHandlerMethod method in methods)
@@ -22,6 +35,7 @@ namespace BE.CQRS.Domain.Events.Handlers
                 {
                     knownEventMethods.Add(method.EventTypeInfo, new List<EventHandlerMethod>());
                 }
+
                 knownEventMethods[method.EventTypeInfo].Add(method);
             }
         }

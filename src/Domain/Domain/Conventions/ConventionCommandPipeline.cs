@@ -72,7 +72,7 @@ namespace BE.CQRS.Domain.Conventions
             commandMapping = commandMappings;
 
             var assemblyCount = domainObjectAssemblies.Count;
-            logger.LogDebug("Found {count} DomainObjects in {assemblyCount} assemblies", count, assemblyCount);
+            logger.LogInformation("Found {count} DomainObjects in {assemblyCount} assemblies", count, assemblyCount);
         }
 
         public Task ExecuteAsync(ICommand cmd)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Denormalization;
 using BE.FluentGuard;
@@ -16,26 +17,31 @@ namespace BE.CQRS.Domain.Events.Handlers
         private static readonly IDenormalizerLocator Locator = new DenormalizerLocator();
         private static readonly IEventMethodConvetion EventMethodConvetion = new OnPrefixEventMethodConvetion();
 
-        private readonly Type[] denormalizers;
+        private readonly Denormalizer[] denormalizers;
         private readonly Dictionary<TypeInfo, object> normalizerInstances = new Dictionary<TypeInfo, object>();
         private readonly Func<Type, object> normalizerFactory;
         private readonly EventHandlerRegistry mapping = new EventHandlerRegistry();
         private readonly ILogger logger;
 
+        private readonly IBackgroundEventQueue backgroundEventQueue = null;
         public int HandlerCount => denormalizers.Length;
 
-        public ConventionEventHandler(DenormalizerDiContext diContext, ILoggerFactory loggerFactory,
+        public ConventionEventHandler(DenormalizerDiContext diContext, ILogger<ConventionEventHandler> logger,IBackgroundEventQueue backgroundEventQueue =null,
             params Assembly[] projectors) // TODO Unify to one constructor
         {
-            Precondition.For(projectors, nameof(projectors)).NotNull()
+            Precondition.For(projectors, nameof(projectors))
+                .NotNull()
                 .True(x => x.Any(), "No projector assemblies were passed!");
+
             normalizerFactory = diContext.DenormalizerActivator.ResolveDenormalizer;
-            IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
 
-            List<Type> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
+            IEnumerable<Denormalizer> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
+            List<Denormalizer> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
 
-            this.logger = loggerFactory.CreateLogger(GetType());
+            this.backgroundEventQueue = backgroundEventQueue;
+            this.logger = logger;
             denormalizers = denormalizersWithMethods.ToArray();
+            LogStartInfo();
         }
 
         public ConventionEventHandler(Func<Type, object> factory, params Assembly[] projectors)
@@ -43,24 +49,31 @@ namespace BE.CQRS.Domain.Events.Handlers
             Precondition.For(projectors, nameof(projectors)).NotNull().True(x => x.Any());
 
             normalizerFactory = factory;
-            IEnumerable<Type> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
+            IEnumerable<Denormalizer> foundDenormalizers = projectors.SelectMany(i => Locator.DenormalizerFromAsm(i));
 
-            List<Type> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
+            List<Denormalizer> denormalizersWithMethods = ProcessDenormalizerMethods(foundDenormalizers);
 
             denormalizers = denormalizersWithMethods.ToArray();
+            LogStartInfo();
+
+        }
+        
+        private void LogStartInfo()
+        {
+            logger.LogInformation($"Bound {denormalizers.Length} denormalizers and {mapping.Count} methods - {mapping.BackgroundMethodCount} background methods");
         }
 
-        private List<Type> ProcessDenormalizerMethods(IEnumerable<Type> foundDenormalizers)
+        private List<Denormalizer> ProcessDenormalizerMethods(IEnumerable<Denormalizer> foundDenormalizers)
         {
-            var denormalizersWithMethods = new List<Type>();
-            foreach (Type denormalizer in foundDenormalizers)
+            var denormalizersWithMethods = new List<Denormalizer>();
+            foreach (Denormalizer denormalizer in foundDenormalizers)
             {
-                EventHandlerMethod[] methods = EventMethodConvetion.ResolveEventMethods(denormalizer).ToArray();
+                EventHandlerMethod[] methods = EventMethodConvetion.ResolveEventMethods(denormalizer.Type).ToArray();
 
                 if (methods.Length <= 0)
                     continue;
 
-                normalizerInstances.Add(denormalizer.GetTypeInfo(), normalizerFactory(denormalizer));
+                normalizerInstances.Add(denormalizer.Type.GetTypeInfo(), normalizerFactory(denormalizer.Type));
 
                 denormalizersWithMethods.Add(denormalizer);
 
@@ -86,7 +99,17 @@ namespace BE.CQRS.Domain.Events.Handlers
 
                 foreach (EventHandlerMethod method in denormailzer)
                 {
-                    await SafeInvoke(@event, method, instance.Value);
+                    
+                    if (method.Background && backgroundEventQueue != null)
+                    {
+                        var task = SafeInvoke(@event, @method, instance.Value);
+                        await backgroundEventQueue.QueueBackgroundWorkItemAsync(x=>task);
+                    }
+                    else
+                    {
+                        await SafeInvoke(@event, method, instance.Value);    
+                    }
+                    
                 }
             }
 

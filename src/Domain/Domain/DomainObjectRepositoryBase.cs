@@ -24,16 +24,16 @@ namespace BE.CQRS.Domain
         private readonly ILogger logger;
 
         private readonly EventsourceDIContext diContext;
-        private readonly IImmediateConventionDenormalizer denormalizer; //=> Extract to "IImmediateDenormalizer!
+        private readonly IImmediateConventionDenormalizerPipeline denormalizerPipeline; //=> Extract to "IImmediateDenormalizer!
         private readonly IStateEventMapping eventMapping;
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration,
-            IImmediateConventionDenormalizer denormalizer, EventsourceDIContext diContext,
+            IImmediateConventionDenormalizerPipeline denormalizerPipeline, EventsourceDIContext diContext,
             IStateEventMapping eventMapping, ILoggerFactory loggerFactory)
         {
             Precondition.For(configuration, nameof(configuration))
                 .NotNull("Configuration for domainobject repository must not be null!");
-            this.denormalizer = denormalizer;
+            this.denormalizerPipeline = denormalizerPipeline;
             this.configuration = configuration;
             this.eventMapping = eventMapping;
             this.diContext = diContext;
@@ -102,9 +102,9 @@ namespace BE.CQRS.Domain
                 {
                     configuration.PostSavePipeline?.Invoke(@event);
 
-                    if (denormalizer != null)
+                    if (denormalizerPipeline != null)
                     {
-                        await denormalizer.HandleAsync(@event);
+                        await denormalizerPipeline.HandleAsync(@event);
                     }
                 }
 

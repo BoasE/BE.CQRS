@@ -4,7 +4,7 @@ using WebApplication.Domain;
 
 namespace WebApplication
 {
-    [Denormalizer]
+    [Denormalizer(IsBackground = true)]
     public sealed class SampleDenormalizer
     {
         public void On(SampleCreatedEvent @event)

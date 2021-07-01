@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Denormalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -42,6 +43,7 @@ namespace WebApplication
                 app.UseDeveloperExceptionPage();
             }
 
+            var foo = app.ApplicationServices.GetRequiredService<IImmediateConventionDenormalizerPipeline>();
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

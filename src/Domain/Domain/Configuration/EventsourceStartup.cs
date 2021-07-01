@@ -7,6 +7,7 @@ using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -33,8 +34,7 @@ namespace BE.CQRS.Domain.Configuration
 
             return config;
         }
-
-
+        
         public static EventSourceConfiguration SetDomainObjectAssemblies(this EventSourceConfiguration config,
             params Assembly[] assembliesWithDomainObjects)
         {
@@ -46,13 +46,21 @@ namespace BE.CQRS.Domain.Configuration
             return config;
         }
 
+        public static IApplicationBuilder UseEventSource(this IApplicationBuilder app)
+        {
+            var bus = app.ApplicationServices.GetRequiredService<ICommandBus>();
+
+            return app;
+        }
+
         public static IServiceCollection AddConventionBasedInMemoryCommandBus(
             this IServiceCollection services, EventSourceConfiguration config)
         {
+            services.AddSingleton<EventSourceConfiguration>(config);
             services.AddSingleton<ICommandBus>(x => InMemoryCommandBus.CreateConventionCommandBus(
                 x.GetRequiredService<IDomainObjectRepository>(),
                 x.GetRequiredService<ILoggerFactory>(),
-                config.DomainObjectAssemblies));
+                x.GetRequiredService<EventSourceConfiguration>()));
 
             return services;
         }

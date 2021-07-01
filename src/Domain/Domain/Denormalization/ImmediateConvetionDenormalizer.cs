@@ -6,20 +6,22 @@ using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain.Denormalization
 {
-    public interface IImmediateConventionDenormalizer : IEventHandler
+    public interface IImmediateConventionDenormalizerPipeline : IEventHandlerPipeline
     {
     }
 
-    public sealed class ImmediateConventionDenormalizer : IImmediateConventionDenormalizer
+    public sealed class ImmediateConventionDenormalizerPipeline : IImmediateConventionDenormalizerPipeline
     {
         private readonly ConventionEventHandler conventionHandler;
 
         public int HandlerCount => conventionHandler.HandlerCount;
 
-        public ImmediateConventionDenormalizer(DenormalizerConfiguration config, DenormalizerDiContext diContext,
-            ILoggerFactory loggerFactory)
+        public ImmediateConventionDenormalizerPipeline(DenormalizerConfiguration config,
+            DenormalizerDiContext diContext,
+            ILogger<ConventionEventHandler> logger, IBackgroundEventQueue queue = null)
         {
-            conventionHandler = new ConventionEventHandler(diContext, loggerFactory, config.DenormalizerAssemblies);
+            conventionHandler = new ConventionEventHandler(diContext, logger, queue,
+                config.DenormalizerAssemblies);
         }
 
         public Task HandleAsync(IEvent @event)

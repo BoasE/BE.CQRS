@@ -1,4 +1,5 @@
 using System;
+using AspCore;
 using BE.CQRS.Di.AspCore;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
@@ -35,6 +36,7 @@ namespace WebApplication.Bootstrap
 
             services
                 .AddServiceProviderDenormalizerActivator()
+                .AddAspBackgroundDenormalization()
                 .AddImmediateDenormalization()
                 .AddDenormalization(deconfig) //<-- hier
                 .AddProjectionBuilder();
