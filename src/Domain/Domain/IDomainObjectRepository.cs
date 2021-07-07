@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.EventDescriptions;
 using BE.CQRS.Domain.Events;
 
 namespace BE.CQRS.Domain
@@ -13,9 +14,9 @@ namespace BE.CQRS.Domain
 
         Task<T> Get<T>(string id) where T : class, IDomainObject;
 
-        Task<T> Get<T>(string id,long version) where T : class, IDomainObject;
-        Task<T> Get<T>(string id,long version,CancellationToken token) where T : class, IDomainObject;
-        
+        Task<T> Get<T>(string id, long version) where T : class, IDomainObject;
+        Task<T> Get<T>(string id, long version, CancellationToken token) where T : class, IDomainObject;
+
         Task<T> Get<T>(string id, CancellationToken token) where T : class, IDomainObject;
 
         Task<T> Get<T>(string id, ISet<Type> eventTypes, CancellationToken token) where T : class, IDomainObject;
@@ -33,7 +34,9 @@ namespace BE.CQRS.Domain
         Task<bool> Exists<T>(string id) where T : class, IDomainObject;
 
         IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
-        
+
         Task Remove<T>(string id) where T : class, IDomainObject;
+
+        Task<List<DescribedEvent>> GetDescribedHistory<T>(string id) where T : class, IDomainObject;
     }
 }

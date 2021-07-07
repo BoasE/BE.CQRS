@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
 using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.EventDescriptions;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
 using BE.CQRS.Domain.Logging;
@@ -24,7 +25,10 @@ namespace BE.CQRS.Domain
         private readonly ILogger logger;
 
         private readonly EventsourceDIContext diContext;
-        private readonly IImmediateConventionDenormalizerPipeline denormalizerPipeline; //=> Extract to "IImmediateDenormalizer!
+
+        private readonly IImmediateConventionDenormalizerPipeline
+            denormalizerPipeline; //=> Extract to "IImmediateDenormalizer!
+
         private readonly IStateEventMapping eventMapping;
 
         protected DomainObjectRepositoryBase(EventSourceConfiguration configuration,
@@ -122,6 +126,7 @@ namespace BE.CQRS.Domain
         {
             return RemoveStream(typeof(T), id);
         }
+
 
         protected abstract Task RemoveStream(Type domainObjectType, string id);
 
@@ -224,6 +229,34 @@ namespace BE.CQRS.Domain
             ApplyConfigToDomainObject(instance);
 
             return instance;
+        }
+
+        public async Task<List<DescribedEvent>> GetDescribedHistory<T>(string id) where T : class, IDomainObject
+        {
+            var entity = await Get<T>(id);
+            var events = entity.GetCommittedEvents();
+
+            List<DescribedEvent> result = new List<DescribedEvent>();
+            foreach (var entry in events)
+            {
+                DescribedEvent item;
+                var described = entry as IDescribeableEvent;
+
+                if (described != null)
+                {
+                    item = new DescribedEvent(described.BuildTitle(), described.BuildTitle(), entry.Headers.Created,
+                        entry, true);
+                }
+                else
+                {
+                    item = new DescribedEvent(entry.GetType().Name, string.Empty, entry.Headers.Created, entry, false);
+                }
+
+                result.Add(item);
+            }
+
+
+            return result;
         }
 
         protected abstract Task<bool> ExistsStream(string streamName);
