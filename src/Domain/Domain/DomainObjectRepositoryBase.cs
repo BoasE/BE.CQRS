@@ -231,6 +231,15 @@ namespace BE.CQRS.Domain
             return instance;
         }
 
+        public async IAsyncEnumerable<DescribedEvent> EnumerateAllDescribed(CancellationToken token)
+        {
+            await foreach (var entry in EnumerateAll(token))
+            {
+                var item = DescribeEvent(entry);
+                yield return item;
+            }
+        }
+
         public async Task<List<DescribedEvent>> GetDescribedHistory<T>(string id) where T : class, IDomainObject
         {
             var entity = await Get<T>(id);
@@ -239,24 +248,29 @@ namespace BE.CQRS.Domain
             List<DescribedEvent> result = new List<DescribedEvent>();
             foreach (var entry in events)
             {
-                DescribedEvent item;
-                var described = entry as IDescribeableEvent;
-
-                if (described != null)
-                {
-                    item = new DescribedEvent(described.BuildTitle(), described.BuildTitle(), entry.Headers.Created,
-                        entry, true);
-                }
-                else
-                {
-                    item = new DescribedEvent(entry.GetType().Name, string.Empty, entry.Headers.Created, entry, false);
-                }
-
+                var item = DescribeEvent(entry);
                 result.Add(item);
             }
 
-
             return result;
+        }
+
+        private static DescribedEvent DescribeEvent(IEvent entry)
+        {
+            DescribedEvent item;
+            var described = entry as IDescribeableEvent;
+
+            if (described != null)
+            {
+                item = new DescribedEvent(described.BuildTitle(), described.BuildDescription(), entry.Headers.Created,
+                    entry, true);
+            }
+            else
+            {
+                item = new DescribedEvent(entry.GetType().Name, string.Empty, entry.Headers.Created, entry, false);
+            }
+
+            return item;
         }
 
         protected abstract Task<bool> ExistsStream(string streamName);
@@ -275,6 +289,7 @@ namespace BE.CQRS.Domain
             CancellationToken token);
 
         public abstract IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
+
 
         public virtual IDomainObject New(Type domainObjectType, string id)
         {

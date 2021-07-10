@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -88,7 +89,6 @@ namespace BE.CQRS.Data.MongoDb
 
                 foreach (IEvent @event in events)
                     yield return @event;
-                ;
             }
         }
 
