@@ -30,16 +30,19 @@ namespace BE.CQRS.Data.MongoDb
         private readonly IEventSerializer eventSerializer;
         private readonly IEventHash eventHash;
 
-        public MongoDomainObjectRepository(EventSourceConfiguration configuration, MongoEventsourceDataContext dataContext,
+        public MongoDomainObjectRepository(EventSourceConfiguration configuration,
+            MongoEventsourceDataContext dataContext,
             EventsourceDIContext diContext,
-            IEventSerializer eventSerializer,IEventHash eventHash,IImmediateConventionDenormalizerPipeline denormalizerPipeline,
-            IStateEventMapping stateEventMapping,ILoggerFactory logger) 
-            : base(configuration,denormalizerPipeline,diContext,stateEventMapping,logger)
+            IEventSerializer eventSerializer, IEventHash eventHash,
+            IImmediateConventionDenormalizerPipeline denormalizerPipeline,
+            IStateEventMapping stateEventMapping, ILoggerFactory logger)
+            : base(configuration, denormalizerPipeline, diContext, stateEventMapping, logger)
         {
             this.eventSerializer = eventSerializer;
             this.eventHash = eventHash;
-            mapper = new EventMapper(eventSerializer,eventHash);
-            repository = new MongoCommitRepository(dataContext.Database,eventHash,eventSerializer,dataContext.UseTransactions,dataContext.DeactivateTimoutOnCommitScan);
+            mapper = new EventMapper(eventSerializer, eventHash);
+            repository = new MongoCommitRepository(dataContext.Database, eventHash, eventSerializer,
+                dataContext.UseTransactions, dataContext.DeactivateTimoutOnCommitScan);
         }
 
         public Task<long> GetCommitCount()
@@ -78,7 +81,8 @@ namespace BE.CQRS.Data.MongoDb
             return repository.SaveAsync(domainObject, versionCheck);
         }
 
-        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion, [EnumeratorCancellation] CancellationToken token)
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion,
+            [EnumeratorCancellation] CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);
@@ -119,14 +123,28 @@ namespace BE.CQRS.Data.MongoDb
         {
             await foreach (EventCommit x in repository.EnumerateAllCommits(token))
             {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 IEnumerable<IEvent> events = mapper.ExtractEvents(x);
 
                 foreach (IEvent @event in events)
+                {
                     yield return @event;
+                }
+
+
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 
-        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName, [EnumeratorCancellation] CancellationToken token)
+        protected override async IAsyncEnumerable<IEvent> ReadEvents(string streamName,
+            [EnumeratorCancellation] CancellationToken token)
         {
             string id = namer.IdByStreamName(streamName);
             string type = namer.TypeNameByStreamName(streamName);

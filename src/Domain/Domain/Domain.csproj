@@ -4,8 +4,8 @@
     <AssemblyName>BE.CQRS.Domain</AssemblyName> 
     <PackageId>BE.CQRS</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Event describtions</PackageReleaseNotes>
-    <PackageVersion>0.90.9-alpha</PackageVersion>
+    <PackageReleaseNotes>Event descriptions for all events and version bump. Better Cancellation token support</PackageReleaseNotes>
+    <PackageVersion>0.90.10-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
