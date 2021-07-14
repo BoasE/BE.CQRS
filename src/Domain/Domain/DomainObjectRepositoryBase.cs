@@ -57,7 +57,7 @@ namespace BE.CQRS.Domain
             return result;
         }
 
-      
+
         private void AssertSave<T>(T domainObject, AppendResult result) where T : class, IDomainObject
         {
             if (result.HadWrongVersion)
@@ -96,27 +96,39 @@ namespace BE.CQRS.Domain
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
-            
-            //especially for direct denormalizer its important to continue on the state that wasreally  persisted.
-            //e.g. in case of persistance errors. otherweise we don't have a real projection of persisted events /auditlog
-            List<IEvent> persistedEvents = await ByAppendResult(result);
-
-            if (!result.HadWrongVersion)
-                foreach (IEvent @event in persistedEvents)
-                {
-                    configuration.PostSavePipeline?.Invoke(@event);
-
-                    if (denormalizerPipeline != null)
-                    {
-                        await denormalizerPipeline.HandleAsync(@event);
-                    }
-                }
-
-            domainObject.CommitChanges(result.CurrentVersion);
             watch.Stop();
 
-            logger.LogTrace("Saved {count} events for \"{type}\" in {watch.ElapsedMilliseconds}ms", count, type,
-                watch.ElapsedMilliseconds);
+            if (string.IsNullOrWhiteSpace(result.CommitId) || result.HadWrongVersion)
+            {
+                string reason = result.Message;
+                logger.LogWarning("{count}  events not saved for \"{type}\" reason; {reason}", count, type,
+                    reason);
+            }
+            else
+            {
+                var ms = watch.ElapsedMilliseconds;
+                logger.LogTrace("Saved {count} events for \"{type}\" in {ms}ms", count, type,
+                    ms);
+
+                //especially for direct denormalizer its important to continue on the state that wasreally  persisted.
+                //e.g. in case of persistance errors. otherweise we don't have a real projection of persisted events /auditlog
+                List<IEvent> persistedEvents = await ByAppendResult(result);
+
+                if (!result.HadWrongVersion)
+                    foreach (IEvent @event in persistedEvents)
+                    {
+                        configuration.PostSavePipeline?.Invoke(@event);
+
+                        if (denormalizerPipeline != null)
+                        {
+                            await denormalizerPipeline.HandleAsync(@event);
+                        }
+                    }
+
+                domainObject.CommitChanges(result.CurrentVersion);
+            }
+
+
             return result;
         }
 
@@ -234,7 +246,7 @@ namespace BE.CQRS.Domain
         public async IAsyncEnumerable<DescribedEvent> EnumerateDescribed(EnumerateDirection direction, int limit,
             [EnumeratorCancellation] CancellationToken token)
         {
-            await foreach (var entry in Enumerate(direction,limit, token))
+            await foreach (var entry in Enumerate(direction, limit, token))
             {
                 var item = DescribeEvent(entry);
                 yield return item;
@@ -291,7 +303,8 @@ namespace BE.CQRS.Domain
 
         public abstract IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
 
-        public abstract IAsyncEnumerable<IEvent> Enumerate(EnumerateDirection direction,int limit, CancellationToken token);
+        public abstract IAsyncEnumerable<IEvent> Enumerate(EnumerateDirection direction, int limit,
+            CancellationToken token);
 
 
         public virtual IDomainObject New(Type domainObjectType, string id)
