@@ -35,9 +35,7 @@ namespace BE.CQRS.Domain.Conventions
             Precondition.For(cmd, nameof(cmd)).IsValidCommand();
             Precondition.For(commandMapping, nameof(commandMapping)).NotNull();
 
-            var type = cmd.GetType();
-            
-            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"",domainObjectType);
+            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"", domainObjectType);
             var currentTry = 0;
 
             while (currentTry < retryCount)
@@ -46,11 +44,11 @@ namespace BE.CQRS.Domain.Conventions
                 {
                     logger.LogTrace("Retrying Command \"{type}\" for \"{domainObjectType}\"...");
                 }
+
                 AppendResult result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, commandMapping);
 
                 if (result.HadWrongVersion)
                 {
-                    
                     currentTry++;
                 }
                 else
@@ -58,12 +56,22 @@ namespace BE.CQRS.Domain.Conventions
                     break;
                 }
             }
+
+            if (currentTry >= retryCount)
+            {
+                var msg = $"Saving \"{domainObjectType.Name}\" with id \"{cmd.DomainObjectId}\" failed due to version conflicts";
+                logger.LogWarning(msg);
+                throw new VersionConflictException(msg);
+            }
         }
 
         private async Task<AppendResult> InvokeAndSaveInternalAsync(Type domainObjectType, ICommand cmd,
             IEnumerable<CommandMethodMapping> commands)
         {
-            CommandMethodMappingKind[] kinds = commands.Select(i => i.Kind).Distinct().ToArray();
+            CommandMethodMappingKind[] kinds = commands.Select(i => i.Kind)
+                .Distinct()
+                .ToArray();
+            
             if (kinds.Length != 1)
             {
                 throw new NotSupportedException(
@@ -90,29 +98,33 @@ namespace BE.CQRS.Domain.Conventions
             {
                 if (kind == CommandMethodMappingKind.UpdateWithoutHistory)
                 {
-                    logger.LogTrace("Creating new \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                    logger.LogTrace("Creating new \"{domainObjectType}\" with id {domainObjectId}", domainObjectType,
+                        cmd.DomainObjectId);
                     domainObject = repository.New(domainObjectType, cmd.DomainObjectId);
                 }
                 else
                 {
-                    logger.LogTrace("Getting existing \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                    logger.LogTrace("Getting existing \"{domainObjectType}\" with id {domainObjectId}",
+                        domainObjectType, cmd.DomainObjectId);
                     domainObject = await repository.Get(cmd.DomainObjectId, domainObjectType);
                 }
             }
 
             if (policyValidator.CheckPolicies(domainObject, cmd, methodMappings.Select(x => x.Method).ToArray()))
             {
-                logger.LogTrace("Applying command on \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                logger.LogTrace("Applying command on \"{domainObjectType}\" with id {domainObjectId}", domainObjectType,
+                    cmd.DomainObjectId);
                 await ApplyCommands(domainObject, cmd, methodMappings);
             }
             else
             {
-                logger.LogTrace("Policy prevented command on \"{domainObjectType}\" with id {domainObjectId}",domainObjectType,cmd.DomainObjectId);
+                logger.LogTrace("Policy prevented command on \"{domainObjectType}\" with id {domainObjectId}",
+                    domainObjectType, cmd.DomainObjectId);
             }
 
             return domainObject;
         }
-
+        
         private static async Task ApplyCommands(IDomainObject domainObject, ICommand cmd,
             IEnumerable<CommandMethodMapping> group)
         {

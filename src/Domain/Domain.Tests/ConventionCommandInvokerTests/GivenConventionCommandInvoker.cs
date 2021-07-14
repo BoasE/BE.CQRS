@@ -1,5 +1,7 @@
 ﻿using System;
 using BE.CQRS.Domain.Conventions;
+using BE.CQRS.Domain.DomainObjects;
+using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Logging;
 using FakeItEasy;
 using Tests.Fakes;
@@ -30,6 +32,21 @@ namespace BE.CQRS.Domain.Tests.ConventionCommandInvokerTests
 
             Type type = typeof(FakeObject);
             var cmd = new SampleCommand();
+        }
+
+        [Fact]
+        [Trait("Category","Transactions")]
+        public void ItThrowsAtEndOfRetries()
+        {
+            var repo = A.Fake<IDomainObjectRepository>();
+            A.CallTo(() => repo.SaveAsync(A<IDomainObject>.Ignored, A<bool>.Ignored))
+                .Returns(AppendResult.WrongVersion(2));
+
+            ConventionCommandInvoker sut = GetSut(repo);
+            
+            var cmd = new SampleCommand();
+
+            
         }
     }
 }

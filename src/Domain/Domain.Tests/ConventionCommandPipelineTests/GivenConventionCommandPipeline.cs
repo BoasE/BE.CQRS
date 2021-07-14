@@ -24,5 +24,7 @@ namespace BE.CQRS.Domain.Tests.ConventionCommandPipelineTests
         {
             ConventionCommandPipeline sut = GetSut();
         }
+        
+        
     }
 }

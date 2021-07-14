@@ -10,8 +10,9 @@ namespace BE.CQRS.Domain
 {
     public interface IDomainObjectRepository
     {
-        IAsyncEnumerable<DescribedEvent> EnumerateAllDescribed(CancellationToken token);
-        
+        IAsyncEnumerable<DescribedEvent> EnumerateDescribed(EnumerateDirection direction, int limit,
+            CancellationToken token);
+
         IDomainObject New(Type domainObjectType, string id);
 
         Task<T> Get<T>(string id) where T : class, IDomainObject;

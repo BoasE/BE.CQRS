@@ -7,7 +7,7 @@ namespace BE.CQRS.Domain.Tests.AppendResultTests
     {
         public AppendResult GetSut(int version)
         {
-            return new AppendResult("", false, version);
+            return new AppendResult("", false, version,"");
         }
 
         [Fact]

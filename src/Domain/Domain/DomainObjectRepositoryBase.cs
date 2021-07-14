@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Configuration;
@@ -9,11 +9,9 @@ using BE.CQRS.Domain.Denormalization;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.EventDescriptions;
 using BE.CQRS.Domain.Events;
-using BE.CQRS.Domain.Events.Handlers;
 using BE.CQRS.Domain.Logging;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace BE.CQRS.Domain
@@ -59,6 +57,7 @@ namespace BE.CQRS.Domain
             return result;
         }
 
+      
         private void AssertSave<T>(T domainObject, AppendResult result) where T : class, IDomainObject
         {
             if (result.HadWrongVersion)
@@ -97,6 +96,7 @@ namespace BE.CQRS.Domain
 
             bool check = domainObject.CheckVersionOnSave && !preventVersionCheck;
             AppendResult result = await SaveUncomittedEventsAsync(domainObject, check);
+            
             //especially for direct denormalizer its important to continue on the state that wasreally  persisted.
             //e.g. in case of persistance errors. otherweise we don't have a real projection of persisted events /auditlog
             List<IEvent> persistedEvents = await ByAppendResult(result);
@@ -231,9 +231,10 @@ namespace BE.CQRS.Domain
             return instance;
         }
 
-        public async IAsyncEnumerable<DescribedEvent> EnumerateAllDescribed(CancellationToken token)
+        public async IAsyncEnumerable<DescribedEvent> EnumerateDescribed(EnumerateDirection direction, int limit,
+            [EnumeratorCancellation] CancellationToken token)
         {
-            await foreach (var entry in EnumerateAll(token))
+            await foreach (var entry in Enumerate(direction,limit, token))
             {
                 var item = DescribeEvent(entry);
                 yield return item;
@@ -289,6 +290,8 @@ namespace BE.CQRS.Domain
             CancellationToken token);
 
         public abstract IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token);
+
+        public abstract IAsyncEnumerable<IEvent> Enumerate(EnumerateDirection direction,int limit, CancellationToken token);
 
 
         public virtual IDomainObject New(Type domainObjectType, string id)

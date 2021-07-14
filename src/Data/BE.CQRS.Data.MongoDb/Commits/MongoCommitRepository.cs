@@ -6,9 +6,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Repositories;
+using BE.CQRS.Domain;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
+using BE.FluentGuard;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -58,24 +60,30 @@ namespace BE.CQRS.Data.MongoDb.Commits
             return Collection.Find(query).AnyAsync();
         }
 
-        public IAsyncEnumerable<EventCommit> EnumerateAllCommits(CancellationToken token)
+        public IAsyncEnumerable<EventCommit> EnumerateAllCommits(
+            EnumerateDirection direction = EnumerateDirection.Ascending, int? limit = null,
+            CancellationToken token = default)
         {
-            return Enumerate(CommitFilters.All, token);
+            return Enumerate(CommitFilters.All, direction, limit, token);
         }
 
-        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, CancellationToken token)
+        public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id,
+            EnumerateDirection direction = EnumerateDirection.Ascending,
+            int? limit = null,
+            CancellationToken token = default)
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
-            return Enumerate(query, token);
+            return Enumerate(query, direction, limit, token);
         }
 
         public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, long maxversion,
-            CancellationToken token)
+            EnumerateDirection direction = EnumerateDirection.Ascending, int? limit = null,
+            CancellationToken token = default)
         {
             FilterDefinition<EventCommit> query = Filters.And(CommitFilters.ByAggregate(type, id),
                 Filters.Lte(x => x.VersionEvents, maxversion));
 
-            return Enumerate(query, token);
+            return Enumerate(query, direction, limit, token);
         }
 
         public IAsyncEnumerable<EventCommit> EnumerateCommits(string type, string id, ISet<Type> eventTypes)
@@ -124,7 +132,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
             if (commit.Events.Count == 0)
             {
                 Debug.WriteLine("Nothing to Update", "BE.CQRS");
-                return new AppendResult("", false, commit.VersionEvents);
+                return AppendResult.NoUpdate;
             }
 
             Debug.WriteLine($"Saving domainObject \"{domainObject.Id}\"", "BE.CQRS");
@@ -153,15 +161,15 @@ namespace BE.CQRS.Data.MongoDb.Commits
             AppendResult result = AppendResult.NoUpdate;
             try
             {
-                if (currentVersion != commit.ExpectedPreviousVersion)
-                {
-                    result = AppendResult.WrongVersion(commit.VersionCommit);
-                }
-                else
-                {
+                // if (currentVersion != commit.ExpectedPreviousVersion)
+                // {
+                //     result = AppendResult.WrongVersion(commit.VersionCommit);
+                // }
+                // else
+                // {
                     await Collection.InsertOneAsync(commit);
-                    result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit);
-                }
+                    result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit,"SUCCESS");
+                //}
             }
             catch (MongoWriteException e)
             {
@@ -202,11 +210,12 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         private IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query)
         {
-            return Enumerate(query, CancellationToken.None);
+            return Enumerate(query);
         }
 
 
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
+            EnumerateDirection direction, int? limit,
             [EnumeratorCancellation] CancellationToken token)
         {
             FindOptions options;
@@ -225,9 +234,27 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 options = new FindOptions();
             }
 
+            SortDefinition<EventCommit> sort;
+            if (direction == EnumerateDirection.Ascending)
+            {
+                sort = Sorts.Ascending(x => x.Ordinal);
+            }
+            else
+            {
+                sort = Sorts.Descending(x => x.Ordinal);
+            }
 
-            IAsyncCursor<EventCommit> cursor = await Collection.Find(query, options)
-                .SortBy(x => x.Ordinal)
+            var find = Collection
+                .Find(query, options)
+                .Sort(sort);
+
+
+            if (limit.HasValue && limit > 0)
+            {
+                find = find.Limit(limit);
+            }
+
+            IAsyncCursor<EventCommit> cursor = await find
                 .ToCursorAsync(token);
 
             while (await cursor.MoveNextAsync(token) && !token.IsCancellationRequested)
@@ -252,6 +279,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         public async Task<EventCommit> ByInternalId(string commitId)
         {
+            Precondition.For(commitId, nameof(commitId)).NotNullOrWhiteSpace("CommitId must not be null!");
             BsonObjectId id = BsonObjectId.Create(commitId);
             var query = Filters.Eq(x => x.Id, id);
 

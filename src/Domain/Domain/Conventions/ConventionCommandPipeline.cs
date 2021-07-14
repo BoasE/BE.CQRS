@@ -18,8 +18,7 @@ namespace BE.CQRS.Domain.Conventions
         private readonly IDomainObjectLocator locator;
         private IReadOnlyDictionary<Type, List<CommandMethodMapping>> commandMapping;
 
-        private readonly ConcurrentDictionary<Type, List<CommandMethodMapping>> resolvedMappings =
-            new ConcurrentDictionary<Type, List<CommandMethodMapping>>();
+        private readonly ConcurrentDictionary<Type, List<CommandMethodMapping>> resolvedMappings = new();
 
         private readonly IConventionCommandInvoker invoker;
 

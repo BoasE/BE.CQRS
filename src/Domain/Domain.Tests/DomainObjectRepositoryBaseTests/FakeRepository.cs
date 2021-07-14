@@ -13,7 +13,8 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 {
     public sealed class FakeRepository : DomainObjectRepositoryBase
     {
-        public FakeRepository(EventSourceConfiguration configuration,EventsourceDIContext diContext) : base(configuration, null, diContext, new StateEventMapping(), null)
+        public FakeRepository(EventSourceConfiguration configuration, EventsourceDIContext diContext) : base(
+            configuration, null, diContext, new StateEventMapping(), null)
         {
         }
 
@@ -44,7 +45,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
         protected override Task<AppendResult> SaveUncomittedEventsAsync<T>(T domainObject, bool versionCheck)
         {
-            return Task.FromResult(new AppendResult("12", false, 3));
+            return Task.FromResult(new AppendResult("12", false, 3,""));
         }
 
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
@@ -65,6 +66,12 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
         }
 
         public override IAsyncEnumerable<IEvent> EnumerateAll(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IAsyncEnumerable<IEvent> Enumerate(EnumerateDirection direction, int limit,
+            CancellationToken token)
         {
             throw new NotImplementedException();
         }
