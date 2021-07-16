@@ -76,7 +76,6 @@ namespace Testrunner
             services
                 .AddLogging(configure => configure.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-
             ConfigureEventSource(services);
             ConfigureDenormalizer(services);
         }

@@ -116,15 +116,18 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             FilterDefinition<EventCommit> query = CommitFilters.ByAggregate(type, id);
 
-            EventCommit result = await Collection.Find(query).Sort(Sorts.Descending(x => x.VersionEvents))
-                .FirstOrDefaultAsync();
+            List<EventCommit> commits = await Collection
+                .Find(query)
+                .ToListAsync();
 
-            if (result == null)
+            if (commits == null || commits.Count == 0)
             {
                 return 0;
             }
 
-            return result.VersionEvents;
+            return commits
+                .SelectMany(x => x.Events)
+                .Count();
         }
 
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
@@ -151,13 +154,13 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         private async Task<AppendResult> InsertEvent(EventCommit commit)
         {
-            
             IClientSessionHandle session = null;
             if (UseTransactions)
             {
                 session = await Database.Client.StartSessionAsync(new ClientSessionOptions());
                 session.StartTransaction(new TransactionOptions());
             }
+
             var watch = Stopwatch.StartNew();
             commit.Ordinal = await identifier.Next("commit");
 
@@ -179,7 +182,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 // {
                 await Collection.InsertOneAsync(commit);
                 result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit, "SUCCESS");
-                
+
                 //}
             }
             catch (MongoWriteException e)
@@ -199,7 +202,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
             {
                 await CommitOrAbortTx(session, result);
                 watch.Stop();
-                logger.LogDebug("{Count} events for {Type} - {Id} handled. Result: {Result}.",commit.Events.Count,commit.AggregateType,commit.AggregateId,result.CommitId);
+                logger.LogDebug("{Count} events for {Type} - {Id} handled. Result: {Result}.", commit.Events.Count,
+                    commit.AggregateType, commit.AggregateId, result.CommitId);
             }
 
             return result;
