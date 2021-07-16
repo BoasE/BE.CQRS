@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Domain;
+using BE.CQRS.Domain.Conventions;
 using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
@@ -169,21 +170,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
             AppendResult result = AppendResult.NoUpdate;
             try
             {
-                if (currentVersion != commit.ExpectedPreviousVersion)
-                {
-                    logger.LogWarning("Wrong version. \"{CurrentVersion}\", insead of \"{ExpectedVersion}\"",
-                        currentVersion, commit.ExpectedPreviousVersion);
-
-                    //TODO Handle wrong version
-                    result = AppendResult.WrongVersion(commit.VersionCommit);
-                }
-
-                // else
-                // {
                 await Collection.InsertOneAsync(commit);
                 result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit, "SUCCESS");
-
-                //}
             }
             catch (MongoWriteException e)
             {

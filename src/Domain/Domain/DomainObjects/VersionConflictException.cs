@@ -8,19 +8,19 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public string Id { get; set; }
 
-        public long Version { get; set; }
-
-        public override string Message => $"Version conflict for {AggregateType} - {Id} with version {Version}";
+        public long DbVersion { get; set; }
+        
+        public override string Message => $"Version conflict for {AggregateType} - {Id} with DbVersion {DbVersion}";
 
         public VersionConflictException()
         {
         }
 
-        public VersionConflictException(string aggregateType, string id, long version)
+        public VersionConflictException(string aggregateType, string id, long dbVersion)
         {
             AggregateType = aggregateType;
             Id = id;
-            Version = version;
+            DbVersion = dbVersion;
         }
     }
 }

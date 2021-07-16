@@ -37,7 +37,7 @@ namespace BE.CQRS.Domain.Conventions
 
             logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"", domainObjectType);
             var currentTry = 0;
-
+            AppendResult result = AppendResult.NoUpdate;
             while (currentTry < retryCount)
             {
                 if (currentTry > 0)
@@ -45,7 +45,7 @@ namespace BE.CQRS.Domain.Conventions
                     logger.LogTrace("Retrying Command \"{type}\" for \"{domainObjectType}\"...");
                 }
 
-                AppendResult result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, commandMapping);
+                result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, commandMapping);
 
                 if (result.HadWrongVersion)
                 {
@@ -59,9 +59,10 @@ namespace BE.CQRS.Domain.Conventions
 
             if (currentTry >= retryCount)
             {
-                var msg = $"Saving \"{domainObjectType.Name}\" with id \"{cmd.DomainObjectId}\" failed due to version conflicts";
+                var msg =
+                    $"Saving \"{domainObjectType.Name}\" with id \"{cmd.DomainObjectId}\" failed due to version conflicts";
                 logger.LogWarning(msg);
-                throw new VersionConflictException(msg);
+                throw new VersionConflictException(domainObjectType.Name, cmd.DomainObjectId, result.CurrentVersion);
             }
         }
 
@@ -71,7 +72,7 @@ namespace BE.CQRS.Domain.Conventions
             CommandMethodMappingKind[] kinds = commands.Select(i => i.Kind)
                 .Distinct()
                 .ToArray();
-            
+
             if (kinds.Length != 1)
             {
                 throw new NotSupportedException(
@@ -124,7 +125,7 @@ namespace BE.CQRS.Domain.Conventions
 
             return domainObject;
         }
-        
+
         private static async Task ApplyCommands(IDomainObject domainObject, ICommand cmd,
             IEnumerable<CommandMethodMapping> group)
         {
