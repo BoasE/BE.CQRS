@@ -29,15 +29,17 @@ namespace BE.CQRS.Domain.Commands
 
         private async Task<CommandBusResult> HandleCommand(ICommand cmd)
         {
+            var type = cmd.GetType();
+            
             CommandBusResult result;
             try
             {
+                logger.LogTrace("Handling command \"{type}\" \"{id}\"}", type, cmd.DomainObjectId);
                 await handler.ExecuteAsync(cmd);
                 result = CommandBusResult.Succeeded();
             }
             catch (Exception err)
             {
-                var type = cmd.GetType();
                 var msg = err.Message;
                 logger.LogError(err, "Error handling command \"{type}\" - {msg}", type, msg);
 
@@ -61,6 +63,9 @@ namespace BE.CQRS.Domain.Commands
             Precondition.For(repository, nameof(repository)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
 
+            var logger = loggerFactory.CreateLogger<InMemoryCommandBus>();
+            logger.LogInformation("Building InMemory CommandBus with convention based pipeline");
+            
             var invoker = new ConventionCommandInvoker(repository,loggerFactory);
             var handler = new ConventionCommandPipeline(invoker, new DomainObjectLocator(), loggerFactory,
                 configuration.DomainObjectAssemblies);

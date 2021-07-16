@@ -22,6 +22,7 @@ namespace BE.CQRS.Data.MongoDb
         private readonly MongoCommitRepository repository;
         private readonly StreamNamer namer = new();
         private readonly EventMapper mapper;
+        private readonly ILogger<MongoDomainObjectRepository> logger;
 
         public MongoDomainObjectRepository(EventSourceConfiguration configuration,
             MongoEventsourceDataContext dataContext,
@@ -31,10 +32,25 @@ namespace BE.CQRS.Data.MongoDb
             IStateEventMapping stateEventMapping, ILoggerFactory logger)
             : base(configuration, denormalizerPipeline, diContext, stateEventMapping, logger)
         {
+            this.logger = logger.CreateLogger<MongoDomainObjectRepository>();
+
             mapper = new EventMapper(eventSerializer, eventHash);
             repository = new MongoCommitRepository(dataContext.Database, eventHash, eventSerializer,
                 logger.CreateLogger<MongoCommitRepository>(),
                 dataContext.UseTransactions, dataContext.DeactivateTimoutOnCommitScan);
+
+            LogStartup(denormalizerPipeline);
+        }
+
+        private void LogStartup(IImmediateConventionDenormalizerPipeline denormalizerPipeline)
+        {
+            string message = "MongoDomainObjectRepository started.";
+            if (denormalizerPipeline != null)
+            {
+                message += Environment.NewLine + "Immediate denormalization pipeline attached!";
+            }
+
+            logger.LogInformation(message);
         }
 
         public Task<long> GetCommitCount()
