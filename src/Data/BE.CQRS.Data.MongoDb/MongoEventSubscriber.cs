@@ -34,7 +34,9 @@ namespace BE.CQRS.Data.MongoDb
 
             mapper = new EventMapper(eventSerializer, hash);
             logger = loggerFactory.CreateLogger<MongoEventSubscriber>();
-            repo = new MongoCommitRepository(db, hash, eventSerializer, useTransactions, deactivateTimeoutOnRead);
+            repo = new MongoCommitRepository(db, hash, eventSerializer,
+                loggerFactory.CreateLogger<MongoCommitRepository>(),
+                useTransactions, deactivateTimeoutOnRead);
         }
 
         public async IAsyncEnumerable<OccuredEvent> Start(long? position) //TODO Check Callers!

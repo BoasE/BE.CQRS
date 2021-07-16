@@ -33,6 +33,7 @@ namespace BE.CQRS.Data.MongoDb
         {
             mapper = new EventMapper(eventSerializer, eventHash);
             repository = new MongoCommitRepository(dataContext.Database, eventHash, eventSerializer,
+                logger.CreateLogger<MongoCommitRepository>(),
                 dataContext.UseTransactions, dataContext.DeactivateTimoutOnCommitScan);
         }
 

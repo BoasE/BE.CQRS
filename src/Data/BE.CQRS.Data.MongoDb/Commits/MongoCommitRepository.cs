@@ -11,6 +11,7 @@ using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Serialization;
 using BE.FluentGuard;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -23,11 +24,14 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         private readonly bool UseTransactions;
         private readonly bool DeactivateTimeoutOnRead;
+        private readonly ILogger<MongoCommitRepository> logger;
 
         public MongoCommitRepository(IMongoDatabase db, IEventHash hash, IEventSerializer eventSerializer,
+            ILogger<MongoCommitRepository> logger,
             bool useTransactions, bool deactivateTimeoutOnRead) : base(db,
             "es_Commits")
         {
+            this.logger = logger;
             UseTransactions = useTransactions;
             DeactivateTimeoutOnRead = deactivateTimeoutOnRead;
             Mapper = new EventMapper(eventSerializer, hash);
@@ -46,10 +50,10 @@ namespace BE.CQRS.Data.MongoDb.Commits
             catch (MongoCommandException e) when (e.CodeName.Equals("IndexOptionsConflict",
                 StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine("Dropping existing index due to conflicts...");
+                logger.LogWarning("Dropping existing index due to conflicts...");
                 await collection.Indexes.DropAllAsync();
 
-                Console.WriteLine("Recreating indexes");
+                logger.LogWarning("Recreating indexes");
                 await collection.Indexes.CreateManyAsync(indexModels);
             }
         }
@@ -131,11 +135,11 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
             if (commit.Events.Count == 0)
             {
-                Debug.WriteLine("Nothing to Update", "BE.CQRS");
+                logger.LogTrace("Nothing to Update");
                 return AppendResult.NoUpdate;
             }
 
-            Debug.WriteLine($"Saving domainObject \"{domainObject.Id}\"", "BE.CQRS");
+            logger.LogTrace("Saving domainObject \"{Id}\"", domainObject.Id);
             AppendResult result;
 
 
@@ -147,13 +151,14 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         private async Task<AppendResult> InsertEvent(EventCommit commit)
         {
+            
             IClientSessionHandle session = null;
             if (UseTransactions)
             {
                 session = await Database.Client.StartSessionAsync(new ClientSessionOptions());
                 session.StartTransaction(new TransactionOptions());
             }
-
+            var watch = Stopwatch.StartNew();
             commit.Ordinal = await identifier.Next("commit");
 
             var currentVersion = await GetVersion(commit.AggregateType, commit.AggregateId);
@@ -161,14 +166,20 @@ namespace BE.CQRS.Data.MongoDb.Commits
             AppendResult result = AppendResult.NoUpdate;
             try
             {
-                // if (currentVersion != commit.ExpectedPreviousVersion)
-                // {
-                //     result = AppendResult.WrongVersion(commit.VersionCommit);
-                // }
+                if (currentVersion != commit.ExpectedPreviousVersion)
+                {
+                    logger.LogWarning("Wrong version. \"{CurrentVersion}\", insead of \"{ExpectedVersion}\"",
+                        currentVersion, commit.ExpectedPreviousVersion);
+
+                    //TODO Handle wrong version
+                    result = AppendResult.WrongVersion(commit.VersionCommit);
+                }
+
                 // else
                 // {
-                    await Collection.InsertOneAsync(commit);
-                    result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit,"SUCCESS");
+                await Collection.InsertOneAsync(commit);
+                result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit, "SUCCESS");
+                
                 //}
             }
             catch (MongoWriteException e)
@@ -179,12 +190,16 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 }
                 else
                 {
+                    logger.LogError(e, "Error when saving a commit for {type} {id}", commit.AggregateType,
+                        commit.AggregateId);
                     throw;
                 }
             }
             finally
             {
                 await CommitOrAbortTx(session, result);
+                watch.Stop();
+                logger.LogDebug("{Count} events for {Type} - {Id} handled. Result: {Result}.",commit.Events.Count,commit.AggregateType,commit.AggregateId,result.CommitId);
             }
 
             return result;

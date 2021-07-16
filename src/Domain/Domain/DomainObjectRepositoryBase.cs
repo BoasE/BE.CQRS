@@ -127,8 +127,7 @@ namespace BE.CQRS.Domain
 
                 domainObject.CommitChanges(result.CurrentVersion);
             }
-
-
+            
             return result;
         }
 

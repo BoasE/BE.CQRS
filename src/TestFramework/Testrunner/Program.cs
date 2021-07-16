@@ -74,7 +74,7 @@ namespace Testrunner
         private static void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddLogging(configure => configure.AddConsole());
+                .AddLogging(configure => configure.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
 
             ConfigureEventSource(services);
