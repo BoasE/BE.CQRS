@@ -62,6 +62,7 @@ namespace BE.CQRS.Domain.Commands
         {
             Precondition.For(repository, nameof(repository)).NotNull();
             Precondition.For(loggerFactory, nameof(loggerFactory)).NotNull();
+            Precondition.For(configuration, nameof(configuration)).NotNull();
 
             var logger = loggerFactory.CreateLogger<InMemoryCommandBus>();
             logger.LogInformation("Building InMemory CommandBus with convention based pipeline");

@@ -13,7 +13,7 @@ namespace BE.CQRS.Domain.DomainObjects
     {
         string Id { get; }
 
-        bool CheckVersionOnSave { get; }
+        bool CheckVersionOnSave { get; } 
 
         bool HasUncommittedEvents { get; }
 

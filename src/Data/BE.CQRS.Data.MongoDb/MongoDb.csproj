@@ -4,8 +4,8 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>Temporary deactivating version event chekcks due to historical bugs</PackageReleaseNotes>
-    <PackageVersion>0.90.12-alpha</PackageVersion>
+    <PackageReleaseNotes>VE resolved inside of tx. EventVersion check by default off</PackageReleaseNotes>
+    <PackageVersion>0.90.13-alpha</PackageVersion>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>

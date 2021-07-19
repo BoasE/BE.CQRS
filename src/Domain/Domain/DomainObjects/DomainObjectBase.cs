@@ -28,7 +28,7 @@ namespace BE.CQRS.Domain.DomainObjects
 
         private List<IEvent> UnCommittedEvents { get; } = new List<IEvent>();
 
-        public virtual bool CheckVersionOnSave { get; } = true;
+        public virtual bool CheckVersionOnSave { get; } = false;
 
         public virtual string Namespace { get; } = null;
 

@@ -143,17 +143,17 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 return AppendResult.NoUpdate;
             }
 
-            logger.LogTrace("Saving domainObject \"{Id}\"", domainObject.Id);
+            logger.LogTrace("Saving domainObject \"{Id}\" , VersionCheck: {VersionCheck}", domainObject.Id,versionCheck);
             AppendResult result;
 
 
-            result = await InsertEvent(commit);
+            result = await InsertEvent(commit, versionCheck);
 
 
             return result;
         }
 
-        private async Task<AppendResult> InsertEvent(EventCommit commit)
+        private async Task<AppendResult> InsertEvent(EventCommit commit, bool versionCheck)
         {
             IClientSessionHandle session = null;
             if (UseTransactions)
@@ -165,11 +165,21 @@ namespace BE.CQRS.Data.MongoDb.Commits
             var watch = Stopwatch.StartNew();
             commit.Ordinal = await identifier.Next("commit");
 
-            var currentVersion = await GetVersion(commit.AggregateType, commit.AggregateId);
-
             AppendResult result = AppendResult.NoUpdate;
             try
             {
+                var currentVersion = await GetVersion(commit.AggregateType, commit.AggregateId);
+
+                if (versionCheck && currentVersion != commit.ExpectedPreviousVersion)
+                {
+                    logger.LogWarning("Event Version check requested and version was wrong . was: {0} expected: {1}",
+                        currentVersion, commit.ExpectedPreviousVersion);
+                    //TODO If version check throw exception!
+                    result = AppendResult.WrongVersion(commit.VersionCommit);
+                }
+
+                commit.VersionCommit = currentVersion + commit.Events.Count;
+
                 await Collection.InsertOneAsync(commit);
                 result = new AppendResult(commit.Id.ToString(), false, commit.VersionCommit, "SUCCESS");
             }
