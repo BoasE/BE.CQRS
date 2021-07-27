@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BE.CQRS.Domain.DomainObjects;
 using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Events.Handlers;
 
@@ -22,6 +24,17 @@ namespace BE.CQRS.Domain.Denormalization
             await foreach (var item in repo.EnumerateAll(token))
             {
                 await Process(item);
+            }
+        }
+
+        public async Task RebuildDomainobject<T>(string id) where T : class, IDomainObject
+        {
+            var domainObject = await repo.Get<T>(id);
+            var events = domainObject.GetCommittedEvents().OrderBy(x => x.Headers.Created);
+
+            foreach (var @event in events)
+            {
+                await eventHandler.HandleAsync(@event);
             }
         }
 
