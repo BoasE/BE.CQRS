@@ -37,7 +37,7 @@ jobs:
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
       - name: Install reportgenerator
-          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.0
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.0
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
