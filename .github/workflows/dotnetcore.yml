@@ -36,6 +36,8 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Install reportgenerator
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.0
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
@@ -44,5 +46,6 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"BoasE_BE.CQRS" /o:"boase" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build src/BE.CQRS.sln
-          dotnet test src/BE.CQRS.sln --no-build --collect:"XPlat Code Coverage"
+          dotnet test src/BE.CQRS.sln --no-build --collect:"XPlat Code Coverage" 
+          reportgenerator "-reports:src\Domain\Domain.Tests\TestResults\*\coverage.cobertura.xml" -targetdir:sonarqubecoverage -reporttypes:SonarQube
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
