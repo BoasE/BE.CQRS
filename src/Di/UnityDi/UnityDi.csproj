@@ -4,8 +4,8 @@
     <RootNamespace>BE.CQRS.Di.Unity</RootNamespace>
     <AssemblyName>BE.CQRS.Di.Unity</AssemblyName>
     
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
     <PackageId>BE.CQRS.Di.Unity</PackageId>
     <PackageReleaseNotes>net5</PackageReleaseNotes>
     <PackageVersion>0.90.0-alpha</PackageVersion>
