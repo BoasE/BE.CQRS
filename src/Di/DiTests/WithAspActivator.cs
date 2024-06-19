@@ -1,5 +1,7 @@
-﻿using BE.CQRS.Di.AspCore;
+﻿using System.IO;
+using BE.CQRS.Di.AspCore;
 using BE.CQRS.Domain.DomainObjects;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiTests
 {
@@ -7,7 +9,10 @@ namespace DiTests
     {
         protected override IDomainObjectActivator GetSut()
         {
-            return new ServiceCollectionActivator();
+            var services = new ServiceCollection();
+            var provider = services.BuildServiceProvider();
+
+            return new ServiceCollectionActivator(provider);
         }
     }
 }

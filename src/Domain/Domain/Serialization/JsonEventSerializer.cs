@@ -10,7 +10,7 @@ namespace BE.CQRS.Domain.Serialization
     {
         private readonly IEventTypeResolver eventTypeResolver;
 
-        private readonly JsonSerializerOptions options = new JsonSerializerOptions()
+        private readonly JsonSerializerOptions options = new ()
         {
         };
 
@@ -19,7 +19,7 @@ namespace BE.CQRS.Domain.Serialization
             this.eventTypeResolver = eventTypeResolver;
         }
 
-        protected virtual  EventHeader DeserializeHeader(string metaData)
+        protected virtual EventHeader DeserializeHeader(string metaData)
         {
             Dictionary<string, string> result = JsonSerializer.Deserialize<Dictionary<string, string>>(metaData);
 

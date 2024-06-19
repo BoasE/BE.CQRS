@@ -50,7 +50,8 @@ namespace BE.CQRS.Domain.Tests.DomainObjectRepositoryBaseTests
 
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, CancellationToken token)
         {
-            throw new NotEmptyException(); //TODO How to return empty?
+            throw new InvalidOperationException();
+            //throw new NotEmptyException("NoEvents"); //TODO How to return empty?
         }
 
         protected override IAsyncEnumerable<IEvent> ReadEvents(string streamName, long maxVersion,

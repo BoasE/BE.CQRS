@@ -4,8 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <PackageId>BE.CQRS.Web.AspCore</PackageId>
         <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-        <PackageReleaseNotes>asp background denormalization </PackageReleaseNotes>
-        <PackageVersion>0.90.6-alpha</PackageVersion>
+        <PackageReleaseNotes>.net 8</PackageReleaseNotes>
+        <PackageVersion>0.95.0-alpha</PackageVersion>
         <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
         <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
         <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     </ItemGroup>
 
     <ItemGroup>

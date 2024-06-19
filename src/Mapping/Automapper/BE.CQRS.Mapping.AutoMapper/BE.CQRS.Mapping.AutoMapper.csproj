@@ -5,12 +5,12 @@
     <LangVersion>12</LangVersion>
     <PackageId>BE.CQRS.Mapping</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>net5</PackageReleaseNotes>
-    <PackageVersion>0.90.0-alpha</PackageVersion>
+    <PackageReleaseNotes>.net 8</PackageReleaseNotes>
+    <PackageVersion>0.95.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>

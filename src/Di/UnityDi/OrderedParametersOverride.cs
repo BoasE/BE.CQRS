@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity;
+using Unity.Resolution;
 
 namespace BE.CQRS.Di.Unity
 {

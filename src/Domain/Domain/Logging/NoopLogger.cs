@@ -6,6 +6,7 @@ namespace BE.CQRS.Domain.Logging
 {
     public sealed class NoopLogger : ILogger
     {
+        public static NoopLogger Instance { get; } = new ();
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
             Func<TState, Exception, string> formatter)
         {

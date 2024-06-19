@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Configuration;
@@ -9,7 +8,6 @@ using BE.CQRS.Domain.Events;
 using BE.CQRS.Domain.Policies;
 using BE.CQRS.Domain.States;
 using BE.FluentGuard;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
@@ -24,9 +22,9 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public string Id { get; }
 
-        public bool HasUncommittedEvents => UnCommittedEvents.Any();
+        public bool HasUncommittedEvents => UnCommittedEvents.Count > 0;
 
-        private List<IEvent> UnCommittedEvents { get; } = new List<IEvent>();
+        private List<IEvent> UnCommittedEvents { get; } = new ();
 
         public virtual bool CheckVersionOnSave { get; } = false;
 
@@ -47,8 +45,8 @@ namespace BE.CQRS.Domain.DomainObjects
             this.mapper = mapper;
         }
 
-        public void ApplyConfig(EventSourceConfiguration configuration,EventsourceDIContext diContext,
-            IStateEventMapping eventMapping,IDomainObjectRepository repo)
+        public void ApplyConfig(EventSourceConfiguration configuration, EventsourceDIContext diContext,
+            IStateEventMapping eventMapping, IDomainObjectRepository repo)
         {
             stateRuntime = new DomainObjectStateRuntime(this, diContext, eventMapping, configuration);
 
@@ -165,7 +163,6 @@ namespace BE.CQRS.Domain.DomainObjects
         {
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull();
             LoadedEventTypes = allowedEvents;
-
 
             await foreach (IEvent @event in eventsToCommit)
             {

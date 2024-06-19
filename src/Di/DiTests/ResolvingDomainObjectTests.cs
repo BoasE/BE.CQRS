@@ -13,6 +13,7 @@ namespace DiTests
 
         protected ResolvingDomainObjectTests()
         {
+            
             IDomainObjectActivator sut = GetSut();
 
             domainObject = sut.Resolve<CustomerDomainObject>(customerId);

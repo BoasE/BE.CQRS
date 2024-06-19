@@ -4,8 +4,8 @@
     <RootNamespace>BE.CQRS.Data.MongoDb</RootNamespace>
     <PackageId>BE.CQRS.Data.MongoDb</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>VE resolved inside of tx. EventVersion check by default off</PackageReleaseNotes>
-    <PackageVersion>0.90.13-alpha</PackageVersion>
+    <PackageReleaseNotes>.net 8</PackageReleaseNotes>
+    <PackageVersion>0.95.00-alpha</PackageVersion>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
@@ -15,8 +15,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.3" />
-    <PackageReference Include="MongoDB.Driver" Version="2.10.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.26.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\Domain\Domain.csproj" />

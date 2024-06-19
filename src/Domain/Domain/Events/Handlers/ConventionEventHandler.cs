@@ -26,7 +26,7 @@ namespace BE.CQRS.Domain.Events.Handlers
         private readonly IBackgroundEventQueue backgroundEventQueue = null;
         public int HandlerCount => denormalizers.Length;
 
-        public ConventionEventHandler(DenormalizerDiContext diContext, ILogger<ConventionEventHandler> logger,IBackgroundEventQueue backgroundEventQueue =null,
+        public ConventionEventHandler(DenormalizerDiContext diContext, ILogger<ConventionEventHandler> logger, IBackgroundEventQueue backgroundEventQueue = null,
             params Assembly[] projectors) // TODO Unify to one constructor
         {
             Precondition.For(projectors, nameof(projectors))
@@ -55,12 +55,14 @@ namespace BE.CQRS.Domain.Events.Handlers
 
             denormalizers = denormalizersWithMethods.ToArray();
             LogStartInfo();
-
         }
-        
+
         private void LogStartInfo()
         {
-            logger.LogInformation($"Bound {denormalizers.Length} denormalizers and {mapping.Count} methods - {mapping.BackgroundMethodCount} background methods");
+            if (logger != null)
+            {
+                logger.LogInformation($"Bound {denormalizers.Length} denormalizers and {mapping.Count} methods - {mapping.BackgroundMethodCount} background methods");
+            }
         }
 
         private List<Denormalizer> ProcessDenormalizerMethods(IEnumerable<Denormalizer> foundDenormalizers)
@@ -99,17 +101,15 @@ namespace BE.CQRS.Domain.Events.Handlers
 
                 foreach (EventHandlerMethod method in denormailzer)
                 {
-                    
                     if (method.Background && backgroundEventQueue != null)
                     {
                         var task = SafeInvoke(@event, @method, instance.Value);
-                        await backgroundEventQueue.QueueBackgroundWorkItemAsync(x=>task);
+                        await backgroundEventQueue.QueueBackgroundWorkItemAsync(x => task);
                     }
                     else
                     {
-                        await SafeInvoke(@event, method, instance.Value);    
+                        await SafeInvoke(@event, method, instance.Value);
                     }
-                    
                 }
             }
 
