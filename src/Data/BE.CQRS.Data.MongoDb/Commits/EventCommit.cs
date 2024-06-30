@@ -13,7 +13,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
         public BsonTimestamp ServerTimestamp { get; set; } = new BsonTimestamp(0);
 
         [BsonId]
-        public ObjectId Id { get; set; }
+        public BsonObjectId Id { get; set; }
 
         [BsonRequired]
         [BsonElement("aty", Order = 3)]

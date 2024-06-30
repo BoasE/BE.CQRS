@@ -298,6 +298,8 @@ namespace BE.CQRS.Data.MongoDb.Commits
         {
             Precondition.For(commitId, nameof(commitId)).NotNullOrWhiteSpace("CommitId must not be null!");
             BsonObjectId id = BsonObjectId.Create(commitId);
+
+            
             var query = Filters.Eq(x => x.Id, id);
 
             var commit = await Collection.Find(query).SortBy(x => x.Ordinal).FirstAsync();

@@ -1,4 +1,6 @@
+using System.Reflection;
 using BE.CQRS.Domain.Configuration;
+using BE.CQRS.Domain.Events.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -17,6 +19,7 @@ namespace BE.CQRS.Domain.Denormalization
         public static IServiceCollection AddImmediateDenormalization(this IServiceCollection services)
         {
             services.AddSingleton<IImmediateConventionDenormalizerPipeline, ImmediateConventionDenormalizerPipeline>();
+            services.AddSingleton<IEventHandler>(x => x.GetRequiredService<IImmediateConventionDenormalizerPipeline>());
             return services;
         }
 

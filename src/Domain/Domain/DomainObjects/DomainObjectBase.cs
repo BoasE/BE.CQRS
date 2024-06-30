@@ -14,12 +14,12 @@ namespace BE.CQRS.Domain.DomainObjects
     public abstract class DomainObjectBase : IDomainObject
     {
         private const bool includeUncommittedStreamsDefault = false;
-        private readonly List<IEvent> committedEvents = new List<IEvent>();
+        private readonly List<IEvent> committedEvents = new ();
         private readonly IEventMapper mapper;
 
         private DomainObjectStateRuntime stateRuntime;
         private IDomainObjectRepository domainObjectRepository;
-
+        protected TimeProvider Time { get; } = TimeProvider.System;
         public string Id { get; }
 
         public bool HasUncommittedEvents => UnCommittedEvents.Count > 0;
@@ -38,11 +38,16 @@ namespace BE.CQRS.Domain.DomainObjects
 
         protected ISet<Type> LoadedEventTypes { get; private set; }
 
-        protected DomainObjectBase(string id, IEventMapper mapper = null)
+        protected DomainObjectBase(string id, TimeProvider? time = null, IEventMapper mapper = null)
         {
             Precondition.For(id, nameof(id)).NotNullOrWhiteSpace();
             Id = id;
             this.mapper = mapper;
+
+            if (time != null)
+            {
+                Time = time;
+            }
         }
 
         public void ApplyConfig(EventSourceConfiguration configuration, EventsourceDIContext diContext,
@@ -134,7 +139,8 @@ namespace BE.CQRS.Domain.DomainObjects
         private void SetEventDefaults<T>(T instance) where T : IEvent, new()
         {
             instance.Headers.Set(EventHeaderKeys.AggregateId, Id);
-            instance.Headers.Set(EventHeaderKeys.Created, DateTimeOffset.Now);
+            instance.Headers.Set(EventHeaderKeys.Created, Time.GetLocalNow()
+            );
         }
 
         public IReadOnlyCollection<IEvent> GetUncommittedEvents()
