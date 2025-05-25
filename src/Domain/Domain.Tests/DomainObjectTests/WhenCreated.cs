@@ -5,7 +5,7 @@ namespace BE.CQRS.Domain.Tests.DomainObjectTests
 {
     public class WhenCreated : GivenDomainObject
     {
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.CreateVersion7().ToString();
 
         private readonly TestDomainObject sut;
 

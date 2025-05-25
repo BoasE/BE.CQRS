@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>    
-    <TargetFramework>net8.0</TargetFramework>    
+    <TargetFramework>net9.0</TargetFramework>    
     <RootNamespace>BE.CQRS.Domain.Tests</RootNamespace>    
     <AssemblyName>BE.CQRS.Domain.Tests</AssemblyName>    
-    <LangVersion>12</LangVersion>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

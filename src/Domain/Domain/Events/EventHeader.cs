@@ -58,7 +58,7 @@ namespace BE.CQRS.Domain.Events
         public void SetDetaults(string id)
         {
             Set(EventHeaderKeys.AggregateId, id);
-            Set(EventHeaderKeys.EventId, Guid.NewGuid());
+            Set(EventHeaderKeys.EventId, Guid.CreateVersion7());
             Set(EventHeaderKeys.Timestamp, DateTimeOffset.UtcNow); //Change to instant ! And support instant!
         }
 

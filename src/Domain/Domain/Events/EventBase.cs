@@ -13,7 +13,7 @@ namespace BE.CQRS.Domain.Events
             Type type = GetType();
             Headers.Set(EventHeaderKeys.EventType, type.Name);
             Headers.Set(EventHeaderKeys.AssemblyEventType, GetType().AssemblyQualifiedName);
-            Headers.Set(EventHeaderKeys.EventId, Guid.NewGuid());
+            Headers.Set(EventHeaderKeys.EventId, Guid.CreateVersion7());
             Headers.Set(EventHeaderKeys.EventFrameworkVersion,CurrentVersion.FrameworkEventVersion.Value);
         }
 

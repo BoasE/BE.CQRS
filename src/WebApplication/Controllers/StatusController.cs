@@ -20,7 +20,7 @@ namespace WebApplication.Controllers
         // GET
         public async Task<IActionResult> Index()
         {
-            await bus.EnqueueAsync(new CreateCommand(Guid.NewGuid().ToString()) {Value = "aa"});
+            await bus.EnqueueAsync(new CreateCommand(Guid.CreateVersion7().ToString()) {Value = "aa"});
             return Ok();
         }
     }

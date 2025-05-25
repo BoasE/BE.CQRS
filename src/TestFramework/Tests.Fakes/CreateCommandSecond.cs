@@ -5,6 +5,6 @@ namespace Tests.Fakes
 {
     public class CreateCommandSecond : ICommand
     {
-        public string DomainObjectId { get; set; } = Guid.NewGuid().ToString();
+        public string DomainObjectId { get; set; } = Guid.CreateVersion7().ToString();
     }
 }

@@ -9,6 +9,7 @@ namespace AspCore
     {
         public static IServiceCollection AddAspBackgroundDenormalization(this IServiceCollection services)
         {
+            
             services
                 .TryAddSingleton<IBackgroundEventQueue,InMemoryBackgroundEventQueue>();
                 services.AddHostedService<AspBackgroundDenormalizerService>();

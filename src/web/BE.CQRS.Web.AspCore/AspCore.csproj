@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <PackageId>BE.CQRS.Web.AspCore</PackageId>
         <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
         <PackageReleaseNotes>.net 8</PackageReleaseNotes>
@@ -10,7 +10,7 @@
         <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
         <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
-        <LangVersion>12</LangVersion>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -49,7 +49,7 @@ namespace Testrunner
             Console.WriteLine("next");
             Console.ReadLine();
 
-            var bo = new SampleBo(Guid.NewGuid().ToString());
+            var bo = new SampleBo(Guid.CreateVersion7().ToString());
 
             bo.ApplyConfig(serviceProvider.GetRequiredService<EventSourceConfiguration>(),
                 serviceProvider.GetRequiredService<EventsourceDIContext>(),

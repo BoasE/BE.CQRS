@@ -27,7 +27,7 @@ namespace AspNetCoreSample.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateCustomerModel model)
         {
-            var customerId = Guid.NewGuid().ToString();
+            var customerId = Guid.CreateVersion7().ToString();
             await bus.EnqueueAsync(new CreateCustomerFromApiCommand()
             {
                 DomainObjectId = customerId, //Mandatory Id

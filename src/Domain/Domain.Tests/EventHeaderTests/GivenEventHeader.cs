@@ -192,7 +192,7 @@ namespace BE.CQRS.Domain.Tests.EventHeaderTests
         [Fact]
         public void GetGuidByType()
         {
-            Guid expected = Guid.NewGuid();
+            Guid expected = Guid.CreateVersion7();
 
             EventHeader sut = GetSut();
             sut.Set("foo", expected);

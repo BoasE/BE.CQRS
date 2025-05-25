@@ -4,14 +4,14 @@
     <AssemblyName>BE.CQRS.Domain</AssemblyName> 
     <PackageId>BE.CQRS</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>test</PackageReleaseNotes>
-    <PackageVersion>0.95.03-alpha</PackageVersion>
+    <PackageReleaseNotes>.net 9</PackageReleaseNotes>
+    <PackageVersion>0.96.00-alpha</PackageVersion>
     <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />

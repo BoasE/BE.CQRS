@@ -8,7 +8,7 @@ namespace DiTests
     {
         protected abstract IDomainObjectActivator GetSut();
 
-        private readonly string customerId = Guid.NewGuid().ToString();
+        private readonly string customerId = Guid.CreateVersion7().ToString();
         private readonly CustomerDomainObject domainObject;
 
         protected ResolvingDomainObjectTests()
