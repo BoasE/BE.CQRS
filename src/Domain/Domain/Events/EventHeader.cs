@@ -10,8 +10,7 @@ namespace BE.CQRS.Domain.Events
     {
         private readonly ConcurrentDictionary<string, string> values = new ConcurrentDictionary<string, string>();
 
-        [JsonIgnore]
-        public int Count => values.Count;
+        [JsonIgnore] public int Count => values.Count;
 
         public string AssemblyEventType => GetString(EventHeaderKeys.AssemblyEventType);
 
@@ -23,6 +22,18 @@ namespace BE.CQRS.Domain.Events
 
         public EventHeader()
         {
+        }
+
+        public EventHeader SetAggregateId(string id)
+        {
+            if (this.values.TryGetValue(EventHeaderKeys.AggregateId, out string value) && value != id)
+            {
+                throw new InvalidOperationException("AggregateId can not be changed");
+            }
+
+            Set(EventHeaderKeys.AggregateId, id);
+
+            return this;
         }
 
         public EventHeader(IDictionary<string, string> dictionary)
