@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Events;
@@ -10,6 +11,10 @@ namespace BE.CQRS.Domain.States
 {
     public abstract class StateBase : IFreezeableState
     {
+        public TimeSpan Duration { get; private set; }
+        public int AppliedEvents { get; private set; }
+        public int InvokedMethods { get; private set; }
+
         private static readonly IEventMethodConvetion MethodConvetion = new OnPrefixEventMethodConvetion();
         private static readonly EventHandlerInvoker Invoker = new EventHandlerInvoker();
 
@@ -36,6 +41,7 @@ namespace BE.CQRS.Domain.States
                 throw new InvalidOperationException("State is frozen and can't be executed again!");
             }
 
+            var stamp = Stopwatch.GetTimestamp();
             foreach (IEvent entry in source)
             {
                 On(entry);
@@ -46,6 +52,8 @@ namespace BE.CQRS.Domain.States
                 }
             }
 
+            var duration = TimeSpan.FromTicks(Stopwatch.GetTimestamp() - stamp);
+            this.Duration = duration;
             Freeze();
         }
 
@@ -63,9 +71,17 @@ namespace BE.CQRS.Domain.States
         {
             EventHandlerMethod[] methods = registry.Resolve(@event.GetType());
 
+            bool applied = false;
             foreach (EventHandlerMethod method in methods)
             {
+                applied = true;
                 await Invoker.InvokeAsync(@event, method, this); //Todo get events
+                InvokedMethods++;
+            }
+
+            if (applied)
+            {
+                AppliedEvents++;
             }
         }
 

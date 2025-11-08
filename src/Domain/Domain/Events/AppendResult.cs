@@ -1,6 +1,6 @@
 ﻿namespace BE.CQRS.Domain.Events
 {
-    public struct AppendResult
+    public readonly struct AppendResult
     {
         public string CommitId { get; }
 

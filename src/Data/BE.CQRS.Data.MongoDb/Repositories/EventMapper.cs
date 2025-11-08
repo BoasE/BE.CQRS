@@ -22,28 +22,26 @@ namespace BE.CQRS.Data.MongoDb.Repositories
             this.eventHash = hash;
         }
 
-        public EventCommit ToCommit(string domainobjectId, Type domainObjectType, long originVersion,
+        public EventCommit ToCommit(EventCommit target,string domainobjectId, Type domainObjectType, long originVersion,
             long commitVersion,
             IList<IEvent> events)
         {
             Dictionary<string, EventDto> items = MapEvents(domainobjectId, events);
 
-            var commit = new EventCommit
-            {
-                AggregateId = domainobjectId,
-                AggregateType = domainObjectType.FullName,
-                AggregateTypeShort = domainObjectType.Name,
-                AggregatePackage = domainObjectType.GetTypeInfo().Assembly.GetName().Name,
-                Ordinal = Timestamp.FromNow(),
-                Timestamp = DateTime.UtcNow,
-                VersionEvents = originVersion + events.Count,
-                VersionCommit = commitVersion,
-                Events = items
-            };
+            target.AggregateId = domainobjectId;
+            target.AggregateType = domainObjectType.FullName;
+            target.AggregateTypeShort = domainObjectType.Name;
+            target.AggregatePackage = domainObjectType.GetTypeInfo().Assembly.GetName().Name;
+            target.Ordinal = Timestamp.FromNow();
+            target.Timestamp = DateTime.UtcNow;
+            target.VersionEvents = originVersion + events.Count;
+            target.VersionCommit = commitVersion;
+            target.Events = items;
 
-            PreAggregateEventTypes(events, commit);
 
-            return commit;
+            PreAggregateEventTypes(events, target);
+
+            return target;
         }
 
         private static void PreAggregateEventTypes(IEnumerable<IEvent> events, EventCommit commit)
@@ -91,7 +89,6 @@ namespace BE.CQRS.Data.MongoDb.Repositories
 
                 dto.Headers.Add(EventHeaderKeys.BodyHash, bodyHash);
                 dto.Headers.Add(EventHeaderKeys.HeaderHash, headerHash);
-                dto.Headers.Remove(EventHeaderKeys.AggregateId);
 
                 items.Add(i.ToString(), dto);
             }

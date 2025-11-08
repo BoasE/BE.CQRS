@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using BE.CQRS.Data.MongoDb.MongoObjectPools;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace BE.CQRS.Data.MongoDb.Commits
 {
     [BsonIgnoreExtraElements]
-    public sealed class EventCommit
+    public sealed class EventCommit : IRentable
     {
         [BsonRequired]
         [BsonElement("_sts", Order = 1)]
@@ -58,5 +59,22 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         [BsonIgnore]
         public long ExpectedPreviousVersion => VersionEvents - Events.Count;
+        
+        
+        public void Clear()
+        {
+            Id = BsonObjectId.Empty;
+            AggregateId = default;
+            AggregateType = default;
+            AggregateTypeShort = default;
+            AggregatePackage = default;
+            Ordinal = default;
+            Timestamp = default;
+            VersionEvents = default;
+            VersionCommit = default;
+            Events?.Clear();
+            AllEventTypes?.Clear();
+
+        }
     }
 }

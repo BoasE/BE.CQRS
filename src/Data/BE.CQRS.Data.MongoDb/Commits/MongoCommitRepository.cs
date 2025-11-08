@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using BE.CQRS.Data.MongoDb.MongoObjectPools;
 using BE.CQRS.Data.MongoDb.Repositories;
 using BE.CQRS.Domain;
 using BE.CQRS.Domain.Conventions;
@@ -49,7 +50,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 await collection.Indexes.CreateManyAsync(indexModels);
             }
             catch (MongoCommandException e) when (e.CodeName.Equals("IndexOptionsConflict",
-                StringComparison.OrdinalIgnoreCase))
+                                                      StringComparison.OrdinalIgnoreCase))
             {
                 logger.LogWarning("Dropping existing index due to conflicts...");
                 await collection.Indexes.DropAllAsync();
@@ -133,22 +134,28 @@ namespace BE.CQRS.Data.MongoDb.Commits
 
         public async Task<AppendResult> SaveAsync(IDomainObject domainObject, bool versionCheck)
         {
-            EventCommit commit = Mapper.ToCommit(domainObject.Id, domainObject.GetType(), domainObject.OriginVersion,
-                domainObject.CommitVersion + 1,
-                domainObject.GetUncommittedEvents().ToList());
-
-            if (commit.Events.Count == 0)
-            {
-                logger.LogTrace("Nothing to Update");
-                return AppendResult.NoUpdate;
-            }
-
-            logger.LogTrace("Saving domainObject \"{Id}\" , VersionCheck: {VersionCheck}", domainObject.Id,versionCheck);
+            var commit = MongoDtoPool<EventCommit>.Instance.Rent();
             AppendResult result;
+            try
+            {
+                Mapper.ToCommit(commit, domainObject.Id, domainObject.GetType(), domainObject.OriginVersion,
+                    domainObject.CommitVersion + 1,
+                    domainObject.GetUncommittedEvents().ToList());
 
+                if (commit.Events.Count == 0)
+                {
+                    logger.LogTrace("Nothing to Update");
+                    return AppendResult.NoUpdate;
+                }
 
-            result = await InsertEvent(commit, versionCheck);
+                logger.LogTrace("Saving domainObject \"{Id}\" , VersionCheck: {VersionCheck}", domainObject.Id, versionCheck);
 
+                result = await InsertEvent(commit, versionCheck);
+            }
+            finally
+            {
+                MongoDtoPool<EventCommit>.Instance.Return(commit);
+            }
 
             return result;
         }
@@ -174,6 +181,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 {
                     logger.LogWarning("Event Version check requested and version was wrong . was: {0} expected: {1}",
                         currentVersion, commit.ExpectedPreviousVersion);
+
                     //TODO If version check throw exception!
                     result = AppendResult.WrongVersion(commit.VersionCommit);
                 }
@@ -193,6 +201,7 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 {
                     logger.LogError(e, "Error when saving a commit for {type} {id}", commit.AggregateType,
                         commit.AggregateId);
+
                     throw;
                 }
             }
@@ -224,12 +233,10 @@ namespace BE.CQRS.Data.MongoDb.Commits
             }
         }
 
-
         private IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query)
         {
             return Enumerate(query);
         }
-
 
         private async IAsyncEnumerable<EventCommit> Enumerate(FilterDefinition<EventCommit> query,
             EnumerateDirection direction, int? limit,
@@ -265,7 +272,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
                 .Find(query, options)
                 .Sort(sort);
 
-
             if (limit.HasValue && limit > 0)
             {
                 find = find.Limit(limit);
@@ -299,7 +305,6 @@ namespace BE.CQRS.Data.MongoDb.Commits
             Precondition.For(commitId, nameof(commitId)).NotNullOrWhiteSpace("CommitId must not be null!");
             BsonObjectId id = BsonObjectId.Create(commitId);
 
-            
             var query = Filters.Eq(x => x.Id, id);
 
             var commit = await Collection.Find(query).SortBy(x => x.Ordinal).FirstAsync();

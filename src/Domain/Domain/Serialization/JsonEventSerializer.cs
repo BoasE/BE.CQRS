@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using BE.CQRS.Domain.Events;
 using BE.FluentGuard;
@@ -10,7 +11,7 @@ namespace BE.CQRS.Domain.Serialization
     {
         private readonly IEventTypeResolver eventTypeResolver;
 
-        private readonly JsonSerializerOptions options = new ()
+        private readonly JsonSerializerOptions options = new()
         {
         };
 
@@ -30,23 +31,53 @@ namespace BE.CQRS.Domain.Serialization
         {
             var header = new EventHeader(headerData);
             Type type = eventTypeResolver.ResolveType(header);
-
-            IEvent result = DeserializeEventInternal(eventData, type);
-
-            result?.Headers.ApplyEventHeader(header);
+            var result = DeserializeEvent(eventData, type, header);
 
             return result;
         }
 
+
         public virtual IEvent DeserializeEvent(string headerData, string eventData)
         {
+            Precondition.For(headerData, nameof(headerData)).NotNullOrWhiteSpace();
+            Precondition.For(eventData, nameof(eventData)).NotNullOrWhiteSpace();
+
             EventHeader header = DeserializeHeader(headerData);
 
             Type type = eventTypeResolver.ResolveType(header);
-            IEvent result = DeserializeEventInternal(eventData, type);
-            result?.Headers.ApplyEventHeader(header);
+            var result = DeserializeEvent(eventData, type, header);
 
             return result;
+        }
+
+        private IEvent DeserializeEvent(string eventData, Type type, EventHeader header)
+        {
+            AssertType(type, header);
+            IEvent result;
+            try
+            {
+                result = DeserializeEventInternal(eventData, type);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Event {type} for {header.AggregateId} could not be deserialized", e);
+            }
+
+
+            return result;
+        }
+
+        private static void AssertType([NotNull] Type type, EventHeader header)
+        {
+            if (string.IsNullOrWhiteSpace(header.AssemblyEventType))
+            {
+                throw new InvalidOperationException("EventHeader must have a AssemblyEventType set");
+            }
+
+            if (type == null)
+            {
+                throw new InvalidOperationException($"Type \"{header.AssemblyEventType}\" could not be resolved");
+            }
         }
 
         public virtual string SerializeHeader(EventHeader headers)
@@ -68,6 +99,8 @@ namespace BE.CQRS.Domain.Serialization
 
         protected virtual IEvent DeserializeEventInternal(string eventData, Type type)
         {
+            Precondition.For(type, nameof(type)).NotNull();
+            Precondition.For(eventData, nameof(eventData)).NotNullOrWhiteSpace();
             return JsonSerializer.Deserialize(eventData, type) as IEvent;
         }
     }
