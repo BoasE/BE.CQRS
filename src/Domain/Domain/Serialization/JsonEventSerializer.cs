@@ -53,18 +53,33 @@ namespace BE.CQRS.Domain.Serialization
         private IEvent DeserializeEvent(string eventData, Type type, EventHeader header)
         {
             AssertType(type, header);
-            IEvent result;
+            IEvent? result = null;
             try
             {
                 result = DeserializeEventInternal(eventData, type);
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Event {type} for {header.AggregateId} could not be deserialized", e);
+                ThrowNoneDeserialized(eventData, type, header, e);
             }
 
+            if (result == null)
+            {
+                ThrowNoneDeserialized(eventData, type, header, null);
+            }
 
+            @result?.Headers.ApplyEventHeader(header);
             return result;
+        }
+
+        private static void ThrowNoneDeserialized(string eventData, Type type, EventHeader header, Exception? e)
+        {
+            throw new EventSerializationException(
+                $"Event {type} for {header.AggregateId} could not be deserialized", 
+                type?.FullName ?? header.AssemblyEventType,
+                header.AggregateId,
+                eventData,
+                e);
         }
 
         private static void AssertType([NotNull] Type type, EventHeader header)
@@ -97,7 +112,7 @@ namespace BE.CQRS.Domain.Serialization
             return JsonSerializer.Serialize(@event, @event.GetType());
         }
 
-        protected virtual IEvent DeserializeEventInternal(string eventData, Type type)
+        protected virtual IEvent? DeserializeEventInternal(string eventData, Type type)
         {
             Precondition.For(type, nameof(type)).NotNull();
             Precondition.For(eventData, nameof(eventData)).NotNullOrWhiteSpace();
