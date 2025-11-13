@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>BE.CQRS.Domain</RootNamespace>
     <AssemblyName>BE.CQRS.Domain</AssemblyName> 
-    <PackageId>BE.CQRS.Domain</PackageId>
+    <PackageId>BE.CQRS</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
     <PackageReleaseNotes>Upgrade to .NET 10</PackageReleaseNotes>
     <PackageVersion>0.100.0-alpha</PackageVersion>
