@@ -4,11 +4,19 @@
     <RootNamespace>BE.CQRS.Di.Unity</RootNamespace>
     <AssemblyName>BE.CQRS.Di.Unity</AssemblyName>
     
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <PackageId>BE.CQRS.Di.Unity</PackageId>
-    <PackageReleaseNotes>net5</PackageReleaseNotes>
-    <PackageVersion>0.90.0-alpha</PackageVersion>
+    <PackageReleaseNotes>Upgrade to .NET 10</PackageReleaseNotes>
+    <PackageVersion>0.100.0-alpha</PackageVersion>
+    <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>BoasE</Authors>
+    <Company>BoasE</Company>
+    <Description>Unity container integration for BE.CQRS.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

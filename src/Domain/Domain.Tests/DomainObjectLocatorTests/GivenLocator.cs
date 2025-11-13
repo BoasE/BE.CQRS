@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BE.CQRS.Domain.DomainObjects;
 using Xunit;
 
@@ -16,7 +17,11 @@ namespace BE.CQRS.Domain.Tests.DomainObjectLocatorTests
         {
             DomainObjectLocator sut = GetSut();
 
-            Assert.Throws<ArgumentNullException>(() => sut.ResolveDomainObjects(null));
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                
+                return sut.ResolveDomainObjects(null).ToList();
+            });
         }
     }
 }

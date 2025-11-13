@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Conventions;
+using BE.FluentGuard;
 
 namespace BE.CQRS.Domain.DomainObjects
 {
     public sealed class DomainObjectLocator : IDomainObjectLocator
     {
         private static readonly TypeInfo DomainType = typeof(IDomainObject).GetTypeInfo();
-        private static readonly TypeInfo Task = typeof(Task).GetTypeInfo();
+        private static readonly TypeInfo TaskType = typeof(Task).GetTypeInfo();
         private static readonly TypeInfo VoidType = typeof(void).GetTypeInfo();
         private static readonly TypeInfo BehaviorAttributeType = typeof(BehaviorAttribute).GetTypeInfo();
         private static readonly TypeInfo CreateAttributeType = typeof(CreateAttribute).GetTypeInfo();
@@ -19,76 +19,79 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public IEnumerable<CommandMethodMapping> ResolveConventionalMethods(Type domainObjectType)
         {
-            IEnumerable<MethodInfo> methods = domainObjectType
-                .GetRuntimeMethods();
+            foreach (var method in domainObjectType.GetRuntimeMethods())
+            {
+                if (method.IsAbstract || !method.IsPublic)
+                    continue;
+                if (!HasCommandParameter(method))
+                    continue;
+                if (!HasConventionalReturnMethod(method))
+                    continue;
+                var attribType = GetBehaviorAttribute(method);
+                if (attribType is null)
+                    continue;
 
-            return methods
-                .Where(i => !i.IsAbstract && i.IsPublic && HasCommandParameter(i) &&
-                    HasConventionalReturnMethod(i) &&
-                    IsAnnotated(i))
-                .Select(method => ToMapping(domainObjectType, method));
+                yield return ToMapping(domainObjectType, method, attribType);
+            }
         }
 
-        private static CommandMethodMapping ToMapping(Type domainObjectType, MethodInfo nfo)
+        private static CommandMethodMapping ToMapping(Type domainObjectType, MethodInfo nfo, Type attribType)
         {
-            Type type = nfo.GetParameters().First().ParameterType;
+            var parameters = nfo.GetParameters();
+            var paramType = parameters[0].ParameterType;
 
-            Type attribType = GetBehaviorAttribute(nfo);
-
-            CommandMethodMappingKind kind = CreateAttributeType.IsAssignableFrom(attribType.GetTypeInfo())
+            var kind = CreateAttributeType.IsAssignableFrom(attribType.GetTypeInfo())
                 ? CommandMethodMappingKind.Create
                 : CommandMethodMappingKind.Update;
 
-            bool awaitable = Task.IsAssignableFrom(nfo.ReturnType.GetTypeInfo());
+            bool awaitable = TaskType.IsAssignableFrom(nfo.ReturnType.GetTypeInfo());
 
-            var result = new CommandMethodMapping(domainObjectType, type, nfo, awaitable, kind);
-
-            return result;
+            return new CommandMethodMapping(domainObjectType, paramType, nfo, awaitable, kind);
         }
 
         private static bool HasCommandParameter(MethodInfo method)
         {
-            ParameterInfo[] para = method.GetParameters();
-
+            var para = method.GetParameters();
             if (para.Length != 1)
-            {
                 return false;
-            }
-            ParameterInfo first = para.First();
 
+            var first = para[0];
             return CommandType.IsAssignableFrom(first.ParameterType.GetTypeInfo());
         }
 
         public IEnumerable<Type> ResolveDomainObjects(IList<Assembly> source)
         {
-            IEnumerable<Type> types = source
-                .SelectMany(i => i.ExportedTypes)
-                .Where(IsAccessAbleDomainObject);
+            if (source == null) throw new ArgumentNullException(nameof(source));
 
-            return types;
+            for (int i = 0; i < source.Count; i++)
+            {
+                var asm = source[i];
+                foreach (var t in asm.ExportedTypes)
+                {
+                    if (IsAccessAbleDomainObject(t))
+                        yield return t;
+                }
+            }
         }
 
         private static bool HasConventionalReturnMethod(MethodInfo method)
         {
             TypeInfo returnType = method.ReturnType.GetTypeInfo();
-
-            return VoidType.IsAssignableFrom(returnType) || Task.IsAssignableFrom(returnType);
-        }
-
-        private static bool IsAnnotated(MethodInfo method)
-        {
-            Type type = GetBehaviorAttribute(method);
-
-            return type != null;
+            return VoidType.IsAssignableFrom(returnType) || TaskType.IsAssignableFrom(returnType);
         }
 
         private static Type GetBehaviorAttribute(MethodInfo method)
         {
-            return method
-                .GetCustomAttributes(true)
-                .SingleOrDefault(i => IsBehaviorAttribute(i.GetType()))
-                ?
-                .GetType();
+            // Materialize to list once to avoid multiple enumeration and allow indexing if needed
+            var attrs = new List<CustomAttributeData>(method.CustomAttributes);
+            for (int i = 0; i < attrs.Count; i++)
+            {
+                var attrType = attrs[i].AttributeType;
+                if (IsBehaviorAttribute(attrType))
+                    return attrType;
+            }
+
+            return null;
         }
 
         private static bool IsBehaviorAttribute(Type type)
@@ -99,8 +102,9 @@ namespace BE.CQRS.Domain.DomainObjects
 
         private static bool IsAccessAbleDomainObject(Type type)
         {
+            if (type == null) return false;
             TypeInfo info = type.GetTypeInfo();
-            return type != null && info.IsPublic && !info.IsAbstract && DomainType.IsAssignableFrom(info);
+            return info.IsPublic && !info.IsAbstract && DomainType.IsAssignableFrom(info);
         }
     }
 }

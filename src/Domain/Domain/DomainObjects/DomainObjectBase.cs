@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.Configuration;
@@ -13,7 +12,7 @@ namespace BE.CQRS.Domain.DomainObjects
 {
     public abstract class DomainObjectBase : IDomainObject
     {
-        private const bool includeUncommittedStreamsDefault = false;
+        private const bool IncludeUncommittedStreamsDefault = false;
         private readonly List<IEvent> committedEvents = new ();
         private readonly IEventMapper mapper;
 
@@ -36,9 +35,9 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public long CommitVersion { get; private set; }
 
-        protected ISet<Type> LoadedEventTypes { get; private set; }
+        private HashSet<string> allowedEventTypeNames;
 
-        protected DomainObjectBase(string id, TimeProvider? time = null, IEventMapper mapper = null)
+        protected DomainObjectBase(string id, TimeProvider time = null, IEventMapper mapper = null)
         {
             Precondition.For(id, nameof(id)).NotNullOrWhiteSpace();
             Id = id;
@@ -60,22 +59,22 @@ namespace BE.CQRS.Domain.DomainObjects
 
         public bool Policy<T>() where T : PolicyBase, new()
         {
-            return stateRuntime.Policy<T>(includeUncommittedStreamsDefault);
+            return stateRuntime.Policy<T>(IncludeUncommittedStreamsDefault);
         }
 
         public bool Policy<T>(ICommand command) where T : PolicyBase
         {
-            return stateRuntime.Policy<T>(command, includeUncommittedStreamsDefault);
+            return stateRuntime.Policy<T>(command, IncludeUncommittedStreamsDefault);
         }
 
         public bool Policy(Type policy, ICommand command)
         {
-            return stateRuntime.Policy(policy, command, includeUncommittedStreamsDefault);
+            return stateRuntime.Policy(policy, command, IncludeUncommittedStreamsDefault);
         }
 
         public T State<T>() where T : StateBase, new()
         {
-            return stateRuntime.State<T>(includeUncommittedStreamsDefault);
+            return stateRuntime.State<T>(IncludeUncommittedStreamsDefault);
         }
 
         public T State<T>(bool includeUnComitted) where T : StateBase, new()
@@ -83,24 +82,24 @@ namespace BE.CQRS.Domain.DomainObjects
             return stateRuntime.State<T>(includeUnComitted);
         }
 
-        protected T RaiseEvent<T, U>(U mappingSource) where T : IEvent, new()
+        protected T RaiseEvent<T, TSource>(TSource mappingSource) where T : IEvent, new()
         {
             Precondition.For(mappingSource, nameof(mappingSource)).NotNull();
             Precondition.For(mapper, nameof(mapper)).NotNull();
 
-            T @event = mapper.MapToEvent<U, T>(mappingSource);
+            T @event = mapper.MapToEvent<TSource, T>(mappingSource);
             @event = RaiseEventInternal(@event, null);
 
             return @event;
         }
 
-        protected T RaiseEvent<T, U>(U mappingSource, Action<T> modification) where T : IEvent, new()
+        protected T RaiseEvent<T, TSource>(TSource mappingSource, Action<T> modification) where T : IEvent, new()
         {
             Precondition.For(mappingSource, nameof(mappingSource)).NotNull();
             Precondition.For(modification, nameof(modification)).NotNull();
             Precondition.For(mapper, nameof(mapper)).NotNull();
 
-            T @event = mapper.MapToEvent<U, T>(mappingSource);
+            T @event = mapper.MapToEvent<TSource, T>(mappingSource);
             @event = RaiseEventInternal(@event, modification);
 
             return @event;
@@ -139,8 +138,7 @@ namespace BE.CQRS.Domain.DomainObjects
         private void SetEventDefaults<T>(T instance) where T : IEvent, new()
         {
             instance.Headers.Set(EventHeaderKeys.AggregateId, Id);
-            instance.Headers.Set(EventHeaderKeys.Created, Time.GetLocalNow()
-            );
+            instance.Headers.Set(EventHeaderKeys.Created, Time.GetLocalNow());
         }
 
         public IReadOnlyCollection<IEvent> GetUncommittedEvents()
@@ -165,34 +163,51 @@ namespace BE.CQRS.Domain.DomainObjects
             UnCommittedEvents.Clear();
         }
 
+        // ReSharper disable PossibleMultipleEnumeration
         public async Task ApplyEvents(IAsyncEnumerable<IEvent> eventsToCommit, ISet<Type> allowedEvents = null)
         {
             Precondition.For(eventsToCommit, nameof(eventsToCommit)).NotNull();
-            LoadedEventTypes = allowedEvents;
+
+            allowedEventTypeNames = null;
+            if (allowedEvents is ICollection<Type> allowedCollection && allowedCollection.Count > 0)
+            {
+                allowedEventTypeNames = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var t in allowedCollection)
+                {
+                    var aqn = t?.AssemblyQualifiedName;
+                    if (!string.IsNullOrWhiteSpace(aqn))
+                        allowedEventTypeNames.Add(aqn);
+                }
+            }
 
             await foreach (IEvent @event in eventsToCommit)
             {
-                ApplyEvent(@event, allowedEvents);
+                ApplyEvent(@event);
             }
         }
 
-        public void ApplyEvent(IEvent @event, ISet<Type> allowedEvents = null)
+        public void ApplyEvent(IEvent @event)
         {
-            if (@event.Headers.HasKey(EventHeaderKeys.CommitId))
+            var headers = @event.Headers;
+            if (headers.HasKey(EventHeaderKeys.CommitId))
             {
-                var version = @event.Headers.GetLong(EventHeaderKeys.CommitId);
+                var version = headers.GetLong(EventHeaderKeys.CommitId);
                 CommitVersion = Math.Max(CommitVersion, version);
             }
 
-            string eventType = @event.Headers.GetString(EventHeaderKeys.AssemblyEventType);
-            if (allowedEvents == null ||
-                (allowedEvents.Count > 0 && allowedEvents.Any(type =>
-                    type != null && !string.IsNullOrWhiteSpace(type.AssemblyQualifiedName) &&
-                    type.AssemblyQualifiedName.Equals(eventType))))
+            if (allowedEventTypeNames == null || allowedEventTypeNames.Count == 0)
             {
-                @committedEvents.Add(@event);
+                committedEvents.Add(@event);
+                return;
+            }
+
+            string eventType = headers.GetString(EventHeaderKeys.AssemblyEventType);
+            if (!string.IsNullOrEmpty(eventType) && allowedEventTypeNames.Contains(eventType))
+            {
+                committedEvents.Add(@event);
             }
         }
+        // ReSharper restore PossibleMultipleEnumeration
 
         public Task<TState> StateFor<TState>(string domainObjectId)
             where TState : StateBase, new()

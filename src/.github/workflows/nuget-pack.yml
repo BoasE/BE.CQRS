@@ -1,0 +1,103 @@
+﻿name: Build and Pack BE.CQRS NuGet packages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - feature/**
+  pull_request:
+    branches:
+      - main
+      - master
+  # Optional: Tags für Releases
+  # tag push "v0.100.0-alpha" triggert pack + push
+  workflow_dispatch:
+
+jobs:
+  pack:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        working-directory: src
+        run: |
+          dotnet restore "BE.CQRS.sln"
+
+      - name: Build
+        working-directory: src
+        run: |
+          dotnet build "BE.CQRS.sln" -c Release --no-restore
+
+      - name: Pack Domain
+        working-directory: src
+        run: |
+          dotnet pack .\Domain\Domain\Domain.csproj -c Release --no-build -o .\artifacts
+
+      - name: Pack Data.MongoDb
+        working-directory: src
+        run: |
+          dotnet pack .\Data\BE.CQRS.Data.MongoDb\MongoDb.csproj -c Release --no-build -o .\artifacts
+
+      - name: Pack Web.AspCore
+        working-directory: src
+        run: |
+          dotnet pack .\web\BE.CQRS.Web.AspCore\AspCore.csproj -c Release --no-build -o .\artifacts
+
+      - name: Pack Mapping.AutoMapper
+        working-directory: src
+        run: |
+          dotnet pack .\Mapping\Automapper\BE.CQRS.Mapping.AutoMapper\BE.CQRS.Mapping.AutoMapper.csproj -c Release --no-build -o .\artifacts
+
+      - name: Upload nupkg as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: src/artifacts/*.nupkg
+
+  # Optionaler Job: Push zu NuGet.org oder GitHub Packages
+  # Voraussetzung: Secret NUGET_API_KEY oder GITHUB_TOKEN
+  publish:
+    needs: pack
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      # Beispiel für Push zu nuget.org (Secret: NUGET_API_KEY)
+      - name: Push to NuGet.org
+        if: env.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY" --skip-duplicate
+
+      # Beispiel für Push zu GitHub Packages
+      # - name: Push to GitHub Packages
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     dotnet nuget push "artifacts/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key "$env:GITHUB_TOKEN" --skip-duplicate
+

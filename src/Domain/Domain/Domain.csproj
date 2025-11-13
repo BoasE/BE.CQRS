@@ -2,27 +2,33 @@
   <PropertyGroup>
     <RootNamespace>BE.CQRS.Domain</RootNamespace>
     <AssemblyName>BE.CQRS.Domain</AssemblyName> 
-    <PackageId>BE.CQRS</PackageId>
+    <PackageId>BE.CQRS.Domain</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
-    <PackageReleaseNotes>.net 9</PackageReleaseNotes>
-    <PackageVersion>0.97.00-alpha</PackageVersion>
-    <PackageLicenseUrl>https://github.com/BoasE/BE.CQRS/blob/master/LICENSEE</PackageLicenseUrl>
+    <PackageReleaseNotes>Upgrade to .NET 10</PackageReleaseNotes>
+    <PackageVersion>0.100.0-alpha</PackageVersion>
+    <!-- Lizenz: bitte bestätigen, falls nicht MIT -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
     <RepositoryUrl>https://github.com/BoasE/BE.CQRS</RepositoryUrl>
-    <RepositoryType>GitHub</RepositoryType>
-    <TargetFramework>net9.0</TargetFramework>
-    <LangVersion>default</LangVersion>
+    <RepositoryType>git</RepositoryType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Authors>BoasE</Authors>
+    <Company>BoasE</Company>
+    <Description>Domain primitives, event sourcing abstractions, and policies for the BE.CQRS framework.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentGuard" Version="1.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Tracing" Version="4.3.0" />
-    <PackageReference Include="System.Reactive" Version="6.0.1" />
-    <PackageReference Include="System.Text.Json" Version="8.0.3" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
 </Project>

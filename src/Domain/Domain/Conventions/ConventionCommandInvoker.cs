@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
 using BE.CQRS.Domain.DomainObjects;
@@ -33,19 +31,21 @@ namespace BE.CQRS.Domain.Conventions
         {
             Precondition.For(domainObjectType, nameof(domainObjectType)).NotNull("Type has to be set!");
             Precondition.For(cmd, nameof(cmd)).IsValidCommand();
-            Precondition.For(commandMapping, nameof(commandMapping)).NotNull();
+            if (commandMapping == null) throw new ArgumentNullException(nameof(commandMapping));
 
-            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"", domainObjectType);
+            var mappingList = commandMapping as IList<CommandMethodMapping> ?? new List<CommandMethodMapping>(commandMapping);
+
+            logger.LogTrace("Invoking Command \"{type}\" for \"{domainObjectType}\"", cmd.GetType(), domainObjectType);
             var currentTry = 0;
             AppendResult result = AppendResult.NoUpdate;
             while (currentTry < retryCount)
             {
                 if (currentTry > 0)
                 {
-                    logger.LogTrace("Retrying Command \"{type}\" for \"{domainObjectType}\"...");
+                    logger.LogTrace("Retrying Command \"{type}\" for \"{domainObjectType}\"...", cmd.GetType(), domainObjectType);
                 }
 
-                result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, commandMapping);
+                result = await InvokeAndSaveInternalAsync(domainObjectType, cmd, mappingList);
 
                 if (result.HadWrongVersion)
                 {
@@ -69,25 +69,39 @@ namespace BE.CQRS.Domain.Conventions
         private async Task<AppendResult> InvokeAndSaveInternalAsync(Type domainObjectType, ICommand cmd,
             IEnumerable<CommandMethodMapping> commands)
         {
-            CommandMethodMappingKind[] kinds = commands.Select(i => i.Kind)
-                .Distinct()
-                .ToArray();
+            var list = commands as IList<CommandMethodMapping> ?? new List<CommandMethodMapping>(commands);
 
-            if (kinds.Length != 1)
+            bool hasFirst = false;
+            CommandMethodMappingKind firstKind = default;
+            for (int i = 0; i < list.Count; i++)
             {
-                throw new NotSupportedException(
-                    "Command can only be bound to single kind (update or create) per aggregate");
+                var c = list[i];
+                if (!hasFirst)
+                {
+                    hasFirst = true;
+                    firstKind = c.Kind;
+                }
+                else if (c.Kind != firstKind)
+                {
+                    throw new NotSupportedException(
+                        "Command can only be bound to single kind (update or create) per aggregate");
+                }
             }
 
-            bool preventVersionCheck = kinds[0] == CommandMethodMappingKind.UpdateWithoutHistory ||
-                                       kinds[0] == CommandMethodMappingKind.Create;
+            if (!hasFirst)
+            {
+                return AppendResult.NoUpdate;
+            }
 
-            IDomainObject obj = await InvokeAsync(domainObjectType, cmd, kinds.First(), commands.ToArray());
-            return await repository.SaveAsync(obj, preventVersionCheck);
+            bool preventVersionCheck = firstKind == CommandMethodMappingKind.UpdateWithoutHistory ||
+                                       firstKind == CommandMethodMappingKind.Create;
+
+            IDomainObject obj = await InvokeAsync(domainObjectType, cmd, firstKind, list);
+            return await repository.SaveAsync((dynamic)obj, preventVersionCheck);
         }
 
         public async Task<IDomainObject> InvokeAsync(Type domainObjectType, ICommand cmd, CommandMethodMappingKind kind,
-            ICollection<CommandMethodMapping> methodMappings)
+            IEnumerable<CommandMethodMapping> methodMappings)
         {
             IDomainObject domainObject;
 
@@ -111,11 +125,17 @@ namespace BE.CQRS.Domain.Conventions
                 }
             }
 
-            if (policyValidator.CheckPolicies(domainObject, cmd, methodMappings.Select(x => x.Method).ToArray()))
+            var list = methodMappings as IList<CommandMethodMapping> ?? new List<CommandMethodMapping>(methodMappings);
+
+            var methodsList = new List<System.Reflection.MethodInfo>(list.Count);
+            for (int i = 0; i < list.Count; i++)
+                methodsList.Add(list[i].Method);
+
+            if (policyValidator.CheckPolicies(domainObject, cmd, methodsList))
             {
                 logger.LogTrace("Applying command on \"{domainObjectType}\" with id {domainObjectId}", domainObjectType,
                     cmd.DomainObjectId);
-                await ApplyCommands(domainObject, cmd, methodMappings);
+                await ApplyCommands(domainObject, cmd, list);
             }
             else
             {
@@ -127,18 +147,24 @@ namespace BE.CQRS.Domain.Conventions
         }
 
         private static async Task ApplyCommands(IDomainObject domainObject, ICommand cmd,
-            IEnumerable<CommandMethodMapping> group)
+            IList<CommandMethodMapping> group)
         {
-            foreach (CommandMethodMapping method in group)
+            for (int i = 0; i < group.Count; i++)
             {
-                if (method.Awaitable)
+                var mapping = group[i];
+                if (mapping.Awaitable && mapping.AsyncInvoker != null)
                 {
-                    var task = method.Method.Invoke(domainObject, new object[] {cmd}) as Task;
-                    await task;
+                    await mapping.AsyncInvoker(domainObject, cmd);
+                }
+                else if (mapping.SyncInvoker != null)
+                {
+                    mapping.SyncInvoker(domainObject, cmd);
                 }
                 else
                 {
-                    method.Method.Invoke(domainObject, new object[] {cmd});
+                    var task = mapping.Method.Invoke(domainObject, new object[] {cmd}) as Task;
+                    if (mapping.Awaitable && task != null)
+                        await task;
                 }
             }
         }

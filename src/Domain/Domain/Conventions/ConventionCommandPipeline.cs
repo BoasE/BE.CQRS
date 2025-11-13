@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
@@ -22,8 +19,6 @@ namespace BE.CQRS.Domain.Conventions
 
         private readonly IConventionCommandInvoker invoker;
 
-        private static readonly string Category = typeof(ConventionCommandPipeline).FullName;
-
         private readonly ILogger logger;
 
         public static ConventionCommandPipeline CreateDefault(IDomainObjectRepository repo,
@@ -40,7 +35,7 @@ namespace BE.CQRS.Domain.Conventions
             this.locator = locator;
             this.invoker = invoker;
             logger = loggerFactory.CreateLogger<ConventionCommandPipeline>();
-            BindDomainObjects(domainObjectAssemblies.ToList());
+            BindDomainObjects(domainObjectAssemblies is IList<Assembly> list ? list : new List<Assembly>(domainObjectAssemblies));
         }
 
         private void BindDomainObjects(IList<Assembly> domainObjectAssemblies)
@@ -59,12 +54,13 @@ namespace BE.CQRS.Domain.Conventions
 
                 foreach (CommandMethodMapping method in methodsOfType)
                 {
-                    if (!commandMappings.ContainsKey(method.CommandType))
+                    if (!commandMappings.TryGetValue(method.CommandType, out var list))
                     {
-                        commandMappings.Add(method.CommandType, new List<CommandMethodMapping>());
+                        list = new List<CommandMethodMapping>();
+                        commandMappings.Add(method.CommandType, list);
                     }
 
-                    commandMappings[method.CommandType].Add(method);
+                    list.Add(method);
                 }
             }
 
@@ -80,15 +76,28 @@ namespace BE.CQRS.Domain.Conventions
 
             Type type = cmd.GetType();
 
-
             List<CommandMethodMapping> mapping = resolvedMappings.GetOrAdd(type, ResolveMappings);
 
             int mappingCount = mapping.Count;
             logger.LogTrace("Executing command \"{type}\" for {mappingCount} recievers", type,mappingCount);
 
-            IEnumerable<IGrouping<Type, CommandMethodMapping>> groups = mapping.GroupBy(i => i.DomainObjectType);
+            // Group by DomainObjectType ohne LINQ
+            var groups = new Dictionary<Type, List<CommandMethodMapping>>();
+            foreach (var m in mapping)
+            {
+                if (!groups.TryGetValue(m.DomainObjectType, out var list))
+                {
+                    list = new List<CommandMethodMapping>();
+                    groups.Add(m.DomainObjectType, list);
+                }
+                list.Add(m);
+            }
 
-            List<Task> tasks = groups.Select(group => invoker.InvokeAndSaveAsync(group.Key, cmd, group)).ToList();
+            var tasks = new List<Task>(groups.Count);
+            foreach (var kvp in groups)
+            {
+                tasks.Add(invoker.InvokeAndSaveAsync(kvp.Key, cmd, kvp.Value));
+            }
 
             return Task.WhenAll(tasks);
         }
@@ -97,9 +106,17 @@ namespace BE.CQRS.Domain.Conventions
         {
             TypeInfo nfo = commandType.GetTypeInfo();
 
-            List<CommandMethodMapping> result = commandMapping.Where(i => nfo.IsAssignableFrom(i.Key.GetTypeInfo()))
-                .SelectMany(i => i.Value)
-                .ToList();
+            var result = new List<CommandMethodMapping>();
+            foreach (var kvp in commandMapping)
+            {
+                if (nfo.IsAssignableFrom(kvp.Key.GetTypeInfo()))
+                {
+                    // Add all target mappings
+                    var list = kvp.Value;
+                    for (int i = 0; i < list.Count; i++)
+                        result.Add(list[i]);
+                }
+            }
             return result;
         }
     }
