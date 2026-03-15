@@ -18,6 +18,17 @@ namespace BE.CQRS.Domain.Tests.DomainObjectLocatorTests
             Assert.True(result.Any());
         }
 
+        [Fact]
+        public void ItDoesNotResolveConventionalMethodsTwice()
+        {
+            DomainObjectLocator sut = GetSut();
+
+            CommandMethodMapping[] result = sut.ResolveConventionalMethods(typeof(FakeObject)).ToArray();
+
+            int uniqueMethodCount = result.Select(i => i.Method).Count();
+            Assert.Equal(uniqueMethodCount, result.Length);
+        }
+
         //[Fact]
         //public void ItFindsTheUpdateMethod()
         //{

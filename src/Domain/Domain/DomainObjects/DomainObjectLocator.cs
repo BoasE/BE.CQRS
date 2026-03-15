@@ -59,13 +59,13 @@ namespace BE.CQRS.Domain.DomainObjects
             return CommandType.IsAssignableFrom(first.ParameterType.GetTypeInfo());
         }
 
-        public IEnumerable<Type> ResolveDomainObjects(IList<Assembly> source)
+        public IEnumerable<Type> ResolveDomainObjects(ISet<Assembly> source)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
 
-            for (int i = 0; i < source.Count; i++)
+
+            foreach (var asm in source)
             {
-                var asm = source[i];
                 foreach (var t in asm.ExportedTypes)
                 {
                     if (IsAccessAbleDomainObject(t))

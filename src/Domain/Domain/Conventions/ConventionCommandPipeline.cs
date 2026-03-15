@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using BE.CQRS.Domain.Commands;
@@ -24,7 +25,8 @@ namespace BE.CQRS.Domain.Conventions
         public static ConventionCommandPipeline CreateDefault(IDomainObjectRepository repo,
             ILoggerFactory loggerFactory, params Assembly[] asm)
         {
-            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo,loggerFactory), new DomainObjectLocator(),
+            return new ConventionCommandPipeline(new ConventionCommandInvoker(repo, loggerFactory),
+                new DomainObjectLocator(),
                 loggerFactory, asm);
         }
 
@@ -35,12 +37,14 @@ namespace BE.CQRS.Domain.Conventions
             this.locator = locator;
             this.invoker = invoker;
             logger = loggerFactory.CreateLogger<ConventionCommandPipeline>();
-            BindDomainObjects(domainObjectAssemblies is IList<Assembly> list ? list : new List<Assembly>(domainObjectAssemblies));
+            BindDomainObjects(domainObjectAssemblies is ISet<Assembly> list
+                ? list
+                : new HashSet<Assembly>(domainObjectAssemblies));
         }
 
-        private void BindDomainObjects(IList<Assembly> domainObjectAssemblies)
+        private void BindDomainObjects(ISet<Assembly> domainObjectAssemblies)
         {
-            IEnumerable<Type> types = locator.ResolveDomainObjects(domainObjectAssemblies);
+            var types = locator.ResolveDomainObjects(domainObjectAssemblies).ToList();
 
             var count = 0;
 
@@ -50,7 +54,8 @@ namespace BE.CQRS.Domain.Conventions
             {
                 count++;
 
-                IEnumerable<CommandMethodMapping> methodsOfType = locator.ResolveConventionalMethods(domainObjectType);
+                IEnumerable<CommandMethodMapping> methodsOfType =
+                    locator.ResolveConventionalMethods(domainObjectType).ToList();
 
                 foreach (CommandMethodMapping method in methodsOfType)
                 {
@@ -79,7 +84,7 @@ namespace BE.CQRS.Domain.Conventions
             List<CommandMethodMapping> mapping = resolvedMappings.GetOrAdd(type, ResolveMappings);
 
             int mappingCount = mapping.Count;
-            logger.LogTrace("Executing command \"{type}\" for {mappingCount} recievers", type,mappingCount);
+            logger.LogTrace("Executing command \"{type}\" for {mappingCount} recievers", type, mappingCount);
 
             // Group by DomainObjectType ohne LINQ
             var groups = new Dictionary<Type, List<CommandMethodMapping>>();
@@ -90,6 +95,7 @@ namespace BE.CQRS.Domain.Conventions
                     list = new List<CommandMethodMapping>();
                     groups.Add(m.DomainObjectType, list);
                 }
+
                 list.Add(m);
             }
 
@@ -117,6 +123,7 @@ namespace BE.CQRS.Domain.Conventions
                         result.Add(list[i]);
                 }
             }
+
             return result;
         }
     }

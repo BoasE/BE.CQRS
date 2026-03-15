@@ -5,7 +5,7 @@
     <PackageId>BE.CQRS</PackageId>
     <PackageProjectUrl>https://github.com/BoasE/BE.CQRS</PackageProjectUrl>
     <PackageReleaseNotes>Upgrade to .NET 10</PackageReleaseNotes>
-    <PackageVersion>0.100.0-alpha</PackageVersion>
+    <PackageVersion>0.100.1-alpha</PackageVersion>
     <!-- Lizenz: bitte bestätigen, falls nicht MIT -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>.net,c#,cqrs,eventsourcing,framework</PackageTags>
@@ -15,7 +15,7 @@
     <LangVersion>14.0</LangVersion>
     <Authors>BoasE</Authors>
     <Company>BoasE</Company>
-    <Description>Domain primitives, event sourcing abstractions, and policies for the BE.CQRS framework.</Description>
+    <Description>Making sure Assembly arent bound twice for domainobjects.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

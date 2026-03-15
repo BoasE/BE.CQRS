@@ -31,8 +31,8 @@ namespace BE.CQRS.Domain.Tests.DomainObjectLocatorTests
         {
             List<Type> result = Resolve().ToList();
 
-            Assert.Null(result.FirstOrDefault(
-                i => i.Name.Equals("PrivateFakeObject", StringComparison.OrdinalIgnoreCase)));
+            Assert.Null(result.FirstOrDefault(i =>
+                i.Name.Equals("PrivateFakeObject", StringComparison.OrdinalIgnoreCase)));
         }
 
         [Fact]
@@ -43,12 +43,30 @@ namespace BE.CQRS.Domain.Tests.DomainObjectLocatorTests
             Assert.Null(result.FirstOrDefault(i => i.Name.Equals("DummyClass", StringComparison.OrdinalIgnoreCase)));
         }
 
+        [Fact]
+        public void ItDoesNotResolveDomainObjectsTwice()
+        {
+            Assembly fakeAssembly = typeof(FakeObject).GetTypeInfo().Assembly;
+            var assemblies = new HashSet<Assembly> { fakeAssembly, fakeAssembly };
+
+            List<Type> result = Resolve(assemblies).ToList();
+
+            int uniqueTypeCount = result.Distinct().Count();
+            Assert.Equal(uniqueTypeCount, result.Count);
+        }
+
         private IEnumerable<Type> Resolve()
         {
             DomainObjectLocator sut = GetSut();
 
-            var asm = new List<Assembly>() {typeof(FakeObject).GetTypeInfo().Assembly};
+            var asm = new HashSet<Assembly>() { typeof(FakeObject).GetTypeInfo().Assembly };
             return sut.ResolveDomainObjects(asm);
+        }
+
+        private IEnumerable<Type> Resolve(ISet<Assembly> assemblies)
+        {
+            DomainObjectLocator sut = GetSut();
+            return sut.ResolveDomainObjects(assemblies);
         }
     }
 }
